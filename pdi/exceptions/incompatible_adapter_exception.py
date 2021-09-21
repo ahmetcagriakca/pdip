@@ -1,0 +1,2 @@
+class IncompatibleAdapterException(Exception):
+    pass
