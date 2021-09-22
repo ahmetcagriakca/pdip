@@ -4,7 +4,7 @@ from multiprocessing.process import current_process
 from typing import TypeVar, Type
 
 from flask import Flask
-from flask_injector import FlaskInjector
+from flask_injector import FlaskInjector, request
 from flask_restx import Api
 from injector import singleton, Injector, threadlocal, Binder
 from sqlalchemy import MetaData
@@ -12,12 +12,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.utils import redirect
 
 from .scopes import ISingleton, IScoped
-from ..configuration.models import ApiConfig
+from ..api.base import ResourceBase
+from ..configuration.models import ApiConfig, ApplicationConfig, DatabaseConfig
 from ..configuration import ConfigManager
 from ..logging.console_logger import ConsoleLogger
 from ..utils import ModuleFinder
-from ..configuration.models import ApplicationConfig
-from ..configuration.models import DatabaseConfig
 
 T = TypeVar('T')
 
@@ -25,17 +24,16 @@ T = TypeVar('T')
 class ServiceProvider:
     Base = declarative_base(metadata=MetaData(schema='Common'))
 
-    def __init__(self, root_directory: str = None) -> None:
+    def __init__(self, root_directory: str) -> None:
         self.app: Flask = None
         self.api: Api = None
         self.config_manager: ConfigManager = None
         self.module_finder: ModuleFinder = None
         self.injector: Injector = None
+        self.binder: Injector = None
         self.logger = ConsoleLogger()
         self.logger.info(f"Application initialize started")
         self.root_directory = root_directory
-        if self.root_directory is None:
-            root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
         self.configure_startup(self.root_directory)
         self.process_info()
 
@@ -44,6 +42,9 @@ class ServiceProvider:
 
     def import_controllers(self):
         self.module_finder.import_modules(included_modules=['controllers'])
+
+    def initialize_injection(self):
+        FlaskInjector(app=self.app, modules=[self.configure], injector=self.injector)
 
     def initialize_flask(self):
 
@@ -79,8 +80,6 @@ class ServiceProvider:
 
         self.injector = Injector()
 
-        FlaskInjector(app=self.app, modules=[self.configure], injector=self.injector)
-
     def set_database_application_name(self):
         application_config = self.config_manager.get(ApplicationConfig)
         database_config: DatabaseConfig = self.config_manager.get(DatabaseConfig)
@@ -91,7 +90,7 @@ class ServiceProvider:
             self.config_manager.set(DatabaseConfig, "application_name", f"{application_config.name}-({process_info})")
 
     def configure(self, binder: Binder):
-
+        self.binder = binder
         binder.bind(
             Flask,
             to=self.app
@@ -119,6 +118,14 @@ class ServiceProvider:
                 scoped,
                 to=scoped,
                 scope=threadlocal,
+            )
+
+    def configure_controller(self):
+        for controller in ResourceBase.__subclasses__():
+            self.binder.bind(
+                controller,
+                to=controller,
+                scope=request,
             )
 
     def get_process_info(self):

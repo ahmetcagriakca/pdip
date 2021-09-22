@@ -3,7 +3,7 @@ from datetime import datetime
 
 from injector import inject
 
-from ..dependency import ISingleton
+from ..dependency.scopes import ISingleton
 from ..utils import Utils
 
 

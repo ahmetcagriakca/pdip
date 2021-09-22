@@ -4,8 +4,8 @@ from typing import Generic, List, TypeVar, Optional, Type
 from injector import inject
 from sqlalchemy.orm import Query
 
-from . import DatabaseSessionManager
-from . import Entity
+from .database_session_manager import DatabaseSessionManager
+from .entity import Entity
 
 T = TypeVar('T')
 

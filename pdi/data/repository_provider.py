@@ -5,7 +5,6 @@ from sqlalchemy.orm import Query
 
 from .database_session_manager import DatabaseSessionManager
 from .repository import Repository
-from ..dependency import ServiceProvider
 from ..dependency.scopes import IScoped
 from ..configuration.models import DatabaseConfig
 
@@ -15,8 +14,8 @@ R = TypeVar('R')
 class RepositoryProvider(IScoped):
     @inject
     def __init__(self,
-                 database_session_manager: DatabaseSessionManager,
-                 database_config: DatabaseConfig
+                 database_config: DatabaseConfig,
+                 database_session_manager: DatabaseSessionManager = None
                  ):
         self.database_config = database_config
         self.database_session_manager = database_session_manager
@@ -26,11 +25,7 @@ class RepositoryProvider(IScoped):
 
     def create(self) -> DatabaseSessionManager:
         if self.database_session_manager is None:
-            if self.database_config is not None:
-                self.database_session_manager = DatabaseSessionManager(database_config=self.database_config)
-            else:
-                self.database_config = ServiceProvider.config_manager.get(DatabaseConfig)
-                self.database_session_manager = DatabaseSessionManager(database_config=self.database_config)
+            self.database_session_manager = DatabaseSessionManager(database_config=self.database_config)
             return self.database_session_manager
         else:
             return self.database_session_manager

@@ -1,5 +1,7 @@
+import os
+
 from .service_provider import ServiceProvider
-# from ..api.flask_app_wrapper import FlaskAppWrapper
+from ..api.app import FlaskAppWrapper
 
 
 class DependencyContainer:
@@ -7,14 +9,12 @@ class DependencyContainer:
 
     @classmethod
     def initialize_service(cls, root_directory):
+        if root_directory is None:
+            root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
         cls.Instance = ServiceProvider(root_directory)
+
+        cls.Instance.initialize_injection()
         cls.Instance.import_controllers()
+        cls.Instance.configure_controller()
+
         return DependencyContainer
-    #
-    # @classmethod
-    # def run_api(cls):
-    #     DependencyContainer.Instance.injector.get(FlaskAppWrapper).run()
-    #
-    # @classmethod
-    # def get_api_test_client(cls):
-    #     DependencyContainer.Instance.injector.get(FlaskAppWrapper).test_client()

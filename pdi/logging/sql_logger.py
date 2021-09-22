@@ -7,8 +7,8 @@ from .console_logger import ConsoleLogger
 from ..data.repository_provider import RepositoryProvider
 from ..dependency.scopes import IScoped
 from ..utils.utils import Utils
-from ..configuration.models import ApplicationConfig
-from ..dependency import ServiceProvider
+from ..configuration.models import ApplicationConfig, DatabaseConfig
+from ..dependency.container import DependencyContainer
 
 
 class SqlLogger(IScoped):
@@ -16,9 +16,10 @@ class SqlLogger(IScoped):
         pass
 
     @classmethod
-    def log_to_db(cls,level, message, job_id=None):
+    def log_to_db(cls, level, message, job_id=None):
         return
-        application_config: ApplicationConfig = ServiceProvider.config_manager.get(ApplicationConfig)
+        application_config: ApplicationConfig = DependencyContainer.Instance.config_manager.get(ApplicationConfig)
+        database_config: DatabaseConfig = DependencyContainer.Instance.config_manager.get(DatabaseConfig)
         console_logger: ConsoleLogger = ServiceProvider.injector.get(ConsoleLogger)
         log_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         process_info = Utils.get_process_info()
@@ -27,9 +28,9 @@ class SqlLogger(IScoped):
             application_name += f'-{application_config.hostname}'
         comment = f'{application_name}-{process_info}'
         try:
-            log_repository = RepositoryProvider().get(LogData)
+            log_repository = RepositoryProvider(database_config=database_config).get(LogData)
             log = LogData(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
-                      JobId=job_id, Commnets=comment)
+                          JobId=job_id, Commnets=comment)
             log_repository.insert(log)
             log_repository.commit()
         except Exception as ex:

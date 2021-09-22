@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 from injector import inject
-from ..dependency import IScoped
+from ..dependency.scopes import IScoped
 from ..configuration.models import ApplicationConfig
 
 
