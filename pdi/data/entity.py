@@ -2,8 +2,9 @@ from datetime import datetime
 from sqlalchemy import Integer, DateTime, TIMESTAMP, text, Column, String
 from sqlalchemy.ext.declarative import declared_attr
 
+from .entity_base import EntityBase
 
-class Entity:
+class Entity(EntityBase):
     Id = Column(
         Integer,
         primary_key=True
@@ -33,23 +34,7 @@ class Entity:
     def Comments(cls):
         return Column(String(1000), index=False, unique=False, nullable=True)
 
-    @declared_attr
-    def RowVersion(cls):
-        return Column(TIMESTAMP(), default=text('DEFAULT'))
+    # @declared_attr
+    # def RowVersion(cls):
+    #     return Column(TIMESTAMP(), default=text('DEFAULT'))
 
-    def __init__(self,
-                 CreatedByUserId: int = None,
-                 CreationDate: datetime = None,
-                 LastUpdatedUserId: int = None,
-                 LastUpdatedDate: datetime = None,
-                 IsDeleted: bool = None,
-                 Comments: str = None,
-                 RowVersion: bytes = None,
-                 ):
-        self.CreatedByUserId: int = CreatedByUserId
-        self.CreationDate: datetime = CreationDate
-        self.LastUpdatedUserId: int = LastUpdatedUserId
-        self.LastUpdatedDate: datetime = LastUpdatedDate
-        self.IsDeleted: bool = IsDeleted
-        self.Comments: str = Comments
-        self.RowVersion: bytes = RowVersion

@@ -1,6 +1,7 @@
 import glob
 import importlib
 import os
+import sys
 
 from . import Utils
 
@@ -8,8 +9,8 @@ from . import Utils
 class ModuleFinder:
     def __init__(self, root_directory: str):
         self.root_directory = root_directory
+        self.running_directory=  os.getcwd()
         self.modules = []
-
         self.get_indexes = lambda module_name, modules: [i for (module, i) in zip(modules, range(len(modules))) if
                                                          module["module_name"] == module_name]
         self.find_all_modules(self.root_directory)
@@ -39,17 +40,31 @@ class ModuleFinder:
                 module_path = os.path.join(folder, file_name)
                 module_address = module_path.replace(self.root_directory, '')[
                     1:].replace('\\', '.').replace('/', '.')
+                module_base_address=''
+                if(self.running_directory!= self.root_directory):
+                    module_base_address = self.root_directory.replace(self.running_directory, '')[
+                        1:].replace('\\', '.').replace('/', '.')+'.'
                 module['module_name'] = file_name
                 module['file_path'] = file
                 module['module_path'] = module_path
                 module['module_address'] = module_address
+                module['module_base_address'] = module_base_address
                 self.modules.append(module)
 
     def import_modules_by_name_ends_with(self, name):
         for module in self.modules:
             if (module['module_name'].endswith(name)):
                 module_address = module["module_address"]
-                importlib.import_module(module_address)
+                if module_address not in sys.modules:
+                    importlib.import_module(module_address)
+
+    # checking existing module for duplicate importing
+    def check_module_existing(self, module_address: str):
+        for k in sys.modules.keys():
+            if k.endswith(module_address):
+                return True
+        else:
+            return False
 
     def import_modules(self, included_modules=None, excluded_modules=None):
         for module in self.modules:
@@ -62,7 +77,13 @@ class ModuleFinder:
                     (included_modules is None) or (included_modules is not None and any(
                         base_module_folder.startswith(item) for item in included_modules))):
                 module_address = module["module_address"]
-                importlib.import_module(module_address)
+
+                if not self.check_module_existing(module_address=module_address):
+                    try:
+                        importlib.import_module(module_address)
+                    except ModuleNotFoundError as ex:
+                        module_base_address = module["module_base_address"]
+                        importlib.import_module(module_base_address+module_address)
 
     def get_module(self, name_of_module):
         indexes = self.get_indexes(name_of_module, self.modules)

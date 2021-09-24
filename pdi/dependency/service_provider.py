@@ -7,8 +7,6 @@ from flask import Flask
 from flask_injector import FlaskInjector, request
 from flask_restx import Api
 from injector import singleton, Injector, threadlocal, Binder
-from sqlalchemy import MetaData
-from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.utils import redirect
 
 from .scopes import ISingleton, IScoped
@@ -22,7 +20,6 @@ T = TypeVar('T')
 
 
 class ServiceProvider:
-    Base = declarative_base(metadata=MetaData(schema='Common'))
 
     def __init__(self, root_directory: str) -> None:
         self.app: Flask = None
@@ -91,39 +88,37 @@ class ServiceProvider:
 
     def configure(self, binder: Binder):
         self.binder = binder
-        binder.bind(
+        self.binder.bind(
             Flask,
             to=self.app
         )
-        binder.bind(
+        self.binder.bind(
             Api,
             to=self.api
         )
         for config in self.config_manager.get_all():
-            binder.bind(
-                config.get("type"),
+            self.binder.bind(
+                interface=config.get("type"),
                 to=config.get("instance"),
                 scope=singleton,
             )
 
         for singletonScope in ISingleton.__subclasses__():
-            binder.bind(
-                singletonScope,
+            self.binder.bind(
+                interface=singletonScope,
                 to=singletonScope,
                 scope=singleton,
             )
 
         for scoped in IScoped.__subclasses__():
-            binder.bind(
-                scoped,
+            self.binder.bind(
+                interface=scoped,
                 to=scoped,
                 scope=threadlocal,
             )
-
-    def configure_controller(self):
         for controller in ResourceBase.__subclasses__():
             self.binder.bind(
-                controller,
+                interface=controller,
                 to=controller,
                 scope=request,
             )

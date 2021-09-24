@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from injector import inject
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.pool import StaticPool
 
 from ..dependency.scopes import IScoped
 from ..utils.utils import Utils
@@ -16,7 +17,7 @@ class DatabaseSessionManager(IScoped):
         self.engine = None
         self._SessionFactory = None
         self.session: Session = None
-        # self.connect()
+        self.connect()
 
     def __del__(self):
         # close = getattr(self, "close", None)
@@ -25,13 +26,20 @@ class DatabaseSessionManager(IScoped):
         pass
 
     def connect(self):
-        connection_string = Utils.get_connection_string(database_config=self.database_config)
-        self.engine = create_engine(connection_string,
-                                    poolclass=pool.NullPool,
-                                    pool_pre_ping=True,
-                                    connect_args={"application_name": self.database_config.application_name})
-        self._SessionFactory = sessionmaker(bind=self.engine)
-        self.session: Session = self.session_factory()
+        if self.database_config.type is not None:
+            connection_string = Utils.get_connection_string(database_config=self.database_config)
+            if self.database_config.type == 'SQLITE':
+                self.engine = create_engine(connection_string, connect_args={"check_same_thread": False},
+                                            poolclass=StaticPool,
+                                            execution_options=self.database_config.execution_options)
+            else:
+
+                self.engine = create_engine(connection_string,
+                                            poolclass=pool.NullPool,
+                                            pool_pre_ping=True,
+                                            connect_args={"application_name": self.database_config.application_name})
+            self._SessionFactory = sessionmaker(bind=self.engine)
+            self.session: Session = self.session_factory()
 
     def dispose(self):
         if self.engine is not None:
@@ -42,7 +50,7 @@ class DatabaseSessionManager(IScoped):
             self.session.close()
         if self.engine is not None:
             self.dispose()
-            self.engine = None
+            # self.engine = None
 
     def session_factory(self):
         if self._SessionFactory is not None:

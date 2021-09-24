@@ -8,7 +8,7 @@ from typing import List
 
 from .models.process_info import ProcessInfo
 from .models.process_task import ProcessTask
-from ..logging import SqlLogger
+from ..logging.sql_logger import SqlLogger
 
 
 class ProcessManager:

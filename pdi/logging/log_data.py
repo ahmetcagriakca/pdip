@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from ..data import EntityBase
 
-class LogData:
+
+class LogData(EntityBase):
     def __init__(self,
-                 TypeId: str = None,
+                 TypeId: int = None,
                  Content: str = None,
                  LogDatetime: datetime = None,
                  JobId: int = None,

@@ -14,8 +14,10 @@ class DatabaseConfig(BaseConfig):
                  database: str = None,
                  username: str = None,
                  password: str = None,
-                 application_name: str = None
+                 application_name: str = None,
+                 execution_options: str = None
                  ):
+        self.execution_options = execution_options
         self.connection_string = connection_string
         self.type = type
         self.driver: str = driver

@@ -44,10 +44,15 @@ class Utils:
             driver = database_config.driver.replace(' ', '+')
         driver_string = ''
         connection_type = ''
+        if database_config.type == 'SQLITE':
+            connection_type = 'sqlite'
+            host = database_config.host if database_config.host is not None else ''
+            connection_string = f'{connection_type}://{host}'
         if database_config.type == 'MSSQL':
             driver_string = f'?driver={driver}'
             connection_type = 'mssql+pyodbc'
+            connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         elif database_config.type == 'POSTGRESQL':
             connection_type = 'postgresql'
-        connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
+            connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         return connection_string

@@ -39,7 +39,6 @@ class ConfigManager:
             config_name_split = "application.yml".split('.')
             config_name = f'{config_name_split[0]}.{environment}.{config_name_split[1]}'
         config_path=os.path.join(root_directory, config_name)
-        print(config_path)
         configs: List[dict] = []
         if os.path.exists(config_path):
             with open(config_path, 'r') as yml_file:

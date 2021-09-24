@@ -1,4 +1,3 @@
-import json
 from unittest import TestCase
 
 from flask import Flask
@@ -29,7 +28,8 @@ class DependencyWrapper:
         self.injector = Injector()
         self.app = Flask("test")
         self.api = Api(self.app)
-        FlaskInjector(app=self.app, modules=[self.configure], injector=self.injector)
+        FlaskInjector(app=self.app, modules=[
+                      self.configure], injector=self.injector)
 
     def configure(self, binder: Binder):
         binder.bind(

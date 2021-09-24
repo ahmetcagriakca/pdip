@@ -8,7 +8,7 @@ from ..data.repository_provider import RepositoryProvider
 from ..dependency.scopes import IScoped
 from ..utils.utils import Utils
 from ..configuration.models import ApplicationConfig, DatabaseConfig
-from ..dependency.container import DependencyContainer
+from ..dependency import DependencyContainer
 
 
 class SqlLogger(IScoped):
@@ -17,22 +17,25 @@ class SqlLogger(IScoped):
 
     @classmethod
     def log_to_db(cls, level, message, job_id=None):
-        return
         application_config: ApplicationConfig = DependencyContainer.Instance.config_manager.get(ApplicationConfig)
         database_config: DatabaseConfig = DependencyContainer.Instance.config_manager.get(DatabaseConfig)
-        console_logger: ConsoleLogger = ServiceProvider.injector.get(ConsoleLogger)
-        log_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        console_logger: ConsoleLogger = DependencyContainer.Instance.injector.get(ConsoleLogger)
+        log_datetime = datetime.now()  # datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         process_info = Utils.get_process_info()
         application_name = application_config.name
         if application_config.hostname is not None:
             application_name += f'-{application_config.hostname}'
         comment = f'{application_name}-{process_info}'
         try:
-            log_repository = RepositoryProvider(database_config=database_config).get(LogData)
-            log = LogData(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
-                          JobId=job_id, Commnets=comment)
+            logger_class = LogData.__subclasses__()[0]
+            # repository_provider = RepositoryProvider(database_config=database_config)
+            repository_provider=DependencyContainer.Instance.get(RepositoryProvider)
+            # repository_provider.database_session_manager.session_factory()
+            log_repository = repository_provider.get(logger_class)
+            log = logger_class(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
+                               JobId=job_id, Comments=comment)
             log_repository.insert(log)
-            log_repository.commit()
+            repository_provider.commit()
         except Exception as ex:
             console_logger.error(f'{job_id}-Sql logging getting error. Error:{ex}')
         finally:
