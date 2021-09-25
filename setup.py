@@ -5,6 +5,7 @@ setup(
     version='0.1.0',
     description='Python Data Integrator infrastructures',
     url='https://github.com/ahmetcagriakca/pdi',
+    download_url='https://github.com/ahmetcagriakca/pdi/archive/refs/tags/v0.1.0.tar.gz',
     author='Ahmet Çağrı AKCA',
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',
