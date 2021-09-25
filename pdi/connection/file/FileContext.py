@@ -1,5 +1,3 @@
-import base64
-import io
 import os
 import re
 from asyncio import Queue
@@ -10,8 +8,8 @@ from typing import List
 from injector import inject
 from pandas import DataFrame
 
-from infrastructure.connection.file.connectors.FileConnector import FileConnector
-from infrastructure.dependency.scopes import IScoped
+from .connectors.FileConnector import FileConnector
+from ...dependency.scopes import IScoped
 
 
 class FileContext(IScoped):
@@ -62,9 +60,9 @@ class FileContext(IScoped):
     #                 files.append(os.path.join(root, file))
     #     return files
 
-    def get_files(self, folder, file_regex)-> List[str]:
+    def get_files(self, folder, file_regex) -> List[str]:
         regex = re.compile(file_regex)
-        only_files = [f for f in listdir(folder) if isfile(join(folder, f) )and regex.match(f)]
+        only_files = [f for f in listdir(folder) if isfile(join(folder, f)) and regex.match(f)]
         return only_files
 
     def get_sub_folders(self, folder):

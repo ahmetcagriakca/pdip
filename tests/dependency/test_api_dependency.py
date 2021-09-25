@@ -48,7 +48,7 @@ class DependencyWrapper:
         )
 
 
-class test_ApiDependency(TestCase):
+class TestApiDependency(TestCase):
     def test_inject_api(self):
         dependency_wrapper = DependencyWrapper()
 

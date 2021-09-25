@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar, Union
 
-from infrastructure.cqrs.IQuery import IQuery
-from infrastructure.cqrs.ICommand import ICommand
+from .IQuery import IQuery
+from .ICommand import ICommand
 
 CQH = TypeVar('CQH', covariant=True, bound=Union[IQuery, ICommand])
 

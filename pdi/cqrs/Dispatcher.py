@@ -2,13 +2,13 @@ from typing import Type, TypeVar
 
 from injector import inject
 
-from IocManager import IocManager
-from infrastructure.cqrs.CommandQueryBase import CommandQueryBase
-from infrastructure.cqrs.ICommand import ICommand
-from infrastructure.cqrs.ICommandHandler import ICommandHandler
-from infrastructure.cqrs.IQuery import IQuery
-from infrastructure.cqrs.IQueryHandler import IQueryHandler
-from infrastructure.dependency.scopes import IScoped
+from .CommandQueryBase import CommandQueryBase
+from .ICommand import ICommand
+from .ICommandHandler import ICommandHandler
+from .IQuery import IQuery
+from .IQueryHandler import IQueryHandler
+from ..dependency.scopes import IScoped
+from ..dependency import DependencyContainer
 
 T = TypeVar('T', covariant=True)
 
@@ -22,7 +22,7 @@ class Dispatcher(IScoped):
         for handler_class in handler_type.__subclasses__():
             result = handler_type[type] == handler_class.__orig_bases__[0]
             if result:
-                instance = IocManager.injector.get(handler_class)
+                instance = DependencyContainer.Instance.get(handler_class)
                 return instance
 
     def dispatch(self, cq: CommandQueryBase[T]) -> T:

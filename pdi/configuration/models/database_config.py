@@ -29,6 +29,3 @@ class DatabaseConfig(BaseConfig):
         self.username: str = username
         self.password: str = password
         self.application_name = application_name
-
-    def is_valid(self):
-        pass

@@ -15,6 +15,3 @@ class ApplicationConfig(BaseConfig):
         self.environment: str = environment
         self.hostname = hostname
         self.secret_key = secret_key
-
-    def is_valid(self):
-        pass

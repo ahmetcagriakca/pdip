@@ -39,20 +39,28 @@ class Utils:
         return f"{current_process().name} ({os.getpid()},{os.getppid()})"
 
     @staticmethod
-    def get_connection_string(database_config):
+    def get_connection_string(database_config, root_directory):
         if database_config.driver is not None and database_config.driver != '':
             driver = database_config.driver.replace(' ', '+')
-        driver_string = ''
-        connection_type = ''
+        connection_string =''
         if database_config.type == 'SQLITE':
             connection_type = 'sqlite'
-            host = database_config.host if database_config.host is not None else ''
-            connection_string = f'{connection_type}://{host}'
+            if database_config.host is not None and database_config.host != '':
+                host = database_config.host
+                db_path = '/'
+                if root_directory is not None:
+                    db_path += os.path.join(root_directory, host)
+                else:
+                    db_path += host
+            else:
+                db_path = ''
+            connection_string = f'{connection_type}://{db_path}'
         if database_config.type == 'MSSQL':
             driver_string = f'?driver={driver}'
             connection_type = 'mssql+pyodbc'
             connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         elif database_config.type == 'POSTGRESQL':
+            driver_string = ''
             connection_type = 'postgresql'
             connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         return connection_string

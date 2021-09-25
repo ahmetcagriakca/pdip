@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
 
-from infrastructure.cqrs.IQuery import IQuery
-from infrastructure.cqrs.CommandQueryHandlerBase import CommandQueryHandlerBase
+from .IQuery import IQuery
+from .CommandQueryHandlerBase import CommandQueryHandlerBase
 
 QH = TypeVar('QH', covariant=True, bound=IQuery)
 

@@ -6,11 +6,11 @@ from queue import Queue
 import pandas as pd
 
 from injector import inject
-from infrastructure.connection.database.DatabasePolicy import DatabasePolicy
-from infrastructure.connection.database.connectors.DatabaseConnector import DatabaseConnector
-from infrastructure.connection.models.DataQueueTask import DataQueueTask
-from infrastructure.dependency.scopes import IScoped
-from infrastructure.logging.SqlLogger import SqlLogger
+from .DatabasePolicy import DatabasePolicy
+from .connectors.DatabaseConnector import DatabaseConnector
+from ..models.DataQueueTask import DataQueueTask
+from ...dependency.scopes import IScoped
+from ...logging.sql_logger import SqlLogger
 
 
 class DatabaseContext(IScoped):

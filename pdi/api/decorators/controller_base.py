@@ -67,7 +67,7 @@ class Controller:
             name = split_namespace[0].title()
         else:
             name = self.cls.__name__.replace(
-                'Controllers', '').replace('Resource', '')
+                'Controller', '').replace('Resource', '')
         return name
 
     def find_route(self):

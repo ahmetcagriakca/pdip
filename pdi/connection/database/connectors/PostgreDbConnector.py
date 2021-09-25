@@ -1,9 +1,9 @@
 import psycopg2
-from injector import inject
-from infrastructure.connection.database.connectors.DatabaseConnector import DatabaseConnector
-from models.configs.DatabaseConfig import DatabaseConfig
 import psycopg2.extras as extras
+from injector import inject
 
+from .DatabaseConnector import DatabaseConnector
+from ....configuration.models.database_config import DatabaseConfig
 
 class PostgreDbConnector(DatabaseConnector):
     @inject

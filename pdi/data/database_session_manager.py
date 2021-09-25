@@ -27,14 +27,17 @@ class DatabaseSessionManager(IScoped):
 
     def connect(self):
         if self.database_config.type is not None:
-            connection_string = Utils.get_connection_string(database_config=self.database_config)
+            if self.database_config.connection_string is None or self.database_config.connection_string == '':
+                self.database_config.connection_string = Utils.get_connection_string(
+                    database_config=self.database_config)
             if self.database_config.type == 'SQLITE':
-                self.engine = create_engine(connection_string, connect_args={"check_same_thread": False},
+                self.engine = create_engine(self.database_config.connection_string,
+                                            connect_args={"check_same_thread": False},
                                             poolclass=StaticPool,
                                             execution_options=self.database_config.execution_options)
             else:
 
-                self.engine = create_engine(connection_string,
+                self.engine = create_engine(self.database_config.connection_string,
                                             poolclass=pool.NullPool,
                                             pool_pre_ping=True,
                                             connect_args={"application_name": self.database_config.application_name})

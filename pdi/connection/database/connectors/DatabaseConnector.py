@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from infrastructure.dependency.scopes import IScoped
+from ....dependency.scopes import IScoped
 
 
 class DatabaseConnector(IScoped):

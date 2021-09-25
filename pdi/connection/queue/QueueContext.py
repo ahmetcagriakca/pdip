@@ -3,8 +3,8 @@ from queue import Queue
 from injector import inject
 from pandas import DataFrame
 
-from infrastructure.connection.queue.connectors.QueueConnector import QueueConnector
-from infrastructure.dependency.scopes import IScoped
+from .connectors.QueueConnector import QueueConnector
+from ...dependency.scopes import IScoped
 
 
 class QueueContext(IScoped):

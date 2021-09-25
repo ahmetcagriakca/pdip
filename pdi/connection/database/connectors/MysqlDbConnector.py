@@ -1,7 +1,7 @@
 import mysql.connector
 from injector import inject
-from infrastructure.connection.database.connectors.DatabaseConnector import DatabaseConnector
-from models.configs.DatabaseConfig import DatabaseConfig
+from .DatabaseConnector import DatabaseConnector
+from ....configuration.models.database_config import DatabaseConfig
 
 
 class MysqlDbConnector(DatabaseConnector):

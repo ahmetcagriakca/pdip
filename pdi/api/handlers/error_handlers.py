@@ -57,9 +57,9 @@ class ErrorHandlers(ISingleton):
             trace_message = exception_traceback
         self.sql_logger.error(f'Messsage:{output_message} - Trace:{trace_message}')
         return {
-                   "result": "",
-                   "isSuccess": "false",
-                   "message": f"Server exception occurred. Exception Message:{output}",
+                   "Result": "",
+                   "IsSuccess": "false",
+                   "Message": f"Server exception occurred. Exception Message:{output}",
                }, 500, {self.mime_type_string: self.default_content_type}
 
     def handle_operational_exception(self, exception):
@@ -80,7 +80,7 @@ class ErrorHandlers(ISingleton):
         self.sql_logger.error(
             f'Operational Exception Messsage:{output_message} - Trace:{trace_message}')
         return {
-                   "result": "",
-                   "isSuccess": "false",
-                   "message": output
+                   "Result": "",
+                   "IsSuccess": "false",
+                   "Message": output
                }, 400, {mime_type_string: default_content_type}

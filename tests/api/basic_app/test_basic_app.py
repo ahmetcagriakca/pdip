@@ -8,17 +8,14 @@ from pdi.dependency.container import DependencyContainer
 # from .controllers.TestApiResource import TestApiResource
 
 class TestBasicApp(TestCase):
-    def __init__(self, methodName='TestBasicApp'):
-        super(TestBasicApp, self).__init__(methodName)
-
+    def setUp(self):
         root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
         DependencyContainer.initialize_service(root_directory=root_directory)
         self.client = DependencyContainer.Instance.injector.get(FlaskAppWrapper).test_client()
 
-    def print_error_detail(self, data):
-        print(data['message'] if 'message' in data else '')
-        print(data['traceback'] if 'traceback' in data else '')
-        print(data['message'] if 'message' in data else '')
+    def tearDown(self):
+        DependencyContainer.cleanup()
+        return super().tearDown()
 
     def test_api_controller(self):
         response = self.client.get(

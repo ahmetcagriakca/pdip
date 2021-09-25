@@ -1,33 +1,29 @@
 from injector import inject
 
-from domain.operation.execution.services.OperationCacheService import OperationCacheService
-from infrastructure.connection.database.DatabaseContext import DatabaseContext
-from infrastructure.connection.database.DatabasePolicy import DatabasePolicy
-from infrastructure.dependency.scopes import IScoped
-from infrastructure.logging.SqlLogger import SqlLogger
-from models.configs.DatabaseConfig import DatabaseConfig
-from models.dao.connection.Connection import Connection
-from models.enums import ConnectionTypes, ConnectorTypes
+from .DatabaseContext import DatabaseContext
+from .DatabasePolicy import DatabasePolicy
+from ..models.enums import ConnectionTypes, ConnectorTypes
+from ...dependency.scopes import IScoped
+from ...logging.sql_logger import SqlLogger
+from ...configuration.models.database_config import DatabaseConfig
 
 
 class DatabaseProvider(IScoped):
     @inject
     def __init__(self,
                  sql_logger: SqlLogger,
-                 operation_cache_service: OperationCacheService,
                  ):
-        self.operation_cache_service = operation_cache_service
         self.sql_logger = sql_logger
 
-    def get_context(self, connection: Connection) -> DatabaseContext:
+    def get_context(self, connection,connection_basic_authentication,connection_server) -> DatabaseContext:
         """
         Creating Connection
         """
         if connection.ConnectionType.Name == ConnectionTypes.Database.name:
-            connection_basic_authentication = self.operation_cache_service.get_connection_basic_authentication_by_connection_id(
-                connection_id=connection.Id)
-            connection_server = self.operation_cache_service.get_connection_server_by_connection_id(
-                connection_id=connection.Id)
+            # connection_basic_authentication = self.operation_cache_service.get_connection_basic_authentication_by_connection_id(
+            #     connection_id=connection.Id)
+            # connection_server = self.operation_cache_service.get_connection_server_by_connection_id(
+            #     connection_id=connection.Id)
             if connection.Database.ConnectorTypeId == ConnectorTypes.ORACLE.value:
                 user = connection_basic_authentication.User
                 password = connection_basic_authentication.Password

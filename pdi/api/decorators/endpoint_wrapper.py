@@ -43,9 +43,6 @@ class EndpointWrapper:
     def get_response(result=None, message=None):
         return {'Result': result, 'Message': message}
 
-    def get_error_response(self, message):
-        return {"IsSuccess": False, 'Message': message}
-
     def field_resolver(self, value, key):
 
         if value == int:
@@ -82,7 +79,7 @@ class EndpointWrapper:
             elif self.type_checker.is_base_generic(value):
                 # TODO:Base generic class
                 print('value type should be a structure of', value.__args__[0])
-            elif self.type_checker.isclass(value):
+            elif self.type_checker.is_class(value):
                 instance = value()
                 nested_annotations = self.get_annotations(instance)
                 if nested_annotations is not None:

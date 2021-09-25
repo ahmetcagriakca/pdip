@@ -1,11 +1,12 @@
 from injector import inject
-from infrastructure.connection.database.connectors.DatabaseConnector import DatabaseConnector
-from infrastructure.connection.database.connectors.MssqlDbConnector import MssqlDbConnector
-from infrastructure.connection.database.connectors.OracleDbConnector import OracleDbConnector
-from infrastructure.connection.database.connectors.PostgreDbConnector import PostgreDbConnector
-from infrastructure.connection.database.connectors.MysqlDbConnector import MysqlDbConnector
-from models.configs.DatabaseConfig import DatabaseConfig
-from models.enums import ConnectorTypes
+
+from .connectors.DatabaseConnector import DatabaseConnector
+from .connectors.MssqlDbConnector import MssqlDbConnector
+from .connectors.OracleDbConnector import OracleDbConnector
+from .connectors.PostgreDbConnector import PostgreDbConnector
+from .connectors.MysqlDbConnector import MysqlDbConnector
+from ..models.enums import ConnectorTypes
+from ...configuration.models.database_config import DatabaseConfig
 
 
 class DatabasePolicy:

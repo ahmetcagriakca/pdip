@@ -2,40 +2,29 @@ import os
 
 from injector import inject
 
-from domain.connection.services.ConnectionSecretService import ConnectionSecretService
-from domain.connection.services.ConnectionServerService import ConnectionServerService
-from infrastructure.connection.file.FileContext import FileContext
-from infrastructure.connection.file.connectors.CsvConnector import CsvConnector
-from infrastructure.connection.file.connectors.FileConnector import FileConnector
+from .FileContext import FileContext
+from .connectors.CsvConnector import CsvConnector
+from .connectors.FileConnector import FileConnector
 from infrastructure.dependency.scopes import IScoped
-from infrastructure.logging.SqlLogger import SqlLogger
-from models.configs.ApplicationConfig import ApplicationConfig
-from models.dao.connection.Connection import Connection
-from models.enums import ConnectionTypes, ConnectorTypes
+from ...logging.sql_logger import SqlLogger
+from ...configuration.models.application_config import ApplicationConfig
+from ..models.enums import ConnectionTypes, ConnectorTypes
 
 
 class FileProvider(IScoped):
     @inject
     def __init__(self,
                  sql_logger: SqlLogger,
-                 connection_secret_service: ConnectionSecretService,
-                 connection_server_service: ConnectionServerService,
                  application_config: ApplicationConfig
                  ):
-        self.connection_server_service = connection_server_service
         self.application_config = application_config
-        self.connection_secret_service = connection_secret_service
         self.sql_logger = sql_logger
 
-    def get_context(self, connection: Connection) -> FileContext:
+    def get_context(self, connection, connection_basic_authentication, connection_server) -> FileContext:
         """
         Creating Connection
         """
         if connection.ConnectionType.Name == ConnectionTypes.File.name:
-            connection_basic_authentication = self.operation_cache_service.get_connection_basic_authentication_by_connection_id(
-                connection_id=connection.Id)
-            connection_server = self.operation_cache_service.get_connection_server_by_connection_id(
-                connection_id=connection.Id)
             connector: FileConnector = None
             if connection.File.ConnectorType.Name == ConnectorTypes.CSV.name:
                 host = connection_server.Host

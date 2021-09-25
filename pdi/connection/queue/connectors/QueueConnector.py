@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from queue import Queue
 
-from infrastructure.dependency.scopes import IScoped
+from ....dependency.scopes import IScoped
 
 from pandas import DataFrame
 

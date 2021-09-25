@@ -18,12 +18,6 @@ class RequestConverter(object):
             # Raise exception instead of silently returning None
             raise ValueError(f'Unable to find a matching class for object: {d}')
 
-    def complex_handler(self, Obj):
-        if hasattr(Obj, '__dict__'):
-            return Obj.__dict__
-        else:
-            raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(Obj), repr(Obj)))
-
     def register(self, cls):
         self.mappings[frozenset(tuple([attr for attr, val in cls().__dict__.items()]))] = cls
         annotations=self.get_annotations(cls())
@@ -41,8 +35,6 @@ class RequestConverter(object):
         if hasattr(obj, '__annotations__'):
             annotations = obj.__annotations__
             return annotations
-        else:
-            return None
 
     def register_subclasses(self,annotations):
         generic_type_checker = TypeChecker()

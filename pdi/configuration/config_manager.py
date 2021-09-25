@@ -27,9 +27,6 @@ class ConfigManager:
         config_instance = self.get(generic_type=generic_type)
         setattr(config_instance, instance_property, property_value)
 
-    def empty(self) -> bool:
-        return not self.items
-
     def __get_configs(self, root_directory: str) -> List[dict]:
         self.module_finder.import_modules_by_name_ends_with(name='Configs')
 

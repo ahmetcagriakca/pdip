@@ -17,6 +17,3 @@ class ApsConfig(BaseConfig):
         self.coalesce = coalesce
         self.default_misfire_grace_time_date_job = default_misfire_grace_time_date_job
         self.default_misfire_grace_time_cron_job = default_misfire_grace_time_cron_job
-
-    def is_valid(self):
-        pass

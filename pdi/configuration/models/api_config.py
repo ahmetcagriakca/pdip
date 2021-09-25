@@ -14,6 +14,3 @@ class ApiConfig(BaseConfig):
         self.origins: str = origins
         self.authorizations: any = authorizations
         self.security: any = security
-
-    def is_valid(self):
-        pass

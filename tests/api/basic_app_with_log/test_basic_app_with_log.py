@@ -7,26 +7,31 @@ from sqlalchemy import desc
 from pdi.api.app import FlaskAppWrapper
 from pdi.data import DatabaseSessionManager, RepositoryProvider
 from pdi.dependency.container import DependencyContainer
-from tests.api.basic_app_with_log.domain.dao.Log import Log
 
 
 class TestBasicAppWithLog(TestCase):
-    def __init__(self, methodName='TestBasicAppWithLog'):
-        super(TestBasicAppWithLog, self).__init__(methodName)
-
-        root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
+    def setUp(self):
+        root_directory = os.path.abspath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__))))
         DependencyContainer.initialize_service(root_directory=root_directory)
-        self.client = DependencyContainer.Instance.injector.get(FlaskAppWrapper).test_client()
-        engine = DependencyContainer.Instance.get(DatabaseSessionManager).engine
+        engine = DependencyContainer.Instance.get(
+            DatabaseSessionManager).engine
         DependencyContainer.Base.metadata.create_all(engine)
+        self.client = DependencyContainer.Instance.injector.get(
+            FlaskAppWrapper).test_client()
 
-    def print_error_detail(self, data):
-        print(data['message'] if 'message' in data else '')
-        print(data['traceback'] if 'traceback' in data else '')
-        print(data['message'] if 'message' in data else '')
+    def tearDown(self):
+        engine = DependencyContainer.Instance.get(
+            DatabaseSessionManager).engine
+        engine.connect()
+        DependencyContainer.Base.metadata.drop_all(engine)
+        DependencyContainer.cleanup()
+        return super().tearDown()
 
-    def check_model_logs(self):
-        repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
+    def test_check_model_logs(self):
+        from .domain.dao.Log import Log
+        repository_provider = DependencyContainer.Instance.get(
+            RepositoryProvider)
         log_repository = repository_provider.get(Log)
         new_log = Log()
         new_log.TypeId = 1
@@ -38,7 +43,7 @@ class TestBasicAppWithLog(TestCase):
         assert log.Content == 'test'
 
     def test_api_logs(self):
-        self.check_model_logs()
+        from .domain.dao.Log import Log
         value = 1
         api_result = f'testdata:{value}'
         log_result = f'data:{value}'
@@ -52,9 +57,12 @@ class TestBasicAppWithLog(TestCase):
         json_data = json.loads(response_data)
         assert json_data['Result'] == api_result
 
-        repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
+        repository_provider = DependencyContainer.Instance.get(
+            RepositoryProvider)
         log_repository = repository_provider.get(Log)
-        DependencyContainer.Instance.get(DatabaseSessionManager).engine.connect()
-        log = log_repository.table.order_by(desc(Log.Id)).filter_by(TypeId=20).first()
+        DependencyContainer.Instance.get(
+            DatabaseSessionManager).engine.connect()
+        log = log_repository.table.order_by(
+            desc(Log.Id)).filter_by(TypeId=20).first()
         assert log is not None
         assert log.Content == log_result

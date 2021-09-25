@@ -9,7 +9,7 @@ from . import Utils
 class ModuleFinder:
     def __init__(self, root_directory: str):
         self.root_directory = root_directory
-        self.running_directory=  os.getcwd()
+        self.running_directory = os.getcwd()
         self.modules = []
         self.get_indexes = lambda module_name, modules: [i for (module, i) in zip(modules, range(len(modules))) if
                                                          module["module_name"] == module_name]
@@ -32,6 +32,10 @@ class ModuleFinder:
     def find_all_modules(self, folder):
         folder_path = os.path.join(folder)
         folders = self.find_sub_folders(folder_path)
+        module_base_address = ''
+        if (self.running_directory != self.root_directory):
+            module_base_address = self.root_directory.replace(self.running_directory, '')[
+                                  1:].replace('\\', '.').replace('/', '.') + '.'
         for folder in folders:
             files = glob.glob(folder + '/*.py')
             for file in files:
@@ -39,16 +43,13 @@ class ModuleFinder:
                 file_name = self.get_file_name(file=file)
                 module_path = os.path.join(folder, file_name)
                 module_address = module_path.replace(self.root_directory, '')[
-                    1:].replace('\\', '.').replace('/', '.')
-                module_base_address=''
-                if(self.running_directory!= self.root_directory):
-                    module_base_address = self.root_directory.replace(self.running_directory, '')[
-                        1:].replace('\\', '.').replace('/', '.')+'.'
+                                 1:].replace('\\', '.').replace('/', '.')
                 module['module_name'] = file_name
                 module['file_path'] = file
                 module['module_path'] = module_path
                 module['module_address'] = module_address
                 module['module_base_address'] = module_base_address
+                module['module_parent_address'] = '.'.join(module_address.split('.')[:-1])
                 self.modules.append(module)
 
     def import_modules_by_name_ends_with(self, name):
@@ -75,7 +76,7 @@ class ModuleFinder:
             if ((excluded_modules is None) or (
                     not any(base_module_folder.startswith(item) for item in excluded_modules))) and (
                     (included_modules is None) or (included_modules is not None and any(
-                        base_module_folder.startswith(item) for item in included_modules))):
+                base_module_folder.startswith(item) for item in included_modules))):
                 module_address = module["module_address"]
 
                 if not self.check_module_existing(module_address=module_address):
@@ -83,7 +84,12 @@ class ModuleFinder:
                         importlib.import_module(module_address)
                     except ModuleNotFoundError as ex:
                         module_base_address = module["module_base_address"]
-                        importlib.import_module(module_base_address+module_address)
+                        importlib.import_module(module_base_address + module_address)
+                else:
+                    for k in sys.modules.keys():
+                        if k.endswith(module_address):
+                            print(k)
+                            break
 
     def get_module(self, name_of_module):
         indexes = self.get_indexes(name_of_module, self.modules)
@@ -94,3 +100,12 @@ class ModuleFinder:
                 return module
         else:
             raise Exception("Modules not found")
+
+    def cleanup(self):
+        import sys
+        for module in self.modules:
+            module_names = [k for k in sys.modules.keys() if
+                            module["module_address"] in k or module["module_parent_address"] in k]
+            for module_name in module_names:
+                if module_name in sys.modules:
+                    del sys.modules[module_name]
