@@ -9,8 +9,8 @@ class DependencyContainer:
     Base = declarative_base(metadata=MetaData())
 
     @classmethod
-    def initialize_service(cls, root_directory):
-        cls.Instance = ServiceProvider(root_directory)
+    def initialize_service(cls, root_directory, excluded_modules: [] = None):
+        cls.Instance = ServiceProvider(root_directory, excluded_modules)
         if cls.Instance.is_flask_api():
             cls.initialize_api()
         else:
