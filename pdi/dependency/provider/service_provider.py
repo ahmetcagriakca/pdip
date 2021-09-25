@@ -9,13 +9,13 @@ from flask_restx import Api
 from injector import singleton, Injector, threadlocal, Binder
 from werkzeug.utils import redirect
 
-from .scopes import ISingleton, IScoped
-from .. import Utils
-from ..api.base import ResourceBase
-from ..configuration.models import ApiConfig, ApplicationConfig, DatabaseConfig
-from ..configuration import ConfigManager
-from ..logging.console_logger import ConsoleLogger
-from ..utils import ModuleFinder
+from pdi import Utils
+from pdi.dependency.scopes import ISingleton, IScoped
+from pdi.api.base import ResourceBase
+from pdi.configuration.models import ApiConfig, ApplicationConfig, DatabaseConfig
+from pdi.configuration import ConfigManager
+from pdi.logging.loggers.console.console_logger import ConsoleLogger
+from pdi.utils import ModuleFinder
 
 T = TypeVar('T')
 

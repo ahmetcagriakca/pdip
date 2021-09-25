@@ -5,7 +5,7 @@ from .connectors.KafkaConnector import KafkaConnector
 from .connectors.QueueConnector import QueueConnector
 from ..models.enums import ConnectionTypes, ConnectorTypes
 from ...dependency.scopes import IScoped
-from ...logging.sql_logger import SqlLogger
+from pdi.logging.loggers.database.sql_logger import SqlLogger
 
 
 class QueueProvider(IScoped):

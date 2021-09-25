@@ -25,6 +25,9 @@ class ConfigManager:
 
     def set(self, generic_type, instance_property, property_value):
         config_instance = self.get(generic_type=generic_type)
+        if config_instance is None:
+            config_instance = generic_type()
+            self.configs.append({"type": generic_type, "instance": config_instance})
         setattr(config_instance, instance_property, property_value)
 
     def __get_configs(self, root_directory: str) -> List[dict]:

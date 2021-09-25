@@ -3,8 +3,8 @@ from datetime import datetime
 
 from injector import inject
 
-from ..dependency.scopes import ISingleton
-from ..utils import Utils
+from ....dependency.scopes import ISingleton
+from ....utils import Utils
 
 
 class ConsoleLogger(ISingleton):

@@ -6,7 +6,7 @@ from .FileContext import FileContext
 from .connectors.CsvConnector import CsvConnector
 from .connectors.FileConnector import FileConnector
 from infrastructure.dependency.scopes import IScoped
-from ...logging.sql_logger import SqlLogger
+from pdi.logging.loggers.database.sql_logger import SqlLogger
 from ...configuration.models.application_config import ApplicationConfig
 from ..models.enums import ConnectionTypes, ConnectorTypes
 

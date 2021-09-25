@@ -8,7 +8,7 @@ from .ICommandHandler import ICommandHandler
 from .IQuery import IQuery
 from .IQueryHandler import IQueryHandler
 from ..dependency.scopes import IScoped
-from ..dependency import DependencyContainer
+from ..dependency.container import DependencyContainer
 
 T = TypeVar('T', covariant=True)
 

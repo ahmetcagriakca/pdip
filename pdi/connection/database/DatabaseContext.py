@@ -10,7 +10,7 @@ from .DatabasePolicy import DatabasePolicy
 from .connectors.DatabaseConnector import DatabaseConnector
 from ..models.DataQueueTask import DataQueueTask
 from ...dependency.scopes import IScoped
-from ...logging.sql_logger import SqlLogger
+from pdi.logging.loggers.database.sql_logger import SqlLogger
 
 
 class DatabaseContext(IScoped):

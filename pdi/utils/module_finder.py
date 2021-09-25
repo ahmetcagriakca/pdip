@@ -29,13 +29,29 @@ class ModuleFinder:
                 for folder in self.find_sub_folders(sub_folder):
                     yield folder
 
+    def find_last_parent(self):
+        return min([p for p in sys.path if p in self.root_directory], key=len)
+
+    def find_last_parent_module(self):
+        last_parent = self.find_last_parent()
+        if (last_parent != self.root_directory):
+            module_name = self.root_directory.replace(last_parent, '')[
+                          1:].replace('\\', '.').replace('/', '.')
+            return module_name
+
     def find_all_modules(self, folder):
         folder_path = os.path.join(folder)
         folders = self.find_sub_folders(folder_path)
         module_base_address = ''
-        if (self.running_directory != self.root_directory):
+        module_last_parent_address = ''
+        if (self.running_directory == self.root_directory):
+            last_parent_module_address = self.find_last_parent_module()
+            if last_parent_module_address is not None:
+                module_last_parent_address = last_parent_module_address
+        elif (self.running_directory != self.root_directory):
             module_base_address = self.root_directory.replace(self.running_directory, '')[
-                                  1:].replace('\\', '.').replace('/', '.') + '.'
+                                  1:].replace('\\', '.').replace('/', '.')
+
         for folder in folders:
             files = glob.glob(folder + '/*.py')
             for file in files:
@@ -50,6 +66,7 @@ class ModuleFinder:
                 module['module_address'] = module_address
                 module['module_base_address'] = module_base_address
                 module['module_parent_address'] = '.'.join(module_address.split('.')[:-1])
+                module['module_last_parent_address'] = module_last_parent_address
                 self.modules.append(module)
 
     def import_modules_by_name_ends_with(self, name):
@@ -78,13 +95,19 @@ class ModuleFinder:
                     (included_modules is None) or (included_modules is not None and any(
                 base_module_folder.startswith(item) for item in included_modules))):
                 module_address = module["module_address"]
+                module_last_parent_address = module["module_last_parent_address"]
 
                 if not self.check_module_existing(module_address=module_address):
                     try:
-                        importlib.import_module(module_address)
+                        module_to_be_added = module_address
+                        if module_last_parent_address is not None and module_last_parent_address != '':
+                            module_to_be_added = '.'.join([module_last_parent_address, module_address])
+                        importlib.import_module(module_to_be_added)
                     except ModuleNotFoundError as ex:
+                        print("ModuleNotFoundError:" + str(ex))
                         module_base_address = module["module_base_address"]
-                        importlib.import_module(module_base_address + module_address)
+                        module_to_be_added = '.'.join([module_base_address, module_address])
+                        importlib.import_module(module_to_be_added)
                 else:
                     for k in sys.modules.keys():
                         if k.endswith(module_address):

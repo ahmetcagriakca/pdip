@@ -6,9 +6,10 @@ from queue import Queue
 from time import time
 from typing import List
 
-from .models.process_info import ProcessInfo
-from .models.process_task import ProcessTask
-from ..logging.sql_logger import SqlLogger
+from .models import ProcessInfo
+from .models import ProcessTask
+from ..dependency.container import DependencyContainer
+from ..logging.loggers.database import SqlLogger
 
 
 class ProcessManager:
@@ -51,9 +52,11 @@ class ProcessManager:
                 target_method=target_method,
                 kwargs=kwargs)
             # Add new process to the list of processes
-            process_data = ProcessInfo(Process=process, SubProcessId=sub_process_id)
+            process_data = ProcessInfo(
+                Process=process, SubProcessId=sub_process_id)
             self._processes.append(process_data)
-            process_task = ProcessTask(SubProcessId=sub_process_id, IsFinished=False)
+            process_task = ProcessTask(
+                SubProcessId=sub_process_id, IsFinished=False)
             self._process_queue.put(process_task)
             self._process_tasks.append(process_task)
             # Start the process
@@ -79,17 +82,28 @@ class ProcessManager:
                         target_method: any,
                         kwargs: any) -> Process:
         # Create the process, and connect it to the worker function
+        if DependencyContainer.Instance is not None:
+            root_directory = DependencyContainer.Instance.root_directory
+            initialize_container = True
+        else:
+            root_directory = None
+            initialize_container = False
         new_process = Process(
             target=self.start_process_operation,
-            args=(sub_process_id, process_queue, process_result_queue, target_method, kwargs))
+            args=(
+                sub_process_id, root_directory, initialize_container, process_queue, process_result_queue,
+                target_method, kwargs))
 
         new_process.start()
         return new_process
 
     @staticmethod
-    def start_process_operation(sub_process_id: int, process_queue: Queue, process_result_queue: Queue, target_method,
+    def start_process_operation(sub_process_id: int, root_directory: str, initialize_container: bool,
+                                process_queue: Queue,
+                                process_result_queue: Queue, target_method,
                                 kwargs):
-        IocManager.initialize()
+        if initialize_container:
+            DependencyContainer.initialize_service(root_directory)
         ProcessManager().__start_process_operation(sub_process_id=sub_process_id,
                                                    process_queue=process_queue,
                                                    process_result_queue=process_result_queue,
@@ -120,14 +134,16 @@ class ProcessManager:
                     kwargs["sub_process_id"] = sub_process_id
                     result = target_method(**kwargs)
                     end = time()
-                    self.sql_logger.info(f"{sub_process_id} process finished. time:{end - start}")
+                    self.sql_logger.info(
+                        f"{sub_process_id} process finished. time:{end - start}")
                     process_task.IsFinished = True
                     process_task.State = 3
                     process_task.Result = result
                     process_result_queue.put(process_task)
                     return
         except Exception as ex:
-            self.sql_logger.error(f"{sub_process_id} process getting error:{ex}")
+            self.sql_logger.error(
+                f"{sub_process_id} process getting error:{ex}")
             process_task = ProcessTask(SubProcessId=sub_process_id, State=4, Exception=ex,
                                        Traceback=traceback.format_exc(), IsFinished=True)
             process_result_queue.put(process_task)
@@ -172,9 +188,11 @@ class ProcessManager:
         if self._processes is not None:
             for process in self._processes:
                 if process.Process.is_alive():
-                    process_task = ProcessTask(SubProcessId=process.SubProcessId, IsFinished=False)
+                    process_task = ProcessTask(
+                        SubProcessId=process.SubProcessId, IsFinished=False)
                     self._process_queue.put(process_task)
-                    print(f"Process will terminate. SubProcessId:{process.SubProcessId}")
+                    print(
+                        f"Process will terminate. SubProcessId:{process.SubProcessId}")
                     process.IsFinished = True
                     process.Process.terminate()
 
@@ -182,7 +200,8 @@ class ProcessManager:
 
         for process_data in self._processes:
             if not process_data.IsFinished and not process_data.Process.is_alive():
-                print(f"Unfinished process found. SubProcessId:{process_data.SubProcessId}")
+                print(
+                    f"Unfinished process found. SubProcessId:{process_data.SubProcessId}")
                 process_data.IsFinished = True
 
     def __check_all_processes_finish(self):
@@ -193,5 +212,6 @@ class ProcessManager:
                 check_finish = False
                 unfinished_process_list.append(str(process_data.SubProcessId))
         process_join = ",".join(unfinished_process_list)
-        print(f"All processes are expected to end . SubProcessId:{process_join}")
+        print(
+            f"All processes are expected to end . SubProcessId:{process_join}")
         return check_finish

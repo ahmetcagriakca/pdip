@@ -17,13 +17,6 @@ class JsonConvert(object):
             raise ValueError(f'Unable to find a matching class for object: {d}')
      
     @classmethod
-    def complex_handler(clsself, Obj):
-        if hasattr(Obj, '__dict__'):
-            return Obj.__dict__
-        else:
-            raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(Obj), repr(Obj)))
- 
-    @classmethod
     def register(clsself, cls):
         clsself.mappings[frozenset(tuple([attr for attr,val in cls().__dict__.items()]))] = cls
         return cls

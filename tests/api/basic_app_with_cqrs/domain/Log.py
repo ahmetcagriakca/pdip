@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 
 from pdi.data.entity import Entity
 from pdi.dependency.container import DependencyContainer
-from pdi.logging.log_data import LogData
+from pdi.logging.models.log_data import LogData
 
 
 class Log(LogData, Entity, DependencyContainer.Base):

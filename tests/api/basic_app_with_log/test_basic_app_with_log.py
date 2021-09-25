@@ -7,6 +7,7 @@ from sqlalchemy import desc
 from pdi.api.app import FlaskAppWrapper
 from pdi.data import DatabaseSessionManager, RepositoryProvider
 from pdi.dependency.container import DependencyContainer
+from tests.api.basic_app_with_log.domain.dao.Log import Log
 
 
 class TestBasicAppWithLog(TestCase):
@@ -29,7 +30,6 @@ class TestBasicAppWithLog(TestCase):
         return super().tearDown()
 
     def test_check_model_logs(self):
-        from .domain.dao.Log import Log
         repository_provider = DependencyContainer.Instance.get(
             RepositoryProvider)
         log_repository = repository_provider.get(Log)
@@ -43,7 +43,6 @@ class TestBasicAppWithLog(TestCase):
         assert log.Content == 'test'
 
     def test_api_logs(self):
-        from .domain.dao.Log import Log
         value = 1
         api_result = f'testdata:{value}'
         log_result = f'data:{value}'

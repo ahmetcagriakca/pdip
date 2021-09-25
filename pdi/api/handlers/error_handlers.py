@@ -4,7 +4,7 @@ from injector import inject
 
 from pdi.data.repository_provider import RepositoryProvider
 from pdi.dependency.scopes import ISingleton
-from pdi.logging.sql_logger import SqlLogger
+from pdi.logging.loggers.database.sql_logger import SqlLogger
 
 
 class ErrorHandlers(ISingleton):

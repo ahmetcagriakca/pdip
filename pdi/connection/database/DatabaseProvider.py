@@ -4,7 +4,7 @@ from .DatabaseContext import DatabaseContext
 from .DatabasePolicy import DatabasePolicy
 from ..models.enums import ConnectionTypes, ConnectorTypes
 from ...dependency.scopes import IScoped
-from ...logging.sql_logger import SqlLogger
+from pdi.logging.loggers.database.sql_logger import SqlLogger
 from ...configuration.models.database_config import DatabaseConfig
 
 

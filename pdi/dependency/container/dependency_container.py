@@ -1,9 +1,7 @@
-import os
-
 from sqlalchemy import MetaData
 from sqlalchemy.orm import declarative_base
 
-from .service_provider import ServiceProvider
+from ..provider import ServiceProvider
 
 
 class DependencyContainer:
