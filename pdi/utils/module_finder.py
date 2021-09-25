@@ -125,7 +125,6 @@ class ModuleFinder:
             raise Exception("Modules not found")
 
     def cleanup(self):
-        import sys
         for module in self.modules:
             module_names = [k for k in sys.modules.keys() if
                             module["module_address"] in k or module["module_parent_address"] in k]

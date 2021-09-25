@@ -42,36 +42,48 @@ class ServiceProvider:
         self.module_finder.cleanup()
 
     def get(self, instance_type: Type[T]) -> T:
-
         return self.injector.get(instance_type)
+
+    def initialize_injection(self):
+        self.injector = Injector(self.configure)
+
+    def initialize_api_injection(self):
+        self.injector = Injector()
+        self.import_controllers()
+        FlaskInjector(app=self.app, modules=[self.configure], injector=self.injector)
 
     def import_controllers(self):
         self.module_finder.import_modules(included_modules=['controllers'])
 
-    def initialize_injection(self):
-        FlaskInjector(app=self.app, modules=[
-            self.configure], injector=self.injector)
+    def is_flask_api(self):
+        api_config: ApiConfig = self.config_manager.get(ApiConfig)
+        return api_config is not None
 
     def initialize_flask(self):
-
         application_config: ApplicationConfig = self.config_manager.get(
             ApplicationConfig)
         api_config: ApiConfig = self.config_manager.get(ApiConfig)
         application_name = ''
         if application_config is not None and application_config.name is not None:
             application_name = application_config.name
-        self.app = Flask(application_name)
+        if api_config is not None:
+            self.app = Flask(application_name)
+            base_url = '/'
+            if api_config.base_url is not None:
+                base_url = api_config.base_url
+            doc_url = '/documentation'
+            if api_config.doc_url is not None:
+                doc_url = api_config.doc_url
 
-        @self.app.route('/')
-        def home_redirect():
-            # Redirect from here, replace your custom site url "www.google.com"
-            return redirect("/documentation", code=302, Response=None)
+            @self.app.route(base_url)
+            def home_redirect():
+                return redirect(doc_url, code=302, Response=None)
 
-        self.api = Api(self.app,
-                       title='Python Data Integrator API',
-                       version='v0.1',
-                       doc='/documentation',
-                       base_url='/')
+            self.api = Api(self.app,
+                           title=f'{application_name} API',
+                           version=api_config.version,
+                           doc=doc_url,
+                           base_url=base_url)
 
     def configure_startup(self, root_directory):
         # Importing all modules for dependency
@@ -83,13 +95,9 @@ class ServiceProvider:
         # Configuration initialize
         self.config_manager = ConfigManager(
             root_directory=root_directory, module_finder=self.module_finder)
-        self.set_database_application_name()
+        self.set_config_values_name()
 
-        self.initialize_flask()
-
-        self.injector = Injector()
-
-    def set_database_application_name(self):
+    def set_config_values_name(self):
         application_config = self.config_manager.get(ApplicationConfig)
         database_config: DatabaseConfig = self.config_manager.get(
             DatabaseConfig)
@@ -101,18 +109,20 @@ class ServiceProvider:
                 DatabaseConfig, "application_name", f"{application_config.name}-({process_info})")
             self.config_manager.set(
                 DatabaseConfig, "connection_string", Utils.get_connection_string(
-                    database_config=database_config,root_directory=self.root_directory))
+                    database_config=database_config, root_directory=self.root_directory))
 
     def configure(self, binder: Binder):
         self.binder = binder
-        self.binder.bind(
-            Flask,
-            to=self.app
-        )
-        self.binder.bind(
-            Api,
-            to=self.api
-        )
+        if self.app is not None:
+            self.binder.bind(
+                Flask,
+                to=self.app
+            )
+        if self.api is not None:
+            self.binder.bind(
+                Api,
+                to=self.api
+            )
         for config in self.config_manager.get_all():
             self.binder.bind(
                 interface=config.get("type"),

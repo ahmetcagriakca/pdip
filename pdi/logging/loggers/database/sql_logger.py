@@ -9,6 +9,7 @@ from ....dependency import IScoped
 from ....utils.utils import Utils
 from ....configuration.models import ApplicationConfig, DatabaseConfig
 from ....dependency.container import DependencyContainer
+from pdi.exceptions.required_class_exception import RequiredClassException
 
 
 class SqlLogger(IScoped):
@@ -28,9 +29,12 @@ class SqlLogger(IScoped):
                 application_name += f'-{application_config.hostname}'
             comment = f'{application_name}-{process_info}'
             try:
-                logger_class = LogData.__subclasses__()[0]
-                # repository_provider = RepositoryProvider(database_config=database_config)
-                repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
+                subclasses = LogData.__subclasses__()
+                if subclasses is None or len(subclasses) == 0:
+                    raise RequiredClassException(f'Requires {LogData.__name__} derived class')
+                logger_class = subclasses[0]
+                repository_provider = RepositoryProvider(database_config=database_config,database_session_manager=None)
+                # repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
                 # repository_provider.database_session_manager.session_factory()
                 log_repository = repository_provider.get(logger_class)
                 log = logger_class(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
