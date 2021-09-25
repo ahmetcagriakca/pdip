@@ -3,61 +3,39 @@ from injector import inject
 from .DatabaseContext import DatabaseContext
 from .DatabasePolicy import DatabasePolicy
 from ..models.enums import ConnectionTypes, ConnectorTypes
-from ...dependency.scopes import IScoped
-from pdi.logging.loggers.database.sql_logger import SqlLogger
-from ...configuration.models.database_config import DatabaseConfig
+from ...dependency import IScoped
+from ...configuration.models import DatabaseConfig
 
 
 class DatabaseProvider(IScoped):
     @inject
     def __init__(self,
-                 sql_logger: SqlLogger,
                  ):
-        self.sql_logger = sql_logger
+        pass
 
-    def get_context(self, connection,connection_basic_authentication,connection_server) -> DatabaseContext:
+    def get_context(self, connection_type: ConnectionTypes, connector_type: ConnectorTypes, host, port, user, password,
+                    database=None, service_name=None, sid=None) -> DatabaseContext:
         """
-        Creating Connection
+        Creating Database Context
         """
-        if connection.ConnectionType.Name == ConnectionTypes.Database.name:
-            # connection_basic_authentication = self.operation_cache_service.get_connection_basic_authentication_by_connection_id(
-            #     connection_id=connection.Id)
-            # connection_server = self.operation_cache_service.get_connection_server_by_connection_id(
-            #     connection_id=connection.Id)
-            if connection.Database.ConnectorTypeId == ConnectorTypes.ORACLE.value:
-                user = connection_basic_authentication.User
-                password = connection_basic_authentication.Password
-                host = connection_server.Host
-                port = connection_server.Port
-                service_name = connection.Database.ServiceName
-                sid = connection.Database.Sid
-                config = DatabaseConfig(type=ConnectorTypes.ORACLE.name, host=host, port=port,
+        if connection_type == ConnectionTypes.Database:
+            if connector_type == connector_type.ORACLE:
+                config = DatabaseConfig(type=connector_type.ORACLE.name, host=host, port=port,
                                         sid=sid, service_name=service_name, username=user, password=password)
-            elif connection.Database.ConnectorTypeId == ConnectorTypes.MSSQL.value:
-                user = connection_basic_authentication.User
-                password = connection_basic_authentication.Password
-                host = connection_server.Host
-                port = connection_server.Port
-                database_name = connection.Database.DatabaseName
-                config = DatabaseConfig(type=ConnectorTypes.MSSQL.name, host=host, port=port,
-                                        database=database_name, username=user, password=password)
-            elif connection.Database.ConnectorTypeId == ConnectorTypes.POSTGRESQL.value:
-                user = connection_basic_authentication.User
-                password = connection_basic_authentication.Password
-                host = connection_server.Host
-                port = connection_server.Port
-                database_name = connection.Database.DatabaseName
-                config = DatabaseConfig(type=ConnectorTypes.POSTGRESQL.name, host=host, port=port,
-                                        database=database_name, username=user, password=password)
-            elif connection.Database.ConnectorTypeId == ConnectorTypes.MYSQL.value:
-                user = connection_basic_authentication.User
-                password = connection_basic_authentication.Password
-                host = connection_server.Host
-                port = connection_server.Port
-                database_name = connection.Database.DatabaseName
-                config = DatabaseConfig(type=ConnectorTypes.MYSQL.name, host=host, port=port,
-                                        database=database_name, username=user, password=password)
+            elif connector_type == connector_type.MSSQL:
+                config = DatabaseConfig(type=connector_type.MSSQL.name, host=host, port=port,
+                                        database=database, username=user, password=password)
+            elif connector_type == connector_type.POSTGRESQL:
+                config = DatabaseConfig(type=connector_type.POSTGRESQL.name, host=host, port=port,
+                                        database=database, username=user, password=password)
+            elif connector_type == connector_type.MYSQL:
+                config = DatabaseConfig(type=connector_type.MYSQL.name, host=host, port=port,
+                                        database=database, username=user, password=password)
+            else:
+                raise Exception(f"{connector_type.name} connector type not supported")
+
             database_policy = DatabasePolicy(database_config=config)
-            database_context: DatabaseContext = DatabaseContext(database_policy=database_policy,
-                                                                sql_logger=self.sql_logger)
+            database_context: DatabaseContext = DatabaseContext(database_policy=database_policy)
             return database_context
+        else:
+            raise Exception(f"{connection_type.name} connection type not supported")

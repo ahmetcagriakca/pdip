@@ -1,10 +1,8 @@
+import importlib
+
 from injector import inject
 
 from .connectors.DatabaseConnector import DatabaseConnector
-from .connectors.MssqlDbConnector import MssqlDbConnector
-from .connectors.OracleDbConnector import OracleDbConnector
-from .connectors.PostgreDbConnector import PostgreDbConnector
-from .connectors.MysqlDbConnector import MysqlDbConnector
 from ..models.enums import ConnectorTypes
 from ...configuration.models.database_config import DatabaseConfig
 
@@ -14,11 +12,19 @@ class DatabasePolicy:
     def __init__(self, database_config: DatabaseConfig):
         self.database_config = database_config
         self.connector: DatabaseConnector = None
+        self.connector_name = None
+        database_connector_base_module = "pdi.connection.database.connectors"
         if database_config.type == ConnectorTypes.MSSQL.name:
-            self.connector: DatabaseConnector = MssqlDbConnector(database_config)
+            connector_name = "MssqlDbConnector"
         elif database_config.type == ConnectorTypes.ORACLE.name:
-            self.connector: DatabaseConnector = OracleDbConnector(database_config)
+            connector_name = "OracleDbConnector"
         elif database_config.type == ConnectorTypes.POSTGRESQL.name:
-            self.connector: DatabaseConnector = PostgreDbConnector(database_config)
+            connector_name = "PostgreDbConnector"
         elif database_config.type == ConnectorTypes.MYSQL.name:
-            self.connector: DatabaseConnector = MysqlDbConnector(database_config)
+            connector_name = "MssqlDbConnector"
+        else:
+            raise Exception("Connector type not found")
+        module = importlib.import_module(".".join([database_connector_base_module, connector_name]))
+        connector_class = getattr(module, connector_name)
+        if connector_class is not None:
+            self.connector: DatabaseConnector = connector_class(database_config)

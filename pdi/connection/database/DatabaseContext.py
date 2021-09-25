@@ -10,16 +10,14 @@ from .DatabasePolicy import DatabasePolicy
 from .connectors.DatabaseConnector import DatabaseConnector
 from ..models.DataQueueTask import DataQueueTask
 from ...dependency.scopes import IScoped
-from pdi.logging.loggers.database.sql_logger import SqlLogger
+from ...logging.loggers.console import ConsoleLogger
 
 
 class DatabaseContext(IScoped):
     @inject
     def __init__(self,
                  database_policy: DatabasePolicy,
-                 sql_logger: SqlLogger,
                  retry_count=3):
-        self.sql_logger: SqlLogger = sql_logger
         self.connector: DatabaseConnector = database_policy.connector
         self.retry_count = retry_count
         self.default_retry = 1
@@ -78,9 +76,9 @@ class DatabaseContext(IScoped):
             return self._execute_many_start(query=query, data=data)
         except Exception as ex:
             if retry > self.retry_count:
-                self.sql_logger.error(f"Db write error on Error:{ex}")
+                ConsoleLogger().error(f"Db write error on Error:{ex}")
                 raise
-            self.sql_logger.error(
+            ConsoleLogger().error(
                 f"Getting error on insert (Operation will be retried. Retry Count:{retry}). Error:{ex}")
             # retrying connect to db,
             self.connector.connect()

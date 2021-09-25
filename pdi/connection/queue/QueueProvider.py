@@ -3,7 +3,7 @@ from injector import inject
 from .QueueContext import QueueContext
 from .connectors.KafkaConnector import KafkaConnector
 from .connectors.QueueConnector import QueueConnector
-from ..models.enums import ConnectionTypes, ConnectorTypes
+from ..models.enums import connection_types, connector_types
 from ...dependency.scopes import IScoped
 from pdi.logging.loggers.database.sql_logger import SqlLogger
 
@@ -19,9 +19,9 @@ class QueueProvider(IScoped):
         """
         Creating Connection
         """
-        if connection.ConnectionType.Name == ConnectionTypes.Queue.name:
+        if connection.ConnectionType.Name == connection_types.Queue.name:
             connector: QueueConnector = None
-            if connection.Queue.ConnectorType.Name == ConnectorTypes.Kafka.name:
+            if connection.Queue.ConnectorType.Name == connector_types.Kafka.name:
                 servers = []
                 for connection_server in connection_servers:
                     server = f"{connection_server.Host}:{connection_server.Port}"

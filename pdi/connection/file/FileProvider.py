@@ -5,10 +5,10 @@ from injector import inject
 from .FileContext import FileContext
 from .connectors.CsvConnector import CsvConnector
 from .connectors.FileConnector import FileConnector
-from infrastructure.dependency.scopes import IScoped
+from ...dependency import IScoped
 from pdi.logging.loggers.database.sql_logger import SqlLogger
 from ...configuration.models.application_config import ApplicationConfig
-from ..models.enums import ConnectionTypes, ConnectorTypes
+from ..models.enums import connection_types, connector_types
 
 
 class FileProvider(IScoped):
@@ -24,14 +24,14 @@ class FileProvider(IScoped):
         """
         Creating Connection
         """
-        if connection.ConnectionType.Name == ConnectionTypes.File.name:
+        if connection.ConnectionType.Name == connection_types.File.name:
             connector: FileConnector = None
-            if connection.File.ConnectorType.Name == ConnectorTypes.CSV.name:
+            if connection.File.ConnectorType.Name == connector_types.CSV.name:
                 host = connection_server.Host
                 port = connection_server.Port
                 if host is None or host == '':
                     host = os.path.join(self.application_config.root_directory, "files")
-                if connection.File.ConnectorType.Name == ConnectorTypes.CSV.name:
+                if connection.File.ConnectorType.Name == connector_types.CSV.name:
                     connector = CsvConnector(host=host)
             if connector is not None:
                 file_context: FileContext = FileContext(connector=connector)
