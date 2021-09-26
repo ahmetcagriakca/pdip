@@ -27,7 +27,8 @@ setup(
             'flask-restx',
             'Werkzeug',
             'dataclasses',
-            'requests'
+            'requests',
+            'pandas'
     ],
     classifiers=[
         # Define that your audience are developers
