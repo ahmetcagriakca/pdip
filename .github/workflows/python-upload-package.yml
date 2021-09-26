@@ -55,4 +55,4 @@ jobs:
         PYPI_PACKAGE_VERSION: ${{ steps.branch_name.outputs.SOURCE_TAG }}
       run: |
         python setup.py sdist bdist_wheel
-        twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+        twine upload dist/*
