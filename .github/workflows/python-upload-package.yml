@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    if: github.event.base_ref == 'refs/heads/main' && github.repository == 'ahmetcagriakca/pdip' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.repository == 'ahmetcagriakca/pdip' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
 
     runs-on: ubuntu-latest
 
