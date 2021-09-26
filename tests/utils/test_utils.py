@@ -1,8 +1,8 @@
 import os
-from pdi.utils.module_finder import ModuleFinder
+from pdip.utils.module_finder import ModuleFinder
 from typing import List, Union
-from pdi.utils.type_checker import TypeChecker
-from pdi.utils import Utils
+from pdip.utils.type_checker import TypeChecker
+from pdip.utils import Utils
 from unittest import TestCase
 
 class ClassTest:

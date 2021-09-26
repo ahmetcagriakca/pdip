@@ -1,5 +1,5 @@
-from pdi.api.base import ResourceBase
-from pdi.api.decorators import controller
+from pdip.api.base import ResourceBase
+from pdip.api.decorators import controller
 
 
 @controller()

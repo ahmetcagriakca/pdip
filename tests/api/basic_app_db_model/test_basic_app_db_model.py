@@ -4,9 +4,9 @@ from unittest import TestCase
 
 from tests.api.basic_app_db_model.models.dao.User import User
 
-from pdi.api.app import FlaskAppWrapper
-from pdi.data import DatabaseSessionManager, RepositoryProvider
-from pdi.dependency.container import DependencyContainer
+from pdip.api.app import FlaskAppWrapper
+from pdip.data import DatabaseSessionManager, RepositoryProvider
+from pdip.dependency.container import DependencyContainer
 
 
 # from .models.dao.User import User

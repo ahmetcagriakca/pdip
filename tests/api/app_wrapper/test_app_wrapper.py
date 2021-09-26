@@ -6,12 +6,12 @@ from flask_injector import FlaskInjector
 from flask_restx import Api
 from injector import Injector, Binder, inject, singleton
 
-from pdi.api.handlers.request_handler import RequestHandler
-from pdi.configuration import ConfigManager
-from pdi.data import DatabaseSessionManager
-from pdi.data import RepositoryProvider
-from pdi.utils import ModuleFinder
-from pdi.api.app import FlaskAppWrapper
+from pdip.api.handlers.request_handler import RequestHandler
+from pdip.configuration import ConfigManager
+from pdip.data import DatabaseSessionManager
+from pdip.data import RepositoryProvider
+from pdip.utils import ModuleFinder
+from pdip.api.app import FlaskAppWrapper
 
 
 class DependencyWrapper:

@@ -1,8 +1,8 @@
 from injector import inject
 
-from pdi.cqrs.Dispatcher import Dispatcher
-from pdi.cqrs.ICommandHandler import ICommandHandler
-from pdi.data import RepositoryProvider
+from pdip.cqrs.Dispatcher import Dispatcher
+from pdip.cqrs.ICommandHandler import ICommandHandler
+from pdip.data import RepositoryProvider
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
 from tests.api.basic_app_with_cqrs.domain.User import User
 

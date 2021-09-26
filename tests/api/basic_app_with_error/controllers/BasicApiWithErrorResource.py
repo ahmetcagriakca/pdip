@@ -1,6 +1,6 @@
-from pdi.api.base import ResourceBase
-from pdi.api.decorators import controller
-from pdi.exceptions import OperationalException
+from pdip.api.base import ResourceBase
+from pdip.api.decorators import controller
+from pdip.exceptions import OperationalException
 
 
 @controller()

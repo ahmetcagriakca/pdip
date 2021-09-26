@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pdi.multi_processing import ProcessManager
+from pdip.multi_processing import ProcessManager
 
 
 class TestProcessManager(TestCase):

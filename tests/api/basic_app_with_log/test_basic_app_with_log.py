@@ -4,9 +4,9 @@ from unittest import TestCase
 
 from sqlalchemy import desc
 
-from pdi.api.app import FlaskAppWrapper
-from pdi.data import DatabaseSessionManager, RepositoryProvider
-from pdi.dependency.container import DependencyContainer
+from pdip.api.app import FlaskAppWrapper
+from pdip.data import DatabaseSessionManager, RepositoryProvider
+from pdip.dependency.container import DependencyContainer
 from tests.api.basic_app_with_log.domain.dao.Log import Log
 
 

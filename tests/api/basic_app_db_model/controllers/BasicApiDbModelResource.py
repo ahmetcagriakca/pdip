@@ -1,8 +1,8 @@
 from injector import inject
 
-from pdi.api.base import ResourceBase
-from pdi.api.decorators import controller
-from pdi.data import RepositoryProvider
+from pdip.api.base import ResourceBase
+from pdip.api.decorators import controller
+from pdip.data import RepositoryProvider
 from tests.api.basic_app_db_model.models.dao.User import User
 
 

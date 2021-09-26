@@ -1,8 +1,8 @@
 from injector import inject
 
-from pdi.api.base import ResourceBase
-from pdi.api.decorators import controller
-from pdi.logging.loggers.database import SqlLogger
+from pdip.api.base import ResourceBase
+from pdip.api.decorators import controller
+from pdip.logging.loggers.database import SqlLogger
 
 
 # @inject

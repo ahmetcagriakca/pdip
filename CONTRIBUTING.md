@@ -39,7 +39,7 @@ it asks for helps us resolve issues faster.
 
 #### Before Submitting A Bug Report
 
-**Perform a [cursory search](https://github.com/ahmetcagriakca/pdi/labels/bug)**
+**Perform a [cursory search](https://github.com/ahmetcagriakca/pdip/labels/bug)**
 to see if the problem has already been reported. If it does exist, add a
 :thumbsup: to the issue to indicate this is also an issue for you, and add a
 comment to the existing issue if there is extra information you can contribute.
@@ -48,7 +48,7 @@ comment to the existing issue if there is extra information you can contribute.
 
 Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/).
 
-Simply create an issue on the [PDI issue tracker](https://github.com/ahmetcagriakca/pdi/issues/new?template=bug_report.md)
+Simply create an issue on the [PDI issue tracker](https://github.com/ahmetcagriakca/pdip/issues/new?template=bug_report.md)
 and fill out the provided issue template.
 
 The information we are interested in includes:
@@ -73,7 +73,7 @@ that you imagine you would take if the feature you're requesting existed.
 
 #### Before Submitting An Enhancement Suggestion
 
-**Perform a [cursory search](https://github.com/ahmetcagriakca/pdi/labels/enhancement)**
+**Perform a [cursory search](https://github.com/ahmetcagriakca/pdip/labels/enhancement)**
 to see if the enhancement has already been suggested. If it has, add a
 :thumbsup: to indicate your interest in it, or comment if there is additional
 information you would like to add.
@@ -81,4 +81,4 @@ information you would like to add.
 
 ### Set Up Your Machine
 
-Start [here](https://github.com/ahmetcagriakca/pdi/blob/development/docs/contributing/setup.md).
+Start [here](https://github.com/ahmetcagriakca/pdip/blob/development/docs/contributing/setup.md).

@@ -2,9 +2,9 @@ import json
 import os
 from unittest import TestCase
 
-from pdi.api.app import FlaskAppWrapper
-from pdi.data import DatabaseSessionManager, RepositoryProvider
-from pdi.dependency.container import DependencyContainer
+from pdip.api.app import FlaskAppWrapper
+from pdip.data import DatabaseSessionManager, RepositoryProvider
+from pdip.dependency.container import DependencyContainer
 
 
 class TestBasicAppWithCqrs(TestCase):

@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from pdi.connection.models.enums import ConnectorTypes,ConnectionTypes
-from pdi.connection.database.DatabaseProvider import DatabaseProvider
+from pdip.connection.models.enums import ConnectorTypes,ConnectionTypes
+from pdip.connection.database.DatabaseProvider import DatabaseProvider
 
 
 class TestConnectionDatabase(TestCase):

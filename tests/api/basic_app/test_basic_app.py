@@ -2,8 +2,8 @@ import json
 import os
 from unittest import TestCase
 
-from pdi.api.app import FlaskAppWrapper
-from pdi.dependency.container import DependencyContainer
+from pdip.api.app import FlaskAppWrapper
+from pdip.dependency.container import DependencyContainer
 
 # from .controllers.TestApiResource import TestApiResource
 

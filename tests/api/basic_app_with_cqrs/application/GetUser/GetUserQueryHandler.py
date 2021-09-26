@@ -1,7 +1,7 @@
 from injector import inject
 
-from pdi.cqrs.IQueryHandler import IQueryHandler
-from pdi.dependency.scopes import IScoped
+from pdip.cqrs.IQueryHandler import IQueryHandler
+from pdip.dependency.scopes import IScoped
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserSpecifications import GetUserSpecifications
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserMapping import GetUserMapping
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery

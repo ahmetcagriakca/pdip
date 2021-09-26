@@ -1,9 +1,9 @@
 import os
 from unittest import TestCase
 
-from pdi.configuration.models import ApplicationConfig
-from pdi.cryptography import CryptoService
-from pdi.dependency.container import DependencyContainer
+from pdip.configuration.models import ApplicationConfig
+from pdip.cryptography import CryptoService
+from pdip.dependency.container import DependencyContainer
 
 
 class TestCryptographyService(TestCase):

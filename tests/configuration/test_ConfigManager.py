@@ -1,9 +1,9 @@
 import os
 
 from unittest import TestCase
-from pdi.configuration import ConfigManager
-from pdi.configuration.models import ApplicationConfig
-from pdi.utils import ModuleFinder
+from pdip.configuration import ConfigManager
+from pdip.configuration.models import ApplicationConfig
+from pdip.utils import ModuleFinder
 
 
 class TestConfigManager(TestCase):
