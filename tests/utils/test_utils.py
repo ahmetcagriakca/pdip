@@ -61,10 +61,9 @@ class TestUtils(TestCase):
     #     assert result
 
     def test_ModuleFinder_get_module(self):
-        import pytest
         root_directory = os.path.abspath(os.path.join(
             os.path.dirname(os.path.abspath(__file__))))
-        with pytest.raises(Exception) as execinfo:
+        with self.assertRaises(Exception) as execinfo:
             result = ModuleFinder(root_directory).get_module("")
-        assert execinfo.value.args[0] == "Modules not found"
-        assert str(execinfo.value) == "Modules not found"
+        assert execinfo.exception.args[0] == "Modules not found"
+        assert str(execinfo.exception) == "Modules not found"
