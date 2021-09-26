@@ -25,6 +25,15 @@ coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.dependency' -
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.utils' -t '.'
 
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.api' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.configuration' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.connection' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.cryptography' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.db' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.dependency' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.utils' -t '.'
+
 # run all tests and generate coverage informations
 coverage run --source=pdip -m unittest discover -v -b 
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
