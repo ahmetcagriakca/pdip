@@ -1,11 +1,13 @@
-from setuptools import setup, find_packages
+import os
 
+from setuptools import setup, find_packages
+version=os.getenv('PYPI_PACKAGE_VERSION', default=None)
 setup(
-    name='pdi',
-    version='0.1.0',
-    description='Python Data Integrator infrastructures',
-    url='https://github.com/ahmetcagriakca/pdi',
-    download_url='https://github.com/ahmetcagriakca/pdi/archive/refs/tags/v0.1.0.tar.gz',
+    name='pdip',
+    version=f'{version}',
+    description='Python Data Integrator infrastructures package',
+    url='https://github.com/ahmetcagriakca/pdip',
+    download_url=f'https://github.com/ahmetcagriakca/pdip/archive/refs/tags/v{version}.tar.gz',
     author='Ahmet Çağrı AKCA',
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',

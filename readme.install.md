@@ -3,7 +3,7 @@
 pip install .
 
 # setup create dist
-
+set version of package with PYPI_PACKAGE_VERSION environment value
 python setup.py sdist bdist_wheel
 
 # twine check and upload
