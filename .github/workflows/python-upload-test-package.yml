@@ -26,7 +26,7 @@ jobs:
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TEST_API_TOKEN }}
-        PYPI_PACKAGE_VERSION: ${GITHUB_REF#refs/*/}
+        PYPI_PACKAGE_VERSION: ${{GITHUB_REF#refs/*/}}
       run: |
         python setup.py sdist bdist_wheel
         twine upload --repository-url https://test.pypi.org/legacy/ dist/*
