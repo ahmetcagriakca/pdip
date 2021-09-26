@@ -5,9 +5,9 @@ name: Pdi application build and tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ development, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ development, main ]
 
 jobs:
   build:
