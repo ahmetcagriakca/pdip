@@ -60,6 +60,8 @@ class ConfigManager:
                         else:
                             config_value = None
                     else:
+                        if property_name == 'ROOT_DIRECTORY':
+                            config_value = root_directory
                         config_value = None
 
                     environment_name = f'{class_name}_{property_name}'

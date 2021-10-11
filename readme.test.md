@@ -36,6 +36,6 @@ python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.ut
 
 # run all tests and generate coverage informations
 coverage run --source=pdip -m unittest discover -v -b 
-coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
+<!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.' -->
 coverage report -m --omit="*/tests/*,*/site-packages/*"
 coverage html  --omit="*/tests/*,*/site-packages/*"

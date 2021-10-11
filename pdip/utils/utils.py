@@ -58,9 +58,9 @@ class Utils:
         if database_config.type == 'MSSQL':
             driver_string = f'?driver={driver}'
             connection_type = 'mssql+pyodbc'
-            connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
+            connection_string = f'{connection_type}://{database_config.user}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         elif database_config.type == 'POSTGRESQL':
             driver_string = ''
             connection_type = 'postgresql'
-            connection_string = f'{connection_type}://{database_config.username}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
+            connection_string = f'{connection_type}://{database_config.user}:{database_config.password}@{database_config.host}:{database_config.port}/{database_config.database}{driver_string}'
         return connection_string

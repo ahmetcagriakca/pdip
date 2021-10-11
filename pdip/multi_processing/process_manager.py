@@ -43,7 +43,7 @@ class ProcessManager:
         # Initiate the worker processes
         for i in range(process_count):
             # Set process name
-            sub_process_id = i
+            sub_process_id = i+1
             # Create the process, and connect it to the worker function
             process = self.__start_process(
                 sub_process_id=sub_process_id,

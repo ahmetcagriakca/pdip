@@ -13,7 +13,7 @@ class PostgreDbConnector(DatabaseConnector):
         self.cursor = None
 
     def connect(self):
-        self.connection = psycopg2.connect(user=self.database_config.username, password=self.database_config.password,
+        self.connection = psycopg2.connect(user=self.database_config.user, password=self.database_config.password,
                                            database=self.database_config.database, host=self.database_config.host,
                                            port=self.database_config.port)
         self.cursor = self.connection.cursor()

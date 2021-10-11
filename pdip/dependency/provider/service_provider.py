@@ -32,7 +32,6 @@ class ServiceProvider:
         self.injector: Injector = None
         self.binder: Injector = None
         self.logger = ConsoleLogger()
-        # print(f'root:{root_directory}')
         self.logger.info(f"Application initialize started")
         self.configure_startup(self.root_directory)
         self.process_info()
@@ -48,15 +47,17 @@ class ServiceProvider:
     def configure_startup(self, root_directory):
         # Importing all modules for dependency
         self.module_finder = ModuleFinder(root_directory=root_directory)
-        self.config_manager = ConfigManager(
-            root_directory=root_directory, module_finder=self.module_finder)
         excluded_modules = ['controllers']
         if self.excluded_modules is not None:
             excluded_modules += self.excluded_modules
         self.module_finder.import_modules(excluded_modules=excluded_modules)
 
+        self.config_manager = ConfigManager(
+            root_directory=root_directory, module_finder=self.module_finder)
+
         # Configuration initialize
-        if self.config_manager.get(ApplicationConfig) is None:
+        application_config=self.config_manager.get(ApplicationConfig)
+        if application_config is None or application_config.root_directory is None or application_config.root_directory=='' :
             self.config_manager.set(
                 ApplicationConfig, "root_directory", self.root_directory)
         self.set_config_values_name()

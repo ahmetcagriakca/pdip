@@ -22,4 +22,4 @@ class BasicApiDbModelResource(ResourceBase):
         user_repository.insert(new_user)
         self.repository_provider.commit()
         user = user_repository.filter_by(Name=name).first()
-        return "username:" + user.Name
+        return "user:" + user.Name

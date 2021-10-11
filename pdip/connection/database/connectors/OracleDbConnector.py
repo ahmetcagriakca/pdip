@@ -20,7 +20,7 @@ class OracleDbConnector(DatabaseConnector):
         else:
             self._tns = cx_Oracle.makedsn(self.database_config.host, self.database_config.port,
                                           service_name=self.database_config.service_name)
-        self.connection = cx_Oracle.connect(self.database_config.username, self.database_config.password, self._tns,
+        self.connection = cx_Oracle.connect(self.database_config.user, self.database_config.password, self._tns,
                                             encoding="UTF-8",
                                             nencoding="UTF-8")
         self.cursor = self.connection.cursor()

@@ -29,7 +29,7 @@
 #         assert response.status_code == 200
 #         response_data = response.get_data(as_text=True)
 #         json_data = json.loads(response_data)
-#         assert json_data['Result'] == 'username:TestUser'
+#         assert json_data['Result'] == 'user:TestUser'
 
 #     # def test_check_user_model(self):
 #     #     name = 'test'

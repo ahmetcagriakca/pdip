@@ -6,11 +6,14 @@ from ....configuration.models.database_config import DatabaseConfig
 class MssqlDbConnector(DatabaseConnector):
     def __init__(self, database_config: DatabaseConfig):
         self.database_config: DatabaseConfig = database_config
-        self.database_config.driver = 'ODBC Driver 17 for SQL Server'
         # ;Client_CSet=UTF-8;Server_CSet=WINDOWS-1251
-        self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
-            self.database_config.driver, self.database_config.host, self.database_config.database,
-            self.database_config.username, self.database_config.password)
+        if self.database_config.connection_string is not None and self.database_config.connection_string !='' and not self.database_config.connection_string.isspace() :
+            self.connection_string =self.database_config.connection_string
+        else:
+            self.database_config.driver = 'ODBC Driver 17 for SQL Server'
+            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
+                self.database_config.driver, self.database_config.host, self.database_config.database,
+                self.database_config.user, self.database_config.password)
 
         self.connection = None
         self.cursor = None

@@ -108,11 +108,6 @@ class ModuleFinder:
                         module_base_address = module["module_base_address"]
                         module_to_be_added = '.'.join([module_base_address, module_address])
                         importlib.import_module(module_to_be_added)
-                else:
-                    for k in sys.modules.keys():
-                        if k.endswith(module_address):
-                            print(k)
-                            break
 
     def get_module(self, name_of_module):
         indexes = self.get_indexes(name_of_module, self.modules)
