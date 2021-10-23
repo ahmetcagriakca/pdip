@@ -52,11 +52,15 @@ class RequestConverter(object):
                 pass
             else:
                 if generic_type_checker.is_generic(value):
-                    self.register(value.__args__[0])
-                    instance = value.__args__[0]()
-                    nested_annotations = self.get_annotations(instance)
-                    if nested_annotations is not None:
-                        self.register_subclasses(nested_annotations)
+
+                    if generic_type_checker.is_primitive(value.__args__[0]):
+                        pass
+                    else:
+                        self.register(value.__args__[0])
+                        instance = value.__args__[0]()
+                        nested_annotations = self.get_annotations(instance)
+                        if nested_annotations is not None:
+                            self.register_subclasses(nested_annotations)
                 elif generic_type_checker.is_base_generic(value):
                     # TODO:Base generic class
                     print('value type should be a structure of', value.__args__[0])

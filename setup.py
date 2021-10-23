@@ -1,7 +1,7 @@
 import os
 
 from setuptools import setup, find_packages
-env_version=os.getenv('PYPI_PACKAGE_VERSION', default='0.1.4')
+env_version=os.getenv('PYPI_PACKAGE_VERSION', default='0.1.7')
 version= env_version.replace('v','')
 setup(
     name='pdip',

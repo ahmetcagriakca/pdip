@@ -64,7 +64,7 @@ class EndpointWrapper:
         for key in annotations:
             value = annotations[key]
             specified_value = None
-            if self.type_checker.is_primitive(value):
+            if self.type_checker.is_primitive(value) or value == datetime:
                 specified_value = self.field_resolver(value, key)
             elif self.type_checker.is_generic(value):
                 if value.__args__[0] is any:
@@ -76,6 +76,10 @@ class EndpointWrapper:
                         nested_model_definition = self.annotation_resolver(nested_annotations)
                         nested_model = self.api.model(value.__args__[0].__name__, nested_model_definition)
                         specified_value = fields.List(fields.Nested(nested_model), description=f'')
+                    elif self.type_checker.is_primitive(instance.__class__):
+                        field=self.field_resolver(instance.__class__, key)
+                        specified_value = fields.List(field, description=f'')
+
             elif self.type_checker.is_base_generic(value):
                 # TODO:Base generic class
                 print('value type should be a structure of', value.__args__[0])
