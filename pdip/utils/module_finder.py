@@ -102,11 +102,15 @@ class ModuleFinder:
                         module_to_be_added = module_address
                         if module_last_parent_address is not None and module_last_parent_address != '':
                             module_to_be_added = '.'.join([module_last_parent_address, module_address])
+                        print('test'+module_last_parent_address)
+                        print(module_to_be_added)
                         importlib.import_module(module_to_be_added)
                     except ModuleNotFoundError as ex:
                         print("ModuleNotFoundError:" + str(ex))
                         module_base_address = module["module_base_address"]
+                        print('test2'+module_base_address)
                         module_to_be_added = '.'.join([module_base_address, module_address])
+                        print('test3'+module_to_be_added)
                         importlib.import_module(module_to_be_added)
 
     def get_module(self, name_of_module):

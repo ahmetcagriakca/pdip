@@ -9,22 +9,23 @@ class DependencyContainer:
     Base = declarative_base(metadata=MetaData())
 
     @classmethod
-    def initialize_service(cls, root_directory, excluded_modules: [] = None):
-        cls.Instance = ServiceProvider(root_directory, excluded_modules)
-        if cls.Instance.is_flask_api():
-            cls.initialize_api()
-        else:
-            cls.Instance.initialize_injection()
+    def initialize_service(cls,
+                           root_directory=None,
+                           configurations: [] = None,
+                           excluded_modules: [] = None,
+                           initialize_flask: bool = True):
+
+        cls.Instance = ServiceProvider(root_directory=root_directory,
+                                       configurations=configurations,
+                                       excluded_modules=excluded_modules)
+        cls.Instance.initialize_injection(initialize_flask=initialize_flask)
         return DependencyContainer
 
     @classmethod
-    def initialize_api(cls):
-        cls.Instance.initialize_flask()
-        cls.Instance.import_controllers()
-        cls.Instance.initialize_api_injection()
-
-    @classmethod
     def cleanup(cls):
-        del cls.Base
-        cls.Base = declarative_base(metadata=MetaData())
-        del cls.Instance
+
+        if cls.Base is not None:
+            del cls.Base
+            cls.Base = declarative_base(metadata=MetaData())
+        if hasattr(cls, 'Instance') and cls.Instance is not None:
+            del cls.Instance

@@ -1,20 +1,17 @@
 import json
-import os
 from unittest import TestCase
 
+from pdip import Pdi
 from pdip.api.app import FlaskAppWrapper
-from pdip.dependency.container import DependencyContainer
-
-# from .controllers.TestApiResource import TestApiResource
 
 class TestBasicApp(TestCase):
     def setUp(self):
-        root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
-        DependencyContainer.initialize_service(root_directory=root_directory)
-        self.client = DependencyContainer.Instance.injector.get(FlaskAppWrapper).test_client()
+        self.pdi = Pdi()
+        self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):
-        DependencyContainer.cleanup()
+        if hasattr(self,'pdi') and self.pdi is not None:
+            del self.pdi
         return super().tearDown()
 
     def test_api_controller(self):

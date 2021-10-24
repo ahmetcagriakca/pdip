@@ -1,9 +1,7 @@
-import inspect
 import json
 from functools import wraps
 
 from .endpoint_wrapper import EndpointWrapper
-from ...dependency.container import DependencyContainer
 from ...utils.type_checker import TypeChecker
 
 
@@ -94,10 +92,11 @@ class Endpoint:
         return fields
 
 
-def endpoint(namespace):
+def endpoint(api, namespace):
     def decorator(function):
+        function.decorated=True
         def instance() -> Endpoint:
-            endpoint_wrapper = EndpointWrapper(api=DependencyContainer.Instance.api)
+            endpoint_wrapper = EndpointWrapper(api=api)
             _instance = Endpoint(function=function, namespace=namespace, endpoint_wrapper=endpoint_wrapper)
             return _instance
 

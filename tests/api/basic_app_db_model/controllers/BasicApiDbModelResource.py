@@ -1,12 +1,10 @@
 from injector import inject
 
 from pdip.api.base import ResourceBase
-from pdip.api.decorators import controller
 from pdip.data import RepositoryProvider
 from tests.api.basic_app_db_model.models.dao.User import User
 
 
-@controller()
 class BasicApiDbModelResource(ResourceBase):
     @inject
     def __init__(self,

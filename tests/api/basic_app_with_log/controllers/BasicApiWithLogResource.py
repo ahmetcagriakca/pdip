@@ -9,7 +9,6 @@ from pdip.logging.loggers.database import SqlLogger
 # def __init__(self,
 #              *args, **kwargs):
 #     super().__init__(*args, **kwargs)
-@controller()
 class BasicApiWithLogResource(ResourceBase):
     @inject
     def __init__(self,

@@ -13,7 +13,8 @@ class ITypeChecker(ABC):
     def is_primitive(self, obj):
         builtins_list = list(
             filter(lambda x: not x.startswith('_'), dir(builtins)))
-        return obj.__name__ in builtins_list
+
+        return hasattr(obj,'__name__') and obj.__name__ in builtins_list
 
     def is_generic(self, class_type):
         pass

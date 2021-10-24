@@ -82,7 +82,7 @@ class ProcessManager:
                         target_method: any,
                         kwargs: any) -> Process:
         # Create the process, and connect it to the worker function
-        if DependencyContainer.Instance is not None:
+        if hasattr(DependencyContainer,'Instance') and DependencyContainer.Instance is not None:
             root_directory = DependencyContainer.Instance.root_directory
             initialize_container = True
         else:
