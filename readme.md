@@ -1,5 +1,5 @@
 <p align="left">
-	<a href="https://pypi.org/project/fastapi" target="_blank">
+	<a href="https://pypi.org/project/pdip" target="_blank">
 			<img src="https://img.shields.io/pypi/v/pdip?color=%2334D058&label=pypi%20package" alt="Package version">
 	</a>
 </p>
