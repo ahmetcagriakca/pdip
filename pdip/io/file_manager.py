@@ -2,7 +2,7 @@ import os, shutil
 
 from injector import inject
 
-from ..configuration.models import ApplicationConfig
+from ..configuration.models.application import ApplicationConfig
 from ..dependency import IScoped
 
 

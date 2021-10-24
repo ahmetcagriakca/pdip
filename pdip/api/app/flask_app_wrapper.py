@@ -10,7 +10,9 @@ from pdip.api.base.resource_base import ResourceBase
 
 from ..handlers.error_handlers import ErrorHandlers
 from ..handlers.request_handler import RequestHandler
-from ...configuration.models import ApiConfig, ApplicationConfig
+from ...configuration.models.api import ApiConfig
+from ...configuration.models.application import ApplicationConfig
+
 from ...dependency.scopes import ISingleton
 from ...exceptions.operational_exception import OperationalException
 

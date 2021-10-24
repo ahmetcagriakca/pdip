@@ -6,7 +6,7 @@ from sqlalchemy.orm import Query
 from .database_session_manager import DatabaseSessionManager
 from .repository import Repository
 from ..dependency.scopes import IScoped
-from ..configuration.models import DatabaseConfig
+from ..configuration.models.database import DatabaseConfig
 
 R = TypeVar('R')
 

@@ -6,7 +6,7 @@ from sqlalchemy.pool import StaticPool
 
 from ..dependency.scopes import IScoped
 from ..utils.utils import Utils
-from ..configuration.models import DatabaseConfig
+from ..configuration.models.database import DatabaseConfig
 
 
 class DatabaseSessionManager(IScoped):
@@ -36,7 +36,6 @@ class DatabaseSessionManager(IScoped):
                                             poolclass=StaticPool,
                                             execution_options=self.database_config.execution_options)
             else:
-
                 self.engine = create_engine(self.database_config.connection_string,
                                             poolclass=pool.NullPool,
                                             pool_pre_ping=True,

@@ -2,8 +2,9 @@ import os
 from typing import List, Type, TypeVar
 
 import yaml
+
+from .models.base.base_config import BaseConfig
 from ..utils import Utils, ModuleFinder
-from .models.base_config import BaseConfig
 
 T = TypeVar('T')
 
@@ -20,7 +21,8 @@ class ConfigManager:
     def get(self, generic_type: Type[T]) -> T:
         for config in self.configs:
             config_type = config.get("type")
-            if config_type is generic_type:
+            if isinstance(config.get("instance"),
+                          generic_type) or config_type is generic_type or generic_type.__module__ == config_type.__module__:
                 return config.get("instance")
 
     def set(self, generic_type, instance_property, property_value):
@@ -38,7 +40,7 @@ class ConfigManager:
         if environment is not None:
             config_name_split = "application.yml".split('.')
             config_name = f'{config_name_split[0]}.{environment}.{config_name_split[1]}'
-        config_path=os.path.join(root_directory, config_name)
+        config_path = os.path.join(root_directory, config_name)
         configs: List[dict] = []
         if os.path.exists(config_path):
             with open(config_path, 'r') as yml_file:

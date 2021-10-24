@@ -3,7 +3,7 @@ import psycopg2.extras as extras
 from injector import inject
 
 from .DatabaseConnector import DatabaseConnector
-from ....configuration.models.database_config import DatabaseConfig
+from ....configuration.models.database.database_config import DatabaseConfig
 
 class PostgreDbConnector(DatabaseConnector):
     @inject

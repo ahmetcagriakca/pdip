@@ -4,7 +4,7 @@ from injector import inject
 
 from .connectors.DatabaseConnector import DatabaseConnector
 from ..models.enums import ConnectorTypes
-from ...configuration.models.database_config import DatabaseConfig
+from ...configuration.models.database.database_config import DatabaseConfig
 
 
 class DatabasePolicy:

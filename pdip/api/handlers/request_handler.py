@@ -1,9 +1,9 @@
 from flask import request, Response
 from injector import inject
 
-from pdip.data import RepositoryProvider
-from pdip.configuration.models import ApiConfig
-from pdip.dependency import ISingleton
+from ...data import RepositoryProvider
+from ...configuration.models.api import ApiConfig
+from ...dependency import ISingleton
 
 
 class RequestHandler(ISingleton):

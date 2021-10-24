@@ -7,7 +7,8 @@ from ...models.log_data import LogData
 from ....data.repository_provider import RepositoryProvider
 from ....dependency import IScoped
 from ....utils.utils import Utils
-from ....configuration.models import ApplicationConfig, DatabaseConfig
+from ....configuration.models.application import ApplicationConfig
+from ....configuration.models.database import DatabaseConfig
 from ....dependency.container import DependencyContainer
 from ....exceptions.required_class_exception import RequiredClassException
 

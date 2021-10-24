@@ -8,10 +8,11 @@ from flask_restx import Api
 from injector import Injector, Binder
 from werkzeug.utils import redirect
 
-from pdip.api.base.controller_base import Controller
-from pdip.api.base import ResourceBase
-from pdip.configuration.models import ApiConfig, ApplicationConfig
-from pdip.logging.loggers.console.console_logger import ConsoleLogger
+from ...api.base.controller_base import Controller
+from ...api.base import ResourceBase
+from ...configuration.models.api import ApiConfig
+from ...configuration.models.application import  ApplicationConfig
+from ...logging.loggers.console.console_logger import ConsoleLogger
 
 T = TypeVar('T')
 

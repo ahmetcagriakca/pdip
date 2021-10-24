@@ -1,7 +1,8 @@
 import json
+import sys
 from unittest import TestCase
 
-from pdip import Pdi
+from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
 
 
@@ -14,7 +15,11 @@ class TestBasicAppWithError(TestCase):
 
     def tearDown(self):
         if hasattr(self,'pdi') and self.pdi is not None:
+            self.pdi.cleanup()
             del self.pdi
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
         return super().tearDown()
 
     def print_error_detail(self, data):

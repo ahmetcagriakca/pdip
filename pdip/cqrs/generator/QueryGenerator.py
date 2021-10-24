@@ -3,10 +3,10 @@ from injector import inject
 from .domain.DaoGenerateConfig import DaoGenerateConfig
 from .domain.Generator import Generator
 from .domain.QueryGenerateConfig import QueryGenerateConfig
-from ...io.FileManager import FileManager
-from ...io.FolderManager import FolderManager
+from ...io.file_manager import FileManager
+from ...io.folder_manager import FolderManager
 from ...utils  import ModuleFinder
-from ...configuration.models import ApplicationConfig
+from ...configuration.models.application import ApplicationConfig
 
 
 class QueryGenerator(Generator):

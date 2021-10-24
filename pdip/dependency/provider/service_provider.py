@@ -5,13 +5,15 @@ from typing import TypeVar, Type
 
 from injector import singleton, Injector, threadlocal, Binder
 
-from pdip.utils import Utils
-from pdip.dependency.provider.api_provider import ApiProvider
-from pdip.dependency.scopes import ISingleton, IScoped
-from pdip.configuration.models import ApiConfig, ApplicationConfig, DatabaseConfig
-from pdip.configuration import ConfigManager
-from pdip.logging.loggers.console.console_logger import ConsoleLogger
-from pdip.utils import ModuleFinder
+from ...utils import Utils
+from ...dependency.provider.api_provider import ApiProvider
+from ...dependency.scopes import ISingleton, IScoped
+from ...configuration.models.api import ApiConfig
+from ...configuration.models.application import ApplicationConfig
+from ...configuration.models.database import DatabaseConfig
+from ...configuration import ConfigManager
+from ...logging.loggers.console.console_logger import ConsoleLogger
+from ...utils import ModuleFinder
 
 T = TypeVar('T')
 
@@ -85,8 +87,16 @@ class ServiceProvider:
     def configure(self, binder: Binder):
         self.binder = binder
         self.binder.bind(
+            interface=ServiceProvider,
+            to=self
+        )
+        self.binder.bind(
             interface=ModuleFinder,
             to=self.module_finder
+        )
+        self.binder.bind(
+            interface=ConfigManager,
+            to=self.config_manager
         )
 
         for config in self.config_manager.get_all():

@@ -7,22 +7,22 @@ from .ICommand import ICommand
 from .ICommandHandler import ICommandHandler
 from .IQuery import IQuery
 from .IQueryHandler import IQueryHandler
+from ..dependency.provider import ServiceProvider
 from ..dependency.scopes import IScoped
-from ..dependency.container import DependencyContainer
 
 T = TypeVar('T', covariant=True)
 
 
 class Dispatcher(IScoped):
     @inject
-    def __init__(self):
-        pass
+    def __init__(self,service_provider:ServiceProvider):
+        self.service_provider = service_provider
 
     def find_handler(self, type, handler_type: Type[T]) -> T:
         for handler_class in handler_type.__subclasses__():
             result = handler_type[type] == handler_class.__orig_bases__[0]
             if result:
-                instance = DependencyContainer.Instance.get(handler_class)
+                instance = self.service_provider.get(handler_class)
                 return instance
 
     def dispatch(self, cq: CommandQueryBase[T]) -> T:

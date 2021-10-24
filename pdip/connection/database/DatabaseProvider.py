@@ -4,7 +4,7 @@ from .DatabaseContext import DatabaseContext
 from .DatabasePolicy import DatabasePolicy
 from ..models.enums import ConnectionTypes, ConnectorTypes
 from ...dependency import IScoped
-from ...configuration.models import DatabaseConfig
+from ...configuration.models.database import DatabaseConfig
 
 
 class DatabaseProvider(IScoped):

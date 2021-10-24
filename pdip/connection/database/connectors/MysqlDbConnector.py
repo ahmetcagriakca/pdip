@@ -1,7 +1,7 @@
 import mysql.connector
 from injector import inject
 from .DatabaseConnector import DatabaseConnector
-from ....configuration.models.database_config import DatabaseConfig
+from ....configuration.models.database.database_config import DatabaseConfig
 
 
 class MysqlDbConnector(DatabaseConnector):

@@ -1,7 +1,6 @@
 from injector import inject
 
 from pdip.api.base import ResourceBase
-from pdip.api.decorators import controller
 from pdip.cqrs.Dispatcher import Dispatcher
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserRequest import CreateUserRequest
@@ -10,7 +9,6 @@ from tests.api.basic_app_with_cqrs.application.GetUser.GetUserRequest import Get
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserResponse import GetUserResponse
 
 
-# @controller()
 class UserCqrsResource(ResourceBase):
     @inject
     def __init__(self,

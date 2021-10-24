@@ -1,3 +1,4 @@
+import sys
 from unittest import TestCase
 
 from flask import Flask
@@ -29,7 +30,7 @@ class DependencyWrapper:
         self.app = Flask("test")
         self.api = Api(self.app)
         FlaskInjector(app=self.app, modules=[
-                      self.configure], injector=self.injector)
+            self.configure], injector=self.injector)
 
     def configure(self, binder: Binder):
         binder.bind(
@@ -49,6 +50,12 @@ class DependencyWrapper:
 
 
 class TestApiDependency(TestCase):
+    def tearDown(self):
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
+        return super().tearDown()
+
     def test_inject_api(self):
         dependency_wrapper = DependencyWrapper()
 

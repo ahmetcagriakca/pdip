@@ -85,33 +85,37 @@ class ModuleFinder:
             return False
 
     def import_modules(self, included_modules=None, excluded_modules=None):
-        for module in self.modules:
-            root_path_dir = os.path.join(
-                self.root_directory, '')
-            base_module_folder = \
-                module['module_path'].replace(root_path_dir, '')
-            if ((excluded_modules is None) or (
-                    not any(base_module_folder.startswith(item) for item in excluded_modules))) and (
-                    (included_modules is None) or (included_modules is not None and any(
-                base_module_folder.startswith(item) for item in included_modules))):
-                module_address = module["module_address"]
-                module_last_parent_address = module["module_last_parent_address"]
+        try:
+            for module in self.modules:
+                root_path_dir = os.path.join(
+                    self.root_directory, '')
+                base_module_folder = \
+                    module['module_path'].replace(root_path_dir, '')
+                if ((excluded_modules is None) or (
+                        not any(base_module_folder.startswith(item) for item in excluded_modules))) and (
+                        (included_modules is None) or (included_modules is not None and any(
+                    base_module_folder.startswith(item) for item in included_modules))):
+                    module_address = module["module_address"]
+                    module_last_parent_address = module["module_last_parent_address"]
 
-                if not self.check_module_existing(module_address=module_address):
-                    try:
-                        module_to_be_added = module_address
-                        if module_last_parent_address is not None and module_last_parent_address != '':
-                            module_to_be_added = '.'.join([module_last_parent_address, module_address])
-                        print('test'+module_last_parent_address)
-                        print(module_to_be_added)
-                        importlib.import_module(module_to_be_added)
-                    except ModuleNotFoundError as ex:
-                        print("ModuleNotFoundError:" + str(ex))
-                        module_base_address = module["module_base_address"]
-                        print('test2'+module_base_address)
-                        module_to_be_added = '.'.join([module_base_address, module_address])
-                        print('test3'+module_to_be_added)
-                        importlib.import_module(module_to_be_added)
+                    if not self.check_module_existing(module_address=module_address):
+                        try:
+                            module_to_be_added = module_address
+                            if module_last_parent_address is not None and module_last_parent_address != '':
+                                module_to_be_added = '.'.join([module_last_parent_address, module_address])
+                            importlib.import_module(module_to_be_added)
+                        except ModuleNotFoundError as ex:
+                            # print("ModuleNotFoundError:" + str(ex))
+                            module_base_address = module["module_base_address"]
+                            module_to_be_added = '.'.join([module_base_address, module_address])
+                            try:
+                                importlib.import_module(module_to_be_added)
+                            except KeyError:
+                                pass
+
+        except:
+            self.cleanup()
+            raise
 
     def get_module(self, name_of_module):
         indexes = self.get_indexes(name_of_module, self.modules)

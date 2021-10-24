@@ -1,15 +1,15 @@
+import sys
 from unittest import TestCase
-
-from pdip.connection.models.enums import ConnectorTypes,ConnectionTypes
-from pdip.connection.database.DatabaseProvider import DatabaseProvider
-
 
 class TestConnectionDatabase(TestCase):
     def setUp(self):
         pass
 
     def tearDown(self):
-        pass
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
+        return super().tearDown()
 
     # def test_database_context_postgres_connect(self):
     #     self.database_context = DatabaseProvider().get_context(connection_type=ConnectionTypes(1),

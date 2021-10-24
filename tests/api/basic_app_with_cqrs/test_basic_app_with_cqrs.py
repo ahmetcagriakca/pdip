@@ -1,11 +1,11 @@
 import json
+import sys
 from unittest import TestCase
 
-from pdip import Pdi
+from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
 from pdip.data import DatabaseSessionManager, RepositoryProvider
 from tests.api.basic_app_with_cqrs.domain.User import User
-from tests.api.basic_app_with_cqrs.application.controllers.UserCqrsResource import UserCqrsResource
 
 
 class TestBasicAppWithCqrs(TestCase):
@@ -17,7 +17,11 @@ class TestBasicAppWithCqrs(TestCase):
 
     def tearDown(self):
         if hasattr(self,'pdi') and self.pdi is not None:
+            self.pdi.cleanup()
             del self.pdi
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
         return super().tearDown()
 
     def create_user(self, create_user_request):
@@ -42,7 +46,7 @@ class TestBasicAppWithCqrs(TestCase):
         assert json_data['IsSuccess'] == True
         return json_data['Result']['Data']
 
-    def test_api_logs(self):
+    def test_create_user(self):
         create_user_request = {
             "Name": "Name",
             "Surname": "Surname",

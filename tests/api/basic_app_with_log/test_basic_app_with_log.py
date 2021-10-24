@@ -1,10 +1,10 @@
 import json
-import os
+import sys
 from unittest import TestCase
 
 from sqlalchemy import desc
 
-from pdip import Pdi
+from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
 from pdip.data import DatabaseSessionManager, RepositoryProvider
 from tests.api.basic_app_with_log.domain.dao.Log import Log
@@ -18,8 +18,12 @@ class TestBasicAppWithLog(TestCase):
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):
-        if hasattr(self,'pdi') and self.pdi is not None:
+        if hasattr(self, 'pdi') and self.pdi is not None:
+            self.pdi.cleanup()
             del self.pdi
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
         return super().tearDown()
 
     def test_check_model_logs(self):

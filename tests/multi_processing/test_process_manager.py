@@ -1,3 +1,4 @@
+import sys
 from unittest import TestCase
 
 from pdip.multi_processing import ProcessManager
@@ -8,7 +9,11 @@ class TestProcessManager(TestCase):
         pass
 
     def tearDown(self):
-        pass
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
+        return super().tearDown()
+
 
     @classmethod
     def process_method(cls, sub_process_id, data):

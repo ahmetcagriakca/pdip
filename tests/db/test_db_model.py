@@ -1,3 +1,4 @@
+import sys
 from unittest import TestCase
 
 from sqlalchemy import MetaData, create_engine, Column, String, Integer, create_mock_engine
@@ -18,6 +19,12 @@ class User(Base):
 
 
 class TestDbModel(TestCase):
+    def tearDown(self):
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
+        return super().tearDown()
+
     def test_model(self):
         engine = create_engine('sqlite:///:memory:', execution_options={"schema_translate_map": {"Common": None}})
 

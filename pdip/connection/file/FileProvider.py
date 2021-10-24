@@ -7,7 +7,7 @@ from .connectors.CsvConnector import CsvConnector
 from .connectors.FileConnector import FileConnector
 from ...dependency import IScoped
 from pdip.logging.loggers.database.sql_logger import SqlLogger
-from ...configuration.models.application_config import ApplicationConfig
+from ...configuration.models.application import ApplicationConfig
 from ..models.enums import connection_types, connector_types
 
 

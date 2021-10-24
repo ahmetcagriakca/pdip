@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .base_config import BaseConfig
+from ..base.base_config import BaseConfig
 
 
 @dataclass

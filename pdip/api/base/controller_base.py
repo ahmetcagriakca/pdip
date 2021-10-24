@@ -3,7 +3,7 @@ import sys
 
 from .endpoint_base import endpoint
 from ...utils.utils import Utils
-from ...configuration.models.application_config import ApplicationConfig
+from ...configuration.models.application import ApplicationConfig
 
 
 class Controller:
