@@ -2,6 +2,8 @@ import inspect
 import os
 from typing import TypeVar, Type
 
+from pdip.configuration.models.application import ApplicationConfig
+
 from ..data import DatabaseSessionManager
 from ..dependency.container import DependencyContainer
 
@@ -48,3 +50,5 @@ class Pdi(object):
         if engine is not None:
             DependencyContainer.Base.metadata.drop_all(engine)
 
+    def set_secret_key(self,key):
+        DependencyContainer.Instance.config_manager.set(ApplicationConfig, 'secret_key', key)

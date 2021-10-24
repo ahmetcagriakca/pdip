@@ -12,7 +12,7 @@ setup(
     author='Ahmet Çağrı AKCA',
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     zip_safe=False,
     keywords=['PDI', 'API', 'ETL','PROCESS','MULTIPROCESS','IO','CQRS','MSSQL','ORACLE','POSTGRES','MYSQL','CSV'],
     install_requires=[

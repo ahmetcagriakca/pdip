@@ -1,10 +1,11 @@
 import sys
 from unittest import TestCase
+
+from injector import Binder
+
 from pdip.base import Pdi
 from pdip.configuration.models.application import ApplicationConfig
-
 from pdip.cryptography import CryptoService
-from pdip.dependency.container import DependencyContainer
 
 
 class TestCryptographyService(TestCase):
@@ -18,9 +19,11 @@ class TestCryptographyService(TestCase):
             del module
         return super().tearDown()
 
-    def generate_key(self, binder):
+    def generate_key(self, binder: Binder):
         key = CryptoService.generate_key().decode()
-        DependencyContainer.Instance.config_manager.set(ApplicationConfig, 'secret_key', key)
+        application_config = binder.injector.get(ApplicationConfig)
+        application_config.secret_key = key
+        # self.pdi.set_secret_key(key=key)
 
     def test_cryptography(self):
         test_data = 'data'

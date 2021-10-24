@@ -9,7 +9,7 @@ from typing import List
 from .models import ProcessInfo
 from .models import ProcessTask
 from ..dependency.container import DependencyContainer
-from ..logging.loggers.database import SqlLogger
+from ..logging.loggers.console import ConsoleLogger
 
 
 class ProcessManager:
@@ -20,14 +20,14 @@ class ProcessManager:
         self._process_result_queue: Queue = None
         self._processes: List[ProcessInfo] = None
         self._process_tasks: List[ProcessTask] = None
-        self.sql_logger = SqlLogger()
+        self.logger = ConsoleLogger()
 
     def __del__(self):
         if not self.fire_and_forget:
             self.__finish_all_processes()
             if self._manager is not None:
                 self._manager.shutdown()
-            del self.sql_logger
+            del self.logger
 
     def get_manager(self):
         if self._manager is None:
@@ -116,14 +116,14 @@ class ProcessManager:
                                   process_result_queue: Queue,
                                   target_method,
                                   kwargs):
-        self.sql_logger.info(f"{sub_process_id} process started")
+        self.logger.info(f"{sub_process_id} process started")
         try:
             while True:
                 process_task: ProcessTask = process_queue.get()
                 process_task.SubProcessId = sub_process_id
                 process_task.State = 2
                 if process_task.IsFinished:
-                    self.sql_logger.info(f"{sub_process_id} process finished")
+                    self.logger.info(f"{sub_process_id} process finished")
                     # Indicate finished
                     break
                 else:
@@ -134,7 +134,7 @@ class ProcessManager:
                     kwargs["sub_process_id"] = sub_process_id
                     result = target_method(**kwargs)
                     end = time()
-                    self.sql_logger.info(
+                    self.logger.info(
                         f"{sub_process_id} process finished. time:{end - start}")
                     process_task.IsFinished = True
                     process_task.State = 3
@@ -142,7 +142,7 @@ class ProcessManager:
                     process_result_queue.put(process_task)
                     return
         except Exception as ex:
-            self.sql_logger.error(
+            self.logger.error(
                 f"{sub_process_id} process getting error:{ex}")
             process_task = ProcessTask(SubProcessId=sub_process_id, State=4, Exception=ex,
                                        Traceback=traceback.format_exc(), IsFinished=True)

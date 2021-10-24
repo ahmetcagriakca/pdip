@@ -35,13 +35,14 @@ if __name__ == "__main__":
                 trace = traceback.format_exc()
                 print(trace)
                 suite.addTest(unittest.defaultTestLoader.loadTestsFromName(t["module_name"]))
+            header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
+            print(f"{t['module_address']} tests started".center(len(header_string)))
 
             test_result = unittest.TextTestRunner().run(suite)
             result = {"test_namespace": t["module_address"], "result": test_result}
 
             results.append(result)
 
-            header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
             print(header_string)
             print("-" * len(header_string))
 
@@ -51,8 +52,10 @@ if __name__ == "__main__":
             successes = runs - errors - failures
             result_string = f'{result["test_namespace"]:75}|{runs:10}|{successes:10}|{errors:10}|{failures:10}'
             print(result_string)
-            print(result)
-            print("-" * len(str(result)))
+            # print(result)
+            print(f"{t['module_address']} tests finished".center(len(header_string)))
+
+            print("-" * len(result_string))
         return results
 
 

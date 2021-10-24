@@ -1,5 +1,6 @@
 import traceback
 from datetime import datetime
+from injector import inject
 from logging import DEBUG, FATAL, ERROR, WARNING, INFO, NOTSET
 
 from ..console.console_logger import ConsoleLogger
@@ -9,37 +10,36 @@ from ....dependency import IScoped
 from ....utils.utils import Utils
 from ....configuration.models.application import ApplicationConfig
 from ....configuration.models.database import DatabaseConfig
-from ....dependency.container import DependencyContainer
-from ....exceptions.required_class_exception import RequiredClassException
 
 
 class SqlLogger(IScoped):
-    def __init__(self):
-        pass
+    @inject
+    def __init__(self,
+                 application_config: ApplicationConfig,
+                 database_config: DatabaseConfig,
+                 console_logger: ConsoleLogger):
+        self.console_logger = console_logger
+        self.database_config = database_config
+        self.application_config = application_config
 
-    @classmethod
-    def log_to_db(cls, level, message, job_id=None):
-        logger_class=None
+    def log_to_db(self, level, message, job_id=None):
+        logger_class = None
         subclasses = LogData.__subclasses__()
         if subclasses is not None and len(subclasses) > 0:
             logger_class = subclasses[0]
 
-        if logger_class is not None and DependencyContainer.Instance is not None:
-            application_config: ApplicationConfig = DependencyContainer.Instance.config_manager.get(ApplicationConfig)
-            database_config: DatabaseConfig = DependencyContainer.Instance.config_manager.get(DatabaseConfig)
-            console_logger: ConsoleLogger = DependencyContainer.Instance.injector.get(ConsoleLogger)
+        if logger_class is not None:
             log_datetime = datetime.now()  # datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             process_info = Utils.get_process_info()
             application_name = ''
-            if application_config.name is not None:
-                application_name=application_config.name
-            if application_config.hostname is not None:
-                application_name += f'-{application_config.hostname}'
+            if self.application_config.name is not None:
+                application_name = self.application_config.name
+            if self.application_config.hostname is not None:
+                application_name += f'-{self.application_config.hostname}'
             comment = f'{application_name}-{process_info}'
             try:
-                repository_provider = RepositoryProvider(database_config=database_config,database_session_manager=None)
-                # repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
-                # repository_provider.database_session_manager.session_factory()
+                repository_provider = RepositoryProvider(database_config=self.database_config,
+                                                         database_session_manager=None)
                 log_repository = repository_provider.get(logger_class)
                 log = logger_class(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
                                    JobId=job_id, Comments=comment)
@@ -48,15 +48,15 @@ class SqlLogger(IScoped):
             except Exception as ex:
                 if job_id is not None:
                     message = f"{job_id}-{message}"
-                console_logger.error(f'{message}. Sql logging getting error. Error:{ex}')
+                self.console_logger.error(f'{message}. Sql logging getting error. Error:{ex}')
             finally:
                 if job_id is not None:
                     message = f"{job_id}-{message}"
-                console_logger.log(level, f'{message}')
+                self.console_logger.log(level, f'{message}')
         else:
             if job_id is not None:
                 message = f"{job_id}-{message}"
-            ConsoleLogger().log(level, f'{message}')
+            self.console_logger.log(level, f'{message}')
 
     #######################################################################################
     def logger_method(self, level, message, job_id=None):
