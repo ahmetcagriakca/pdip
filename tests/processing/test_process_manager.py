@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase
 
-from pdip.multi_processing import ProcessManager
+from pdip.processing import ProcessManager
 
 
 class TestProcessManager(TestCase):

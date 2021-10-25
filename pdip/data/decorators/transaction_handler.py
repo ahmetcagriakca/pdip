@@ -3,7 +3,7 @@ from ...data import RepositoryProvider
 from ...dependency.container import DependencyContainer
 
 
-def transaction_handler(func):
+def transactionhandler(func):
     def inner(*args, **kwargs):
         repository_provider = DependencyContainer.Instance.get(RepositoryProvider)
         try:

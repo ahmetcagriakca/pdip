@@ -38,14 +38,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest and coverage
       run: |
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.api' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.configuration' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.connection' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.cryptography' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.db' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.dependency' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
-        coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.utils' -t '.'
+        coverage run  --source=pdip run_tests.py 
         coverage report -m --omit="*/tests/*,*/site-packages/*"
     - name: Build and publish
       if: github.repository == 'ahmetcagriakca/pdip' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

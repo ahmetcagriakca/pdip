@@ -2,7 +2,7 @@ from datetime import datetime
 
 from ...data import EntityBase
 
-class ConfigParameter(EntityBase):
+class ConfigParameterBase(EntityBase):
     
     def __init__(self,
                  Name: str = None,

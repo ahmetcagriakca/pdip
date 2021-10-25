@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from injector import inject
 
-from .config_parameter import ConfigParameter
+from .config_parameter_base import ConfigParameterBase
 from ...data import RepositoryProvider
 from ...dependency import IScoped
 from ...exceptions import RequiredClassException
@@ -14,9 +14,9 @@ class ConfigService(IScoped):
                  repository_provider: RepositoryProvider
                  ):
         self.repository_provider = repository_provider
-        config_subclasses= ConfigParameter.__subclasses__()
+        config_subclasses= ConfigParameterBase.__subclasses__()
         if  config_subclasses is None or len(config_subclasses)==0:
-            raise RequiredClassException(f'Requires {ConfigParameter.__name__} derived class')
+            raise RequiredClassException(f'Requires {ConfigParameterBase.__name__} derived class')
         config_class = config_subclasses[0]
         self.config_reposiotry = repository_provider.get(config_class)
 

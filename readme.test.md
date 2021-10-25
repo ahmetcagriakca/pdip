@@ -24,7 +24,7 @@ coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.connection' -
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.cryptography' -t '.'
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.db' -t '.'
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.dependency' -t '.'
-coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
+coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.processing' -t '.'
 coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.utils' -t '.'
 coverage run -a --source=pdip run_tests.py
 python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.api' -t '.'
@@ -34,11 +34,11 @@ python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.co
 python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.cryptography' -t '.'
 python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.db' -t '.'
 python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.dependency' -t '.'
-python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.'
+python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.processing' -t '.'
 python3 -m coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.utils' -t '.'
 
 # run all tests and generate coverage informations
 coverage run --source=pdip -m unittest discover -v -b 
-<!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.multi_processing' -t '.' -->
+<!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.processing' -t '.' -->
 coverage report -m --omit="*/tests/*,*/site-packages/*"
 coverage html  --omit="*/tests/*,*/site-packages/*"
