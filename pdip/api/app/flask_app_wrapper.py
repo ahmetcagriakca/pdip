@@ -6,15 +6,14 @@ from injector import inject
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
-from pdip.api.base.resource_base import ResourceBase
-
-from ..handlers.error_handlers import ErrorHandlers
-from ..handlers.request_handler import RequestHandler
+from ..handlers import ErrorHandlers
+from ..handlers import RequestHandler
+from ...api.base import ResourceBase
 from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
 
-from ...dependency.scopes import ISingleton
-from ...exceptions.operational_exception import OperationalException
+from ...dependency import ISingleton
+from ...exceptions import OperationalException
 
 
 class FlaskAppWrapper(ISingleton):

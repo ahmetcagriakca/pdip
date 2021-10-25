@@ -1,11 +1,12 @@
 import json
 import time
 import re
-from queue import Queue
 
 import pandas as pd
 
+from queue import Queue
 from injector import inject
+
 from .DatabasePolicy import DatabasePolicy
 from .connectors.DatabaseConnector import DatabaseConnector
 from ..models.DataQueueTask import DataQueueTask

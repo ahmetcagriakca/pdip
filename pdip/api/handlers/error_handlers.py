@@ -2,9 +2,9 @@ import json
 import traceback
 from injector import inject
 
-from pdip.data.repository_provider import RepositoryProvider
-from pdip.dependency.scopes import ISingleton
-from pdip.logging.loggers.database.sql_logger import SqlLogger
+from ...data import RepositoryProvider
+from ...dependency import ISingleton
+from ...logging.loggers.database import SqlLogger
 
 
 class ErrorHandlers(ISingleton):

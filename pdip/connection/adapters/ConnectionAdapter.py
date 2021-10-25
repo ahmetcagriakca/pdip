@@ -2,9 +2,8 @@ from abc import abstractmethod
 from queue import Queue
 from typing import List
 
-from pandas import DataFrame
 
-from models.dto.PagingModifier import PagingModifier
+from ..models.dto.PagingModifier import PagingModifier
 
 
 class ConnectionAdapter:
@@ -28,7 +27,7 @@ class ConnectionAdapter:
         pass
 
     @abstractmethod
-    def prepare_data(self, data_integration_id: int, source_data: DataFrame) -> List[any]:
+    def prepare_data(self, data_integration_id: int, source_data) -> List[any]:
         pass
 
     @abstractmethod

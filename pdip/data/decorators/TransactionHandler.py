@@ -1,6 +1,6 @@
 # This decorator will check unexpected database error for thread operations
-from pdip.data import RepositoryProvider
-from pdip.dependency.container import DependencyContainer
+from ...data import RepositoryProvider
+from ...dependency.container import DependencyContainer
 
 
 def transaction_handler(func):

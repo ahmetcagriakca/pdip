@@ -2,7 +2,7 @@ import json
 from functools import wraps
 
 from .endpoint_wrapper import EndpointWrapper
-from ...utils.type_checker import TypeChecker
+from ...utils import TypeChecker
 
 
 class Endpoint:

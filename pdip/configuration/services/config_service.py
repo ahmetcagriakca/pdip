@@ -1,11 +1,11 @@
 from functools import lru_cache
-from pdip.exceptions.required_class_exception import RequiredClassException
 
 from injector import inject
 
 from .config_parameter import ConfigParameter
-from pdip.data import RepositoryProvider
-from pdip.dependency import IScoped
+from ...data import RepositoryProvider
+from ...dependency import IScoped
+from ...exceptions import RequiredClassException
 
 
 class ConfigService(IScoped):

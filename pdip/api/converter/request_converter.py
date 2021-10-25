@@ -2,8 +2,8 @@ import inspect
 import json
 from datetime import datetime
 
-from pdip.utils.type_checker import TypeChecker
-from pdip.json.date_time_encoder import DateTimeEncoder
+from ...utils import TypeChecker
+from ...json import DateTimeEncoder
 
 
 class RequestConverter(object):

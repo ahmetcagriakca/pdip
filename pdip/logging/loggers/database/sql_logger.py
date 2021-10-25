@@ -3,9 +3,9 @@ from datetime import datetime
 from injector import inject
 from logging import DEBUG, FATAL, ERROR, WARNING, INFO, NOTSET
 
-from ..console.console_logger import ConsoleLogger
-from ...models.log_data import LogData
-from ....data.repository_provider import RepositoryProvider
+from ..console import ConsoleLogger
+from ...models import LogData
+from ....data import RepositoryProvider
 from ....dependency import IScoped
 from ....utils.utils import Utils
 from ....configuration.models.application import ApplicationConfig

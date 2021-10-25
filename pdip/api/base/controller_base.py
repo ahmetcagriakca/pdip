@@ -2,7 +2,7 @@ import os
 import sys
 
 from .endpoint_base import endpoint
-from ...utils.utils import Utils
+from ...utils import Utils
 from ...configuration.models.application import ApplicationConfig
 
 

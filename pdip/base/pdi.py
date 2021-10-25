@@ -2,8 +2,7 @@ import inspect
 import os
 from typing import TypeVar, Type
 
-from pdip.configuration.models.application import ApplicationConfig
-
+from ..configuration.models.application import ApplicationConfig
 from ..data import DatabaseSessionManager
 from ..dependency.container import DependencyContainer
 
