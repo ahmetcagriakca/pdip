@@ -1,4 +1,4 @@
-from pdip.cqrs.decorators.requestclass import requestclass
+from pdip.cqrs.decorators import requestclass
 
 
 @requestclass

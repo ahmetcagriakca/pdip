@@ -1,7 +1,7 @@
 from injector import inject
 
 from pdip.api.base import ResourceBase
-from pdip.cqrs.Dispatcher import Dispatcher
+from pdip.cqrs import Dispatcher
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserRequest import CreateUserRequest
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery

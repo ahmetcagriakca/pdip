@@ -1,6 +1,6 @@
 from injector import inject
 
-from pdip.cqrs.IQueryHandler import IQueryHandler
+from pdip.cqrs import IQueryHandler
 from pdip.dependency.scopes import IScoped
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserSpecifications import GetUserSpecifications
 from tests.api.basic_app_with_cqrs.application.GetUser.GetUserMapping import GetUserMapping

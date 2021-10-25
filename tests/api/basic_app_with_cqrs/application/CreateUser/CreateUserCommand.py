@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pdip.cqrs.ICommand import ICommand
+from pdip.cqrs import ICommand
 from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserRequest import CreateUserRequest
 
 
