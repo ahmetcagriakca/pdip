@@ -36,31 +36,21 @@ if __name__ == "__main__":
                 print(trace)
                 suite.addTest(unittest.defaultTestLoader.loadTestsFromName(t["module_name"]))
             header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
-            print(f"{t['module_address']} tests started".center(len(header_string)))
+            print(f"{t['module_address']} tests started".center(len(header_string)+2,'-'))
 
             test_result = unittest.TextTestRunner().run(suite)
             result = {"test_namespace": t["module_address"], "result": test_result}
 
             results.append(result)
-
-            print(header_string)
-            print("-" * len(header_string))
-
-            runs = result["result"].testsRun
-            errors = len(result["result"].errors)
-            failures = len(result["result"].failures)
-            successes = runs - errors - failures
-            result_string = f'{result["test_namespace"]:75}|{runs:10}|{successes:10}|{errors:10}|{failures:10}'
-            print(result_string)
-            # print(result)
-            print(f"{t['module_address']} tests finished".center(len(header_string)))
-
-            print("-" * len(result_string))
+            print_results(results=[result])
+            print(f"{t['module_address']} tests finished".center(len(header_string)+2,'-'))
+            print("-" * (len(header_string)+2))
         return results
 
 
     def print_results(results):
-        header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
+        header_string = f'|{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
+        print("-" * len(header_string))
         print(header_string)
         print("-" * len(header_string))
         total = {
@@ -79,10 +69,11 @@ if __name__ == "__main__":
             total["successes"] += successes
             total["errors"] += errors
             total["failures"] += failures
-            result_string = f'{result["test_namespace"]:75}|{runs:10}|{successes:10}|{errors:10}|{failures:10}'
+            result_string = f'|{result["test_namespace"]:75}|{runs:10}|{successes:10}|{errors:10}|{failures:10}|'
             print(result_string)
-        total_string = f'{"Total":75}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}'
+        total_string = f'|{"Total":75}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
         print(total_string)
+        print("-" * len(header_string))
 
 
     root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
