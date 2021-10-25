@@ -83,3 +83,4 @@ Loading complete
 *.db
 .pypirc
 *.py,cover
+readme.install.md
