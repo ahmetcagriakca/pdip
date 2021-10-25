@@ -88,15 +88,20 @@ class ApiProvider:
         for resource in ResourceBase.__subclasses__():
             if resource.__module__ in sys.modules and sys.modules[resource.__module__].__file__.startswith(self.application_config.root_directory):
                 namespace = None
+                namespace_name = None
                 route = None
                 if hasattr(resource, 'namespace'):
                     namespace = resource.namespace
+                if hasattr(resource, 'namespace_name'):
+                    namespace_name = resource.namespace_name
                 if hasattr(resource, 'route'):
                     route = resource.route
+                
                 con = Controller(
                     cls=resource,
                     api=self.api,
                     application_config=self.application_config,
                     namespace=namespace,
+                    namespace_name=namespace_name,
                     route=route)
                 con.create_route()
