@@ -1,8 +1,6 @@
-from injector import inject
-
-from .domain.DaoGenerateConfig import DaoGenerateConfig
-from .domain.Generator import Generator
-from .domain.QueryGenerateConfig import QueryGenerateConfig
+from .domain.dao_generate_config import DaoGenerateConfig
+from .domain.generator import Generator
+from .domain.query_generate_config import QueryGenerateConfig
 from ...io.file_manager import FileManager
 from ...io.folder_manager import FolderManager
 from ...utils  import ModuleFinder

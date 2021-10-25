@@ -2,11 +2,11 @@ from typing import Type, TypeVar
 
 from injector import inject
 
-from .CommandQueryBase import CommandQueryBase
-from .ICommand import ICommand
-from .ICommandHandler import ICommandHandler
-from .IQuery import IQuery
-from .IQueryHandler import IQueryHandler
+from .command_query_base import CommandQueryBase
+from .icommand import ICommand
+from .icommand_handler import ICommandHandler
+from .iquery import IQuery
+from .iquery_handler import IQueryHandler
 from ..dependency.provider import ServiceProvider
 from ..dependency.scopes import IScoped
 

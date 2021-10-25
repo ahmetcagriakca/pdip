@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from generator.domain.DaoGenerateConfig import DaoGenerateConfig
+from .dao_generate_config import DaoGenerateConfig
 
 
 @dataclass

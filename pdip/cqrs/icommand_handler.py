@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
 
-from .CommandQueryHandlerBase import CommandQueryHandlerBase
-from .ICommand import ICommand
+from .command_query_handler_base import CommandQueryHandlerBase
+from .icommand import ICommand
 
 CH = TypeVar('CH', covariant=True, bound=ICommand)
 

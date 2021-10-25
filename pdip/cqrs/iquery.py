@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar
 
-from .CommandQueryBase import CommandQueryBase
+from .command_query_base import CommandQueryBase
 
 Q = TypeVar('Q', covariant=True)
 

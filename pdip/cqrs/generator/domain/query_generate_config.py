@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from generator.domain.GenerateConfig import GenerateConfig
+from .generate_config import GenerateConfig
 
 
 @dataclass

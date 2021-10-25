@@ -1,6 +1,6 @@
 from abc import ABC
 
-from generator.domain.GenerateConfig import GenerateConfig
+from .generate_config import GenerateConfig
 
 
 class Generator(ABC):
