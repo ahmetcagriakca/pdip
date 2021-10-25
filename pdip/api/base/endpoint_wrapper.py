@@ -6,11 +6,10 @@ from flask_restx import Api, fields, inputs
 from flask_restx.reqparse import RequestParser, Argument
 from injector import inject
 
-from pdip.api.request_parameter.order_by_parameter import OrderByParameter
-from pdip.api.request_parameter.paging_parameter import PagingParameter
-from pdip.api.converter.request_converter import RequestConverter
-from pdip.utils.type_checker import TypeChecker
-from pdip.json.json_convert import JsonConvert
+from ...api.request_parameter import OrderByParameter
+from ...api.request_parameter import PagingParameter
+from ...api.converter import RequestConverter
+from ...utils import TypeChecker
 
 T = typing.TypeVar('T')
 
@@ -77,7 +76,7 @@ class EndpointWrapper:
                         nested_model = self.api.model(value.__args__[0].__name__, nested_model_definition)
                         specified_value = fields.List(fields.Nested(nested_model), description=f'')
                     elif self.type_checker.is_primitive(instance.__class__):
-                        field=self.field_resolver(instance.__class__, key)
+                        field = self.field_resolver(instance.__class__, key)
                         specified_value = fields.List(field, description=f'')
 
             elif self.type_checker.is_base_generic(value):
@@ -137,7 +136,6 @@ class EndpointWrapper:
     def get_request_from_parser_for_primitive(self, name, input_type: typing.Type[T]) -> T:
         parser = self.create_parser(name=name, input_type=input_type)
         data = parser.parse_args(request)
-        # req: T = JsonConvert.FromJSON(json.dumps(data))
         return data[name]
 
     def create_argument(self, name, type, location, help) -> Argument:
@@ -147,7 +145,7 @@ class EndpointWrapper:
 
         if specified_type == bool:
             specified_type = inputs.boolean
-        argument = Argument( name, type=specified_type, location=location, help=help)
+        argument = Argument(name, type=specified_type, location=location, help=help)
         return argument
 
     def get_annotations(self, obj):
@@ -174,13 +172,19 @@ class EndpointWrapper:
         return parser
 
     def get_request_from_parser(self, parser_type: typing.Type[T]) -> T:
+        request_converter = RequestConverter()
+        request_converter.register(parser_type)
         data = self.request_parser(parser_type).parse_args(request)
-        req: T = JsonConvert.FromJSON(json.dumps(data))
+        json_data = json.dumps(data)
+        req: T = request_converter.FromJSON(json_data)
+        # req: T = json.loads(json_data, object_hook=lambda d: parser_type(**d))
         return req
 
     def get_request_from_body(self, parser_type: typing.Type[T]) -> T:
         request_converter = RequestConverter()
         request_converter.register(parser_type)
         data = self.api.payload
-        req: T = request_converter.FromJSON(json.dumps(data))
+        json_data = json.dumps(data)
+        req: T = request_converter.FromJSON(json_data)
+        # req: T = json.loads(json_data, object_hook=lambda d: parser_type(**d))
         return req

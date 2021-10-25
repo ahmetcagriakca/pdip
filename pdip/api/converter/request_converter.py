@@ -12,15 +12,17 @@ class RequestConverter(object):
 
     def class_mapper(self, d):
         for keys, cls in self.mappings.items():
-            if keys.issuperset(d.keys()) :  # are all required arguments present?
+            if keys.issuperset(d.keys()):  # are all required arguments present?
                 return cls(**d)
         else:
             # Raise exception instead of silently returning None
             raise ValueError(f'Unable to find a matching class for object: {d}')
 
     def register(self, cls):
-        self.mappings[frozenset(tuple([attr for attr, val in cls().__dict__.items()]))] = cls
-        annotations=self.get_annotations(cls())
+        instance = cls()
+        mapping_data = frozenset(tuple([attr for attr, val in instance.__dict__.items()]))
+        self.mappings[mapping_data] = cls
+        annotations = self.get_annotations(instance)
         self.register_subclasses(annotations)
         return cls
 
@@ -36,39 +38,40 @@ class RequestConverter(object):
             annotations = obj.__annotations__
             return annotations
 
-    def register_subclasses(self,annotations):
+    def register_subclasses(self, annotations):
         generic_type_checker = TypeChecker()
-        for key in annotations:
-            value = annotations[key]
-            if value == int:
-                pass
-            elif value == str:
-                pass
-            elif value == bool:
-                pass
-            elif value == datetime:
-                pass
-            elif value == float:
-                pass
-            else:
-                if generic_type_checker.is_generic(value):
+        if annotations is not None and len(annotations) > 0:
+            for key in annotations:
+                value = annotations[key]
+                if value == int:
+                    pass
+                elif value == str:
+                    pass
+                elif value == bool:
+                    pass
+                elif value == datetime:
+                    pass
+                elif value == float:
+                    pass
+                else:
+                    if generic_type_checker.is_generic(value):
 
-                    if generic_type_checker.is_primitive(value.__args__[0]):
-                        pass
-                    else:
-                        self.register(value.__args__[0])
-                        instance = value.__args__[0]()
+                        if generic_type_checker.is_primitive(value.__args__[0]):
+                            pass
+                        else:
+                            self.register(value.__args__[0])
+                            instance = value.__args__[0]()
+                            nested_annotations = self.get_annotations(instance)
+                            if nested_annotations is not None:
+                                self.register_subclasses(nested_annotations)
+                    elif generic_type_checker.is_base_generic(value):
+                        # TODO:Base generic class
+                        print('value type should be a structure of', value.__args__[0])
+                    elif inspect.isclass(value):
+                        self.register(value)
+                        instance = value()
                         nested_annotations = self.get_annotations(instance)
                         if nested_annotations is not None:
                             self.register_subclasses(nested_annotations)
-                elif generic_type_checker.is_base_generic(value):
-                    # TODO:Base generic class
-                    print('value type should be a structure of', value.__args__[0])
-                elif inspect.isclass(value):
-                    self.register(value)
-                    instance = value()
-                    nested_annotations = self.get_annotations(instance)
-                    if nested_annotations is not None:
-                        self.register_subclasses(nested_annotations)
-                else:
-                    print('Type not know', value)
+                    else:
+                        print('Type not know', value)
