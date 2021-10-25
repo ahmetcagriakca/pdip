@@ -39,10 +39,10 @@ class Utils:
         return f"{current_process().name} ({os.getpid()},{os.getppid()})"
 
     @staticmethod
-    def get_connection_string(database_config, root_directory):
+    def get_connection_string(database_config, root_directory: str = None):
         if database_config.driver is not None and database_config.driver != '':
             driver = database_config.driver.replace(' ', '+')
-        connection_string =''
+        connection_string = ''
         if database_config.type == 'SQLITE':
             connection_type = 'sqlite'
             if database_config.host is not None and database_config.host != '':
