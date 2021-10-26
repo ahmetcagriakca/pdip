@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime
 
 from pdip.data.entity import Entity
-from pdip.dependency.container import DependencyContainer
-from pdip.logging.models.log_data import LogData
+from pdip.logging.models import LogData
+from tests.api.basic_app_with_cqrs.domain import Base
 
 
-class Log(LogData, Entity, DependencyContainer.Base):
+class Log(LogData, Entity, Base):
     __tablename__ = "Log"
     __table_args__ = {"schema": "Common"}
     TypeId = Column(Integer, index=False, unique=False, nullable=False)

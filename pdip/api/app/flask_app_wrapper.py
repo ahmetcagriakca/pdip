@@ -1,5 +1,3 @@
-import sys
-
 from flask import Flask
 from flask_restx import Api
 from injector import inject
@@ -46,13 +44,6 @@ class FlaskAppWrapper(ISingleton):
         self.app.register_error_handler(Exception, self.error_handlers.handle_exception)
         self.app.register_error_handler(HTTPException, self.error_handlers.handle_http_exception)
         self.app.after_request(self.request_handler.after_request)
-
-    # def find_resources(self):
-    #     for resource in ResourceBase.__subclasses__():
-    #         if sys.modules[resource.__module__].__file__.startswith(self.application_config.root_directory):
-    #             con = Controller(
-    #                 cls=resource, api=self.api, application_config=self.application_config, namespace=None, route=None)
-    #             con.create_route()
 
     def run(self):
         self.app.run(debug=self.api_config.is_debug, host='0.0.0.0', port=self.api_config.port)

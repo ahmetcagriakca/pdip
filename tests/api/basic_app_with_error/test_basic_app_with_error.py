@@ -9,8 +9,6 @@ from pdip.api.app import FlaskAppWrapper
 class TestBasicAppWithError(TestCase):
     def setUp(self):
         self.pdi = Pdi()
-        self.pdi.drop_all()
-        self.pdi.create_all()
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):

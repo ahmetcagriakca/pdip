@@ -5,14 +5,15 @@ from unittest import TestCase
 from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
 from pdip.data import DatabaseSessionManager, RepositoryProvider
+from tests.api.basic_app_with_cqrs.domain import Base
 from tests.api.basic_app_with_cqrs.domain.User import User
 
 
 class TestBasicAppWithCqrs(TestCase):
     def setUp(self):
         self.pdi = Pdi()
-        self.pdi.drop_all()
-        self.pdi.create_all()
+        engine = self.pdi.get(DatabaseSessionManager).engine
+        Base.metadata.create_all(engine)
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):

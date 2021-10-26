@@ -6,7 +6,6 @@ from ..provider import ServiceProvider
 
 class DependencyContainer:
     Instance: ServiceProvider = None
-    Base = declarative_base(metadata=MetaData())
 
     @classmethod
     def initialize_service(cls,
@@ -25,9 +24,5 @@ class DependencyContainer:
 
     @classmethod
     def cleanup(cls):
-
-        if cls.Base is not None:
-            del cls.Base
-            cls.Base = declarative_base(metadata=MetaData())
         if hasattr(cls, 'Instance') and cls.Instance is not None:
             del cls.Instance

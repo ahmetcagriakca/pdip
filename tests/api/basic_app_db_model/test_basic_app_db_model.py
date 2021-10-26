@@ -6,6 +6,7 @@ from pdip.base import Pdi
 
 from pdip.api.app import FlaskAppWrapper
 from pdip.data import DatabaseSessionManager, RepositoryProvider
+from tests.api.basic_app_db_model.models.dao import Base
 from tests.api.basic_app_db_model.models.dao.User import User
 
 
@@ -13,8 +14,8 @@ class TestBasicAppDbModel(TestCase):
     def setUp(self):
         try:
             self.pdi = Pdi()
-            self.pdi.drop_all()
-            self.pdi.create_all()
+            engine = self.pdi.get(DatabaseSessionManager).engine
+            Base.metadata.create_all(engine)
             self.client = self.pdi.get(FlaskAppWrapper).test_client()
         except Exception as ex:
             self.tearDown()

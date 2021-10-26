@@ -1,15 +1,16 @@
-import traceback
-import unittest
-from unittest import TestCase
-import os
-
+from os import path
 from pdip.utils import ModuleFinder
 from pdip.logging.loggers.console import ConsoleLogger
+from traceback import format_exc
+from unittest import TestCase
+from unittest.loader import defaultTestLoader, makeSuite
+from unittest.runner import TextTestRunner
+from unittest.suite import TestSuite
 
 if __name__ == "__main__":
     class TestRunner:
         def __init__(self):
-            self.root_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
+            self.root_directory = path.abspath(path.join(path.dirname(path.abspath(__file__))))
             self.logger=ConsoleLogger()
 
         def run(self):
@@ -30,7 +31,7 @@ if __name__ == "__main__":
         def run_all_tests(self,test_modules):
             results = []
             for t in test_modules:
-                suite = unittest.TestSuite()
+                suite = TestSuite()
                 try:
                     # If the module defines a suite() function, call it to get the suite.
                     mod = __import__(t["module_address"], globals(), locals(), ['suite'])
@@ -40,16 +41,16 @@ if __name__ == "__main__":
                             module = c
                     if module is not None:
                         # suitefn = getattr(module, 'suite')
-                        suite.addTest(unittest.makeSuite(module))
+                        suite.addTest(makeSuite(module))
                 except (ImportError, AttributeError) as ex:
                     # else, just load all the test cases from the module.
-                    trace = traceback.format_exc()
+                    trace = format_exc()
                     self.logger.debug(trace)
-                    suite.addTest(unittest.defaultTestLoader.loadTestsFromName(t["module_name"]))
+                    suite.addTest(defaultTestLoader.loadTestsFromName(t["module_name"]))
                 header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
                 self.logger.debug(f"{t['module_address']} tests started".center(len(header_string)+2,'-'))
 
-                test_result = unittest.TextTestRunner().run(suite)
+                test_result = TextTestRunner().run(suite)
                 result = {"test_namespace": t["module_address"], "result": test_result}
 
                 results.append(result)

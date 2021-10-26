@@ -39,15 +39,5 @@ class Pdi(object):
     def get(self, instance_type: Type[T]) -> T:
         return DependencyContainer.Instance.get(instance_type)
 
-    def create_all(self):
-        engine = self.get(DatabaseSessionManager).engine
-        if engine is not None:
-            DependencyContainer.Base.metadata.create_all(engine)
-
-    def drop_all(self):
-        engine = self.get(DatabaseSessionManager).engine
-        if engine is not None:
-            DependencyContainer.Base.metadata.drop_all(engine)
-
     def set_secret_key(self,key):
         DependencyContainer.Instance.config_manager.set(ApplicationConfig, 'secret_key', key)

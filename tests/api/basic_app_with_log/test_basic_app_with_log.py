@@ -7,14 +7,15 @@ from sqlalchemy import desc
 from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
 from pdip.data import DatabaseSessionManager, RepositoryProvider
+from tests.api.basic_app_with_log.domain.dao import Base
 from tests.api.basic_app_with_log.domain.dao.Log import Log
 
 
 class TestBasicAppWithLog(TestCase):
     def setUp(self):
         self.pdi = Pdi()
-        self.pdi.drop_all()
-        self.pdi.create_all()
+        engine = self.pdi.get(DatabaseSessionManager).engine
+        Base.metadata.create_all(engine)
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):
