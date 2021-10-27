@@ -1,5 +1,6 @@
 import cx_Oracle
 from injector import inject
+
 from .DatabaseConnector import DatabaseConnector
 from ....configuration.models.database.database_config import DatabaseConfig
 
@@ -47,7 +48,7 @@ class OracleDbConnector(DatabaseConnector):
         except Exception as error:
             self.connection.rollback()
             self.cursor.close()
-            raise 
+            raise
 
     def get_table_count_query(self, query):
         count_query = f"SELECT COUNT (*)  \"COUNT\" FROM ({query})"

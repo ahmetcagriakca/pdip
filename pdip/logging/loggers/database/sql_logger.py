@@ -1,15 +1,16 @@
 import traceback
 from datetime import datetime
-from injector import inject
 from logging import DEBUG, FATAL, ERROR, WARNING, INFO, NOTSET
+
+from injector import inject
 
 from ..console import ConsoleLogger
 from ...models import LogData
+from ....configuration.models.application import ApplicationConfig
+from ....configuration.models.database import DatabaseConfig
 from ....data import RepositoryProvider
 from ....dependency import IScoped
 from ....utils.utils import Utils
-from ....configuration.models.application import ApplicationConfig
-from ....configuration.models.database import DatabaseConfig
 
 
 class SqlLogger(IScoped):

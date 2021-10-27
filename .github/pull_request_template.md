@@ -1,6 +1,3 @@
 Closes #[issue number]
 
-Description
-Screenshots
-Release notes
-Notes:
+Description Screenshots Release notes Notes:

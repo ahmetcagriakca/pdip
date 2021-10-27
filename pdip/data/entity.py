@@ -1,8 +1,10 @@
 from datetime import datetime
-from sqlalchemy import Integer, DateTime, TIMESTAMP, text, Column, String
+
+from sqlalchemy import Integer, DateTime, Column, String
 from sqlalchemy.ext.declarative import declared_attr
 
 from .entity_base import EntityBase
+
 
 class Entity(EntityBase):
     Id = Column(
@@ -37,4 +39,3 @@ class Entity(EntityBase):
     # @declared_attr
     # def RowVersion(cls):
     #     return Column(TIMESTAMP(), default=text('DEFAULT'))
-

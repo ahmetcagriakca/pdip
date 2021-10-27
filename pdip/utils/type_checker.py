@@ -1,7 +1,7 @@
+import builtins
 import inspect
 import typing
 from abc import ABC
-import builtins
 
 
 class ITypeChecker(ABC):
@@ -14,7 +14,7 @@ class ITypeChecker(ABC):
         builtins_list = list(
             filter(lambda x: not x.startswith('_'), dir(builtins)))
 
-        return hasattr(obj,'__name__') and obj.__name__ in builtins_list
+        return hasattr(obj, '__name__') and obj.__name__ in builtins_list
 
     def is_generic(self, class_type):
         pass

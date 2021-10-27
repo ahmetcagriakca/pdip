@@ -1,17 +1,18 @@
 from os import path
-from pdip.utils import ModuleFinder
-from pdip.logging.loggers.console import ConsoleLogger
 from traceback import format_exc
 from unittest import TestCase
 from unittest.loader import defaultTestLoader, makeSuite
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
+from pdip.logging.loggers.console import ConsoleLogger
+from pdip.utils import ModuleFinder
+
 if __name__ == "__main__":
     class TestRunner:
         def __init__(self):
             self.root_directory = path.abspath(path.join(path.dirname(path.abspath(__file__))))
-            self.logger=ConsoleLogger()
+            self.logger = ConsoleLogger()
 
         def run(self):
             all_test_modules = self.find_test_modules()
@@ -27,8 +28,7 @@ if __name__ == "__main__":
                     test_modules.append(module)
             return test_modules
 
-
-        def run_all_tests(self,test_modules):
+        def run_all_tests(self, test_modules):
             results = []
             for t in test_modules:
                 suite = TestSuite()
@@ -48,19 +48,18 @@ if __name__ == "__main__":
                     self.logger.debug(trace)
                     suite.addTest(defaultTestLoader.loadTestsFromName(t["module_name"]))
                 header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
-                self.logger.debug(f"{t['module_address']} tests started".center(len(header_string)+2,'-'))
+                self.logger.debug(f"{t['module_address']} tests started".center(len(header_string) + 2, '-'))
 
                 test_result = TextTestRunner().run(suite)
                 result = {"test_namespace": t["module_address"], "result": test_result}
 
                 results.append(result)
                 self.print_results(results=[result])
-                self.logger.debug(f"{t['module_address']} tests finished".center(len(header_string)+2,'-'))
-                self.logger.debug("-" * (len(header_string)+2))
+                self.logger.debug(f"{t['module_address']} tests finished".center(len(header_string) + 2, '-'))
+                self.logger.debug("-" * (len(header_string) + 2))
             return results
 
-
-        def print_results(self,results):
+        def print_results(self, results):
             header_string = f'|{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
             self.logger.debug("-" * len(header_string))
             self.logger.debug(header_string)
@@ -86,5 +85,6 @@ if __name__ == "__main__":
             total_string = f'|{"Total":75}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
             self.logger.debug(total_string)
             self.logger.debug("-" * len(header_string))
+
 
     TestRunner().run()

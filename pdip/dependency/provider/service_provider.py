@@ -1,19 +1,18 @@
 import os
-
 from multiprocessing.process import current_process
 from typing import TypeVar, Type
 
 from injector import singleton, Injector, threadlocal, Binder
 
-from ...utils import Utils
-from ...dependency.provider.api_provider import ApiProvider
-from ...dependency.scopes import ISingleton, IScoped
+from ...configuration import ConfigManager
 from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
 from ...configuration.models.database import DatabaseConfig
-from ...configuration import ConfigManager
+from ...dependency.provider.api_provider import ApiProvider
+from ...dependency.scopes import ISingleton, IScoped
 from ...logging.loggers.console.console_logger import ConsoleLogger
 from ...utils import ModuleFinder
+from ...utils import Utils
 
 T = TypeVar('T')
 
@@ -23,7 +22,7 @@ class ServiceProvider:
     """
 
     def __init__(self,
-                 root_directory: str= None,
+                 root_directory: str = None,
                  configurations: [] = None,
                  excluded_modules: [] = None):
         self.root_directory = root_directory
@@ -132,7 +131,7 @@ class ServiceProvider:
                     application_config.hostname is not None and application_config.hostname != '') else ''
             logger.info(f"Application : {application_config.name}{hostname}")
 
-    def initialize_injection(self,initialize_flask):
+    def initialize_injection(self, initialize_flask):
         if self.is_flask_api() and initialize_flask:
 
             application_config: ApplicationConfig = self.config_manager.get(

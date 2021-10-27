@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from queue import Queue
 
-from ....dependency.scopes import IScoped
-
 from pandas import DataFrame
 
+from ....dependency.scopes import IScoped
 
-class FileConnector(ABC,IScoped):
+
+class FileConnector(ABC, IScoped):
     @abstractmethod
     def connect(self):
         pass
@@ -16,7 +16,8 @@ class FileConnector(ABC,IScoped):
         pass
 
     @abstractmethod
-    def get_unpredicted_data(self, file: str, names: [], header: int, separator: str, limit: int, process_count:int, data_queue: Queue, result_queue:Queue):
+    def get_unpredicted_data(self, file: str, names: [], header: int, separator: str, limit: int, process_count: int,
+                             data_queue: Queue, result_queue: Queue):
         pass
 
     @abstractmethod
@@ -25,7 +26,7 @@ class FileConnector(ABC,IScoped):
 
     @abstractmethod
     def get_data(self, file: str, names: [], start: int, limit: int,
-                  header: int, separator: str) -> DataFrame:
+                 header: int, separator: str) -> DataFrame:
         pass
 
     @abstractmethod

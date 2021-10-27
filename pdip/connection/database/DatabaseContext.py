@@ -1,10 +1,9 @@
 import json
-import time
 import re
+import time
+from queue import Queue
 
 import pandas as pd
-
-from queue import Queue
 from injector import inject
 
 from .DatabasePolicy import DatabasePolicy

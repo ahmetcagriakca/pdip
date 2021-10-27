@@ -2,8 +2,9 @@ import json
 import sys
 from unittest import TestCase
 
-from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
+from pdip.base import Pdi
+
 
 class TestBasicApp(TestCase):
     def setUp(self):
@@ -11,7 +12,7 @@ class TestBasicApp(TestCase):
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):
-        if hasattr(self,'pdi') and self.pdi is not None:
+        if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
         modules = [y for y in sys.modules if 'pdip' in y]

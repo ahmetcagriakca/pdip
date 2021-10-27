@@ -1,12 +1,13 @@
 from os import getenv
 from pathlib import Path
+
 from setuptools import setup, find_packages
 
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version= getenv('PYPI_PACKAGE_VERSION', default='0.2.2')
-version= env_version.replace('v','')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.2.2')
+version = env_version.replace('v', '')
 setup(
     name='pdip',
     version=f'{version}',
@@ -18,25 +19,27 @@ setup(
     author='Ahmet Çağrı AKCA',
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',
-    packages=find_packages(exclude=["tests","tests*", "test_*", '__pycache__', '*.__pycache__', '__pycache.*', '*.__pycache__.*']),
+    packages=find_packages(
+        exclude=["tests", "tests*", "test_*", '__pycache__', '*.__pycache__', '__pycache.*', '*.__pycache__.*']),
     zip_safe=False,
-    keywords=['PDI', 'API', 'ETL','PROCESS','MULTIPROCESS','IO','CQRS','MSSQL','ORACLE','POSTGRES','MYSQL','CSV'],
+    keywords=['PDI', 'API', 'ETL', 'PROCESS', 'MULTIPROCESS', 'IO', 'CQRS', 'MSSQL', 'ORACLE', 'POSTGRES', 'MYSQL',
+              'CSV'],
     python_requires='>=3.6, <3.10',
     install_requires=[
-            'injector',
-            'jsonpickle',
-            'PyYAML',
-            'Fernet',
-            'cryptography',
-            'SQLAlchemy',
-            'Flask',
-            'Flask_Cors',
-            'Flask-Injector',
-            'flask-restx',
-            'Werkzeug',
-            'dataclasses',
-            'requests',
-            'pandas'
+        'injector',
+        'jsonpickle',
+        'PyYAML',
+        'Fernet',
+        'cryptography',
+        'SQLAlchemy',
+        'Flask',
+        'Flask_Cors',
+        'Flask-Injector',
+        'flask-restx',
+        'Werkzeug',
+        'dataclasses',
+        'requests',
+        'pandas'
     ],
     classifiers=[
         'Intended Audience :: Developers',

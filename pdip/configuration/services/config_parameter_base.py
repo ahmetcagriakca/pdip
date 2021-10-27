@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from ...data import EntityBase
 
+
 class ConfigParameterBase(EntityBase):
-    
+
     def __init__(self,
                  Name: str = None,
                  Type: str = None,

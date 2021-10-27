@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from queue import Queue
 
-from ....dependency.scopes import IScoped
-
 from pandas import DataFrame
+
+from ....dependency.scopes import IScoped
 
 
 class QueueConnector(ABC, IScoped):
@@ -44,6 +44,5 @@ class QueueConnector(ABC, IScoped):
         pass
 
     @abstractmethod
-    def get_unpredicted_data(self, limit: int, process_count:int, data_queue:Queue, result_queue:Queue) -> DataFrame:
+    def get_unpredicted_data(self, limit: int, process_count: int, data_queue: Queue, result_queue: Queue) -> DataFrame:
         pass
-

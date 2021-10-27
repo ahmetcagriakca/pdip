@@ -1,4 +1,4 @@
-from abc import ABCMeta, ABC, abstractmethod
+from abc import ABCMeta, ABC
 
 
 class BaseConfig(ABC):

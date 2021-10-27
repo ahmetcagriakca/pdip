@@ -1,6 +1,7 @@
 import sys
 from unittest import TestCase
 
+
 class TestConnectionDatabase(TestCase):
     def setUp(self):
         pass

@@ -1,1 +1,1 @@
-from .scopes import IScoped,ISingleton
+from .scopes import IScoped, ISingleton

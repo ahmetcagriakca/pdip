@@ -12,9 +12,9 @@ class EntityBase:
                  IsDeleted: bool = None,
                  Comments: str = None,
                  # RowVersion: bytes = None,
-                 *args,**kwargs
+                 *args, **kwargs
                  ):
-        super().__init__(*args,**kwargs)
+        super().__init__(*args, **kwargs)
         self.Id = Id
         self.CreatedByUserId: int = CreatedByUserId
         self.CreationDate: datetime = CreationDate

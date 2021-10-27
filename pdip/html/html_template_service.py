@@ -4,9 +4,9 @@ from typing import List
 from injector import inject
 from sqlalchemy import text
 
+from ..configuration.models.application import ApplicationConfig
 from ..dependency import IScoped
 from ..json import JsonConvert
-from ..configuration.models.application import ApplicationConfig
 
 
 @JsonConvert.register

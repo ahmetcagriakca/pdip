@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase
 
-from sqlalchemy import MetaData, create_engine, Column, String, Integer, create_mock_engine
+from sqlalchemy import MetaData, create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 Base = declarative_base(metadata=MetaData())

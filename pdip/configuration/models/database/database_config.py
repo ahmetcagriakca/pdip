@@ -17,4 +17,3 @@ class DatabaseConfig(BaseConfig):
     password: str = None
     application_name: str = None
     execution_options: str = None
-

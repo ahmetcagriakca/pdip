@@ -5,6 +5,7 @@ from injector import inject
 from .DatabaseConnector import DatabaseConnector
 from ....configuration.models.database.database_config import DatabaseConfig
 
+
 class PostgreDbConnector(DatabaseConnector):
     @inject
     def __init__(self, database_config: DatabaseConfig):

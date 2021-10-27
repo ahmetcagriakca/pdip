@@ -1,5 +1,4 @@
 import sys
-
 from typing import TypeVar
 
 from flask import Flask
@@ -8,10 +7,10 @@ from flask_restx import Api
 from injector import Injector, Binder
 from werkzeug.utils import redirect
 
-from ...api.base.controller_base import Controller
 from ...api.base import ResourceBase
+from ...api.base.controller_base import Controller
 from ...configuration.models.api import ApiConfig
-from ...configuration.models.application import  ApplicationConfig
+from ...configuration.models.application import ApplicationConfig
 from ...logging.loggers.console.console_logger import ConsoleLogger
 
 T = TypeVar('T')
@@ -86,7 +85,8 @@ class ApiProvider:
 
     def find_resources(self):
         for resource in ResourceBase.__subclasses__():
-            if resource.__module__ in sys.modules and sys.modules[resource.__module__].__file__.startswith(self.application_config.root_directory):
+            if resource.__module__ in sys.modules and sys.modules[resource.__module__].__file__.startswith(
+                    self.application_config.root_directory):
                 namespace = None
                 namespace_name = None
                 route = None
@@ -96,7 +96,7 @@ class ApiProvider:
                     namespace_name = resource.namespace_name
                 if hasattr(resource, 'route'):
                     route = resource.route
-                
+
                 con = Controller(
                     cls=resource,
                     api=self.api,

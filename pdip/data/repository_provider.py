@@ -1,12 +1,12 @@
-from typing import Type, TypeVar, Optional
+from typing import Type, TypeVar
 
 from injector import inject
 from sqlalchemy.orm import Query
 
 from .database_session_manager import DatabaseSessionManager
 from .repository import Repository
-from ..dependency.scopes import IScoped
 from ..configuration.models.database import DatabaseConfig
+from ..dependency.scopes import IScoped
 
 R = TypeVar('R')
 

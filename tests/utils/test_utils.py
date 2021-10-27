@@ -1,14 +1,16 @@
 import os
 import sys
-
-from pdip.utils.module_finder import ModuleFinder
-from typing import List, Union
-from pdip.utils.type_checker import TypeChecker
-from pdip.utils import Utils
+from typing import List
 from unittest import TestCase
+
+from pdip.utils import Utils
+from pdip.utils.module_finder import ModuleFinder
+from pdip.utils.type_checker import TypeChecker
+
 
 class ClassTest:
     pass
+
 
 class TestUtils(TestCase):
     def tearDown(self):
@@ -16,33 +18,27 @@ class TestUtils(TestCase):
         for module in modules:
             del module
         return super().tearDown()
+
     def test_process_info(self):
         assert Utils.get_process_info().startswith('MainProcess')
-
 
     def test_path_split(self):
         path_splitted = Utils.path_split('test/test')
         assert path_splitted == ['test', 'test']
         assert Utils.path_split('test\\test') == ['test', 'test']
 
-
     def test_replace_last(self):
         replaced = Utils.replace_last(
             source_string='TestConfig', replace_what='Config', replace_with='')
         assert replaced == 'Test'
 
-
     def test_to_snake_case(self):
         replaced = Utils.to_snake_case(name='TestConfig')
         assert replaced == 'test_config'
 
-
     def test_get_config_name(self):
         replaced = Utils.get_config_name(class_name='TestConfig')
         assert replaced == 'TEST'
-
-
-
 
     def test_TypeChecker_is_class(self):
         result = TypeChecker().is_class(int)
@@ -50,18 +46,15 @@ class TestUtils(TestCase):
         result = TypeChecker().is_class(ClassTest)
         assert result
 
-
     def test_TypeChecker_is_primitive(self):
         result = TypeChecker().is_primitive(int)
         assert result
         result = TypeChecker().is_primitive(ClassTest)
         assert not result
 
-
     def test_TypeChecker_is_generic(self):
         result = TypeChecker().is_generic(List[int])
         assert result
-
 
     # def test_TypeChecker_is_base_generic():
     #     result = TypeChecker().is_base_generic(Union[str, bytes])

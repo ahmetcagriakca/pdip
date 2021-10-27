@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sqlalchemy import desc
 
-from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
+from pdip.base import Pdi
 from pdip.data import DatabaseSessionManager, RepositoryProvider
 from tests.api.basic_app_with_log.domain.dao import Base
 from tests.api.basic_app_with_log.domain.dao.Log import Log

@@ -2,8 +2,8 @@ import json
 import sys
 from unittest import TestCase
 
-from pdip.base import Pdi
 from pdip.api.app import FlaskAppWrapper
+from pdip.base import Pdi
 from pdip.data import DatabaseSessionManager, RepositoryProvider
 from tests.api.basic_app_with_cqrs.domain import Base
 from tests.api.basic_app_with_cqrs.domain.User import User
@@ -17,7 +17,7 @@ class TestBasicAppWithCqrs(TestCase):
         self.client = self.pdi.get(FlaskAppWrapper).test_client()
 
     def tearDown(self):
-        if hasattr(self,'pdi') and self.pdi is not None:
+        if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
         modules = [y for y in sys.modules if 'pdip' in y]

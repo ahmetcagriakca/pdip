@@ -1,12 +1,13 @@
 from __future__ import absolute_import
+
 from injector import inject
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
+from ..configuration.models.database import DatabaseConfig
 from ..dependency.scopes import IScoped
 from ..utils.utils import Utils
-from ..configuration.models.database import DatabaseConfig
 
 
 class DatabaseSessionManager(IScoped):

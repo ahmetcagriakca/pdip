@@ -3,7 +3,7 @@ import importlib
 import os
 import sys
 
-from . import Utils
+from .utils import Utils
 
 
 class ModuleFinder:

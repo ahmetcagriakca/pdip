@@ -94,7 +94,8 @@ class Endpoint:
 
 def endpoint(api, namespace):
     def decorator(function):
-        function.decorated=True
+        function.decorated = True
+
         def instance() -> Endpoint:
             endpoint_wrapper = EndpointWrapper(api=api)
             _instance = Endpoint(function=function, namespace=namespace, endpoint_wrapper=endpoint_wrapper)

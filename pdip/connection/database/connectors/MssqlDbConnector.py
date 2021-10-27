@@ -1,4 +1,5 @@
 import pyodbc
+
 from .DatabaseConnector import DatabaseConnector
 from ....configuration.models.database.database_config import DatabaseConfig
 
@@ -7,8 +8,8 @@ class MssqlDbConnector(DatabaseConnector):
     def __init__(self, database_config: DatabaseConfig):
         self.database_config: DatabaseConfig = database_config
         # ;Client_CSet=UTF-8;Server_CSet=WINDOWS-1251
-        if self.database_config.connection_string is not None and self.database_config.connection_string !='' and not self.database_config.connection_string.isspace() :
-            self.connection_string =self.database_config.connection_string
+        if self.database_config.connection_string is not None and self.database_config.connection_string != '' and not self.database_config.connection_string.isspace():
+            self.connection_string = self.database_config.connection_string
         else:
             self.database_config.driver = 'ODBC Driver 17 for SQL Server'
             self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (

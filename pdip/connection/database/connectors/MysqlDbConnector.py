@@ -1,5 +1,6 @@
 import mysql.connector
 from injector import inject
+
 from .DatabaseConnector import DatabaseConnector
 from ....configuration.models.database.database_config import DatabaseConfig
 
@@ -12,9 +13,11 @@ class MysqlDbConnector(DatabaseConnector):
         self.cursor = None
 
     def connect(self):
-        self.connection = mysql.connector.connect(user=self.database_config.user, password=self.database_config.password,
-                                           database=self.database_config.database, host=self.database_config.host,
-                                           port=self.database_config.port)
+        self.connection = mysql.connector.connect(user=self.database_config.user,
+                                                  password=self.database_config.password,
+                                                  database=self.database_config.database,
+                                                  host=self.database_config.host,
+                                                  port=self.database_config.port)
         self.cursor = self.connection.cursor()
 
     def disconnect(self):
@@ -39,7 +42,7 @@ class MysqlDbConnector(DatabaseConnector):
         except Exception as error:
             self.connection.rollback()
             self.cursor.close()
-            raise 
+            raise
 
     def get_table_count_query(self, query):
         count_query = f"SELECT COUNT (*)  \"COUNT\" FROM ({query})"

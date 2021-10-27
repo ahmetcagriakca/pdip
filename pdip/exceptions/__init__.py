@@ -1,4 +1,4 @@
 from .incompatible_adapter_exception import IncompatibleAdapterException
-from .not_supported_feature_exception import  NotSupportedFeatureException
+from .not_supported_feature_exception import NotSupportedFeatureException
 from .operational_exception import OperationalException
 from .required_class_exception import RequiredClassException

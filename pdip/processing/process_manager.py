@@ -43,7 +43,7 @@ class ProcessManager:
         # Initiate the worker processes
         for i in range(process_count):
             # Set process name
-            sub_process_id = i+1
+            sub_process_id = i + 1
             # Create the process, and connect it to the worker function
             process = self.__start_process(
                 sub_process_id=sub_process_id,
@@ -82,7 +82,7 @@ class ProcessManager:
                         target_method: any,
                         kwargs: any) -> Process:
         # Create the process, and connect it to the worker function
-        if hasattr(DependencyContainer,'Instance') and DependencyContainer.Instance is not None:
+        if hasattr(DependencyContainer, 'Instance') and DependencyContainer.Instance is not None:
             root_directory = DependencyContainer.Instance.root_directory
             initialize_container = True
         else:

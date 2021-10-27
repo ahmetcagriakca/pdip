@@ -4,4 +4,4 @@ from tests.api.basic_app_with_cqrs.application.GetUser.GetUserDto import GetUser
 
 @responseclass
 class GetUserResponse:
-	Data: GetUserDto = None
+    Data: GetUserDto = None

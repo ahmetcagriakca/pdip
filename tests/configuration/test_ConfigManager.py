@@ -1,7 +1,7 @@
 import os
 import sys
-
 from unittest import TestCase
+
 from pdip.configuration import ConfigManager
 from pdip.configuration.models.application import ApplicationConfig
 from pdip.utils import ModuleFinder

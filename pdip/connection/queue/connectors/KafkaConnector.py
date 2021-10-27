@@ -14,6 +14,8 @@ from ...models.DataQueueTask import DataQueueTask
 
 kafka_logger = logging.getLogger(name="kafka")
 kafka_logger.setLevel(level=logging.WARNING)
+
+
 class KafkaConnector(QueueConnector):
     def __init__(self,
                  servers: List[str],
@@ -85,7 +87,7 @@ class KafkaConnector(QueueConnector):
                                             group_id=group_id,
                                             value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
-    def get_unpredicted_data(self, limit: int, process_count: int , data_queue: Queue, result_queue: Queue) -> DataFrame:
+    def get_unpredicted_data(self, limit: int, process_count: int, data_queue: Queue, result_queue: Queue) -> DataFrame:
         data = []
         total_data_count = 0
         limited_data_count = 0
@@ -112,7 +114,7 @@ class KafkaConnector(QueueConnector):
 
         if data is not None and len(data) > 0:
             task_id = task_id + 1
-            total_data_count=total_data_count+len(data)
+            total_data_count = total_data_count + len(data)
             data_queue_task = DataQueueTask(Id=task_id, Data=data, Start=total_data_count - limited_data_count,
                                             End=total_data_count, Limit=limit, IsFinished=False)
             data_queue.put(data_queue_task)

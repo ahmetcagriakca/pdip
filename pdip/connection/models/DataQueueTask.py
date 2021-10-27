@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class DataQueueTask:
-    Id:int=None
+    Id: int = None
     Data: any = None
-    DataTypes:any=None
-    IsDataFrame:bool=True
+    DataTypes: any = None
+    IsDataFrame: bool = True
     Start: int = None
     End: int = None
     Limit: int = None

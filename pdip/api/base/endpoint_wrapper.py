@@ -1,14 +1,15 @@
 import json
-from datetime import datetime
 import typing
+from datetime import datetime
+
 from flask import request
 from flask_restx import Api, fields, inputs
 from flask_restx.reqparse import RequestParser, Argument
 from injector import inject
 
+from ...api.converter import RequestConverter
 from ...api.request_parameter import OrderByParameter
 from ...api.request_parameter import PagingParameter
-from ...api.converter import RequestConverter
 from ...utils import TypeChecker
 
 T = typing.TypeVar('T')

@@ -2,8 +2,8 @@ import os
 import sys
 
 from .endpoint_base import endpoint
-from ...utils import Utils
 from ...configuration.models.application import ApplicationConfig
+from ...utils import Utils
 
 
 class Controller:

@@ -1,6 +1,6 @@
-from multiprocessing.process import current_process
 import os
 import re
+from multiprocessing.process import current_process
 
 
 class Utils:

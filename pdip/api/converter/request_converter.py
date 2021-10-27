@@ -2,8 +2,8 @@ import inspect
 import json
 from datetime import datetime
 
-from ...utils import TypeChecker
 from ...json import DateTimeEncoder
+from ...utils import TypeChecker
 
 
 class RequestConverter(object):

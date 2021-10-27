@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Generic, List, TypeVar, Optional, Type
+from typing import Generic, List, TypeVar, Type
 
 from injector import inject
 from sqlalchemy.orm import Query
 
 from .database_session_manager import DatabaseSessionManager
-from .entity import Entity
 
 T = TypeVar('T')
 

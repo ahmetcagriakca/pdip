@@ -1,5 +1,6 @@
 import json
 import traceback
+
 from injector import inject
 
 from ...data import RepositoryProvider

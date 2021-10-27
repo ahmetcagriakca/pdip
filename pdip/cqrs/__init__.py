@@ -1,4 +1,4 @@
-from .command_query_base import  CommandQueryBase
+from .command_query_base import CommandQueryBase
 from .command_query_handler_base import CommandQueryHandlerBase
 from .dispatcher import Dispatcher
 from .icommand import ICommand

@@ -14,7 +14,6 @@ class TestProcessManager(TestCase):
             del module
         return super().tearDown()
 
-
     @classmethod
     def process_method(cls, sub_process_id, data):
         print(f"{sub_process_id}-{data}")

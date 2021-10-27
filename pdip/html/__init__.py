@@ -1,1 +1,1 @@
-from .html_template_service import HtmlTemplateService,Pagination
+from .html_template_service import HtmlTemplateService, Pagination

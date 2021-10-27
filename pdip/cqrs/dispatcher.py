@@ -15,7 +15,7 @@ T = TypeVar('T', covariant=True)
 
 class Dispatcher(IScoped):
     @inject
-    def __init__(self,service_provider:ServiceProvider):
+    def __init__(self, service_provider: ServiceProvider):
         self.service_provider = service_provider
 
     def find_handler(self, type, handler_type: Type[T]) -> T:

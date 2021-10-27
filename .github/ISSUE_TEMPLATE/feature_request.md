@@ -1,9 +1,6 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: enhancement
-assignees: ahmetcagriakca
+name: Feature request about: Suggest an idea for this project title: ''
+labels: enhancement assignees: ahmetcagriakca
 
 ---
 

@@ -3,7 +3,6 @@ import os
 from typing import TypeVar, Type
 
 from ..configuration.models.application import ApplicationConfig
-from ..data import DatabaseSessionManager
 from ..dependency.container import DependencyContainer
 
 T = TypeVar('T')
@@ -39,5 +38,5 @@ class Pdi(object):
     def get(self, instance_type: Type[T]) -> T:
         return DependencyContainer.Instance.get(instance_type)
 
-    def set_secret_key(self,key):
+    def set_secret_key(self, key):
         DependencyContainer.Instance.config_manager.set(ApplicationConfig, 'secret_key', key)

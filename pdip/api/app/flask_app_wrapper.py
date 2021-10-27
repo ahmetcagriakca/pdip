@@ -1,15 +1,13 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restx import Api
 from injector import inject
 from werkzeug.exceptions import HTTPException
-from flask_cors import CORS
 
 from ..handlers import ErrorHandlers
 from ..handlers import RequestHandler
-from ...api.base import ResourceBase
 from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
-
 from ...dependency import ISingleton
 from ...exceptions import OperationalException
 

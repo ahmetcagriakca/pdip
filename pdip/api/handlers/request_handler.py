@@ -1,8 +1,8 @@
 from flask import request, Response
 from injector import inject
 
-from ...data import RepositoryProvider
 from ...configuration.models.api import ApiConfig
+from ...data import RepositoryProvider
 from ...dependency import ISingleton
 
 
@@ -11,7 +11,7 @@ class RequestHandler(ISingleton):
     def __init__(self,
                  api_config: ApiConfig,
                  repository_provider: RepositoryProvider
-                 ) :
+                 ):
         self.repository_provider = repository_provider
         self.api_config = api_config
 

@@ -14,8 +14,8 @@ class ConfigService(IScoped):
                  repository_provider: RepositoryProvider
                  ):
         self.repository_provider = repository_provider
-        config_subclasses= ConfigParameterBase.__subclasses__()
-        if  config_subclasses is None or len(config_subclasses)==0:
+        config_subclasses = ConfigParameterBase.__subclasses__()
+        if config_subclasses is None or len(config_subclasses) == 0:
             raise RequiredClassException(f'Requires {ConfigParameterBase.__name__} derived class')
         config_class = config_subclasses[0]
         self.config_reposiotry = repository_provider.get(config_class)

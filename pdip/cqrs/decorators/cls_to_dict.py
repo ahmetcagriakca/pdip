@@ -1,4 +1,5 @@
 import copy
+
 from ...utils.type_checker import TypeChecker
 
 
@@ -11,10 +12,10 @@ def cls_to_dict(cls):
                 if isinstance(attr, list):
                     entities = []
                     for entity in attr:
-                        if(hasattr(entity,'to_dict')):
+                        if (hasattr(entity, 'to_dict')):
                             entities.append(entity.to_dict())
                     _dict[attr_name] = entities
-                elif TypeChecker().is_class(attr.__class__) and hasattr(attr,'to_dict'):
+                elif TypeChecker().is_class(attr.__class__) and hasattr(attr, 'to_dict'):
                     _dict[attr_name] = attr.to_dict()
         return _dict
 
