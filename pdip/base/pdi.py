@@ -21,10 +21,11 @@ class Pdi(object):
         self.excluded_modules = excluded_modules
         self.configurations = configurations
         self.root_directory = root_directory
-        DependencyContainer.initialize_service(root_directory=root_directory,
-                                               configurations=configurations,
-                                               excluded_modules=excluded_modules,
-                                               initialize_flask=initialize_flask)
+        if DependencyContainer.Instance is None:
+            DependencyContainer.initialize_service(root_directory=root_directory,
+                                                   configurations=configurations,
+                                                   excluded_modules=excluded_modules,
+                                                   initialize_flask=initialize_flask)
 
     def cleanup(self):
         DependencyContainer.cleanup()
@@ -39,4 +40,5 @@ class Pdi(object):
         return DependencyContainer.Instance.get(instance_type)
 
     def set_secret_key(self, key):
-        DependencyContainer.Instance.config_manager.set(ApplicationConfig, 'secret_key', key)
+        DependencyContainer.Instance.config_manager.set(
+            ApplicationConfig, 'secret_key', key)

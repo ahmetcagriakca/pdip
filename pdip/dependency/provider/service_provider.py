@@ -8,8 +8,8 @@ from ...configuration import ConfigManager
 from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
 from ...configuration.models.database import DatabaseConfig
+from ...dependency import ISingleton, IScoped
 from ...dependency.provider.api_provider import ApiProvider
-from ...dependency.scopes import ISingleton, IScoped
 from ...logging.loggers.console.console_logger import ConsoleLogger
 from ...utils import ModuleFinder
 from ...utils import Utils
@@ -146,4 +146,4 @@ class ServiceProvider:
 
     def is_flask_api(self):
         api_config: ApiConfig = self.config_manager.get(ApiConfig)
-        return api_config is not None
+        return api_config is not None and api_config.is_debug is not None

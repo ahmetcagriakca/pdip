@@ -3,7 +3,7 @@ from queue import Queue
 
 from pandas import DataFrame
 
-from ....dependency.scopes import IScoped
+from ....dependency import IScoped
 
 
 class QueueConnector(ABC, IScoped):

@@ -7,8 +7,10 @@ from ...utils import TypeChecker
 
 
 class RequestConverter(object):
-    def __init__(self):
+    def __init__(self, cls=None):
         self.mappings = {}
+        if cls is not None:
+            self.register(cls)
 
     def class_mapper(self, d):
         for keys, cls in self.mappings.items():

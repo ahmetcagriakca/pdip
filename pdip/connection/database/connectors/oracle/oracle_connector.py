@@ -1,11 +1,11 @@
 import cx_Oracle
 from injector import inject
 
-from .DatabaseConnector import DatabaseConnector
-from ....configuration.models.database.database_config import DatabaseConfig
+from ...base.database_connector import DatabaseConnector
+from .....configuration.models.database import DatabaseConfig
 
 
-class OracleDbConnector(DatabaseConnector):
+class OracleConnector(DatabaseConnector):
     @inject
     def __init__(self, database_config: DatabaseConfig):
         self.database_config = database_config

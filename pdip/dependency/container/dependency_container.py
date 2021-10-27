@@ -23,3 +23,4 @@ class DependencyContainer:
     def cleanup(cls):
         if hasattr(cls, 'Instance') and cls.Instance is not None:
             del cls.Instance
+            cls.Instance = None

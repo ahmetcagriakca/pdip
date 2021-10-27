@@ -7,8 +7,8 @@ from .icommand import ICommand
 from .icommand_handler import ICommandHandler
 from .iquery import IQuery
 from .iquery_handler import IQueryHandler
+from ..dependency import IScoped
 from ..dependency.provider import ServiceProvider
-from ..dependency.scopes import IScoped
 
 T = TypeVar('T', covariant=True)
 

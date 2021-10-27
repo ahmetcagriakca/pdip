@@ -2,13 +2,13 @@ import os
 
 from injector import inject
 
-from .FileContext import FileContext
-from .connectors.CsvConnector import CsvConnector
-from .connectors.FileConnector import FileConnector
-from ..models.enums import ConnectorTypes
-from ...configuration.models.application import ApplicationConfig
-from ...dependency import IScoped
-from ...logging.loggers.database import SqlLogger
+from .file_connector import FileConnector
+from .file_context import FileContext
+from ..connectors.csv import CsvConnector
+from ...models.enums import ConnectorTypes
+from ....configuration.models.application import ApplicationConfig
+from ....dependency import IScoped
+from ....logging.loggers.database import SqlLogger
 
 
 class FileProvider(IScoped):

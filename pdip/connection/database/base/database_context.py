@@ -6,11 +6,11 @@ from queue import Queue
 import pandas as pd
 from injector import inject
 
-from .DatabasePolicy import DatabasePolicy
-from .connectors.DatabaseConnector import DatabaseConnector
-from ..models.DataQueueTask import DataQueueTask
-from ...dependency.scopes import IScoped
-from ...logging.loggers.console import ConsoleLogger
+from .database_connector import DatabaseConnector
+from .database_policy import DatabasePolicy
+from ...models import DataQueueTask
+from ....dependency import IScoped
+from ....logging.loggers.console import ConsoleLogger
 
 
 class DatabaseContext(IScoped):
@@ -92,9 +92,13 @@ class DatabaseContext(IScoped):
         datas = self.connector.cursor.fetchall()
         return datas[0][0]
 
-    def get_table_data(self, query, first_row, start, end):
-        data_query = self.connector.get_table_data_query(query=query, first_row=first_row, start=start,
-                                                         end=end)
+    def get_table_data(self, query):
+        data_query = self.connector.get_table_data_query(query=query)
+        return self.fetch(data_query)
+
+    def get_table_data_with_paging(self, query, order_row, start, end):
+        data_query = self.connector.get_table_data_with_paging_query(query=query, order_row=order_row, start=start,
+                                                                     end=end)
         return self.fetch(data_query)
 
     def read_data(self, query: str, columns: [], limit: int):

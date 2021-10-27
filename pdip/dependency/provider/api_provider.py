@@ -4,7 +4,7 @@ from typing import TypeVar
 from flask import Flask
 from flask_injector import FlaskInjector, request
 from flask_restx import Api
-from injector import Injector, Binder
+from injector import Injector, Binder,singleton
 from werkzeug.utils import redirect
 
 from ...api.base import ResourceBase
@@ -45,18 +45,20 @@ class ApiProvider:
         if self.app is not None:
             self.binder.bind(
                 interface=Flask,
-                to=self.app
+                to=self.app,
+                scope=singleton
             )
         if self.api is not None:
             self.binder.bind(
                 interface=Api,
-                to=self.api
+                to=self.api,
+                scope=singleton
             )
         for controller in ResourceBase.__subclasses__():
             self.binder.bind(
                 interface=controller,
                 to=controller,
-                scope=request,
+                scope=request
             )
 
     def initialize_flask(self):

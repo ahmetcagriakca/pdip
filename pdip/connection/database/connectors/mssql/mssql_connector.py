@@ -1,10 +1,10 @@
 import pyodbc
 
-from .DatabaseConnector import DatabaseConnector
-from ....configuration.models.database.database_config import DatabaseConfig
+from ...base.database_connector import DatabaseConnector
+from .....configuration.models.database import DatabaseConfig
 
 
-class MssqlDbConnector(DatabaseConnector):
+class MssqlConnector(DatabaseConnector):
     def __init__(self, database_config: DatabaseConfig):
         self.database_config: DatabaseConfig = database_config
         # ;Client_CSet=UTF-8;Server_CSet=WINDOWS-1251

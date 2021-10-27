@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 from ..configuration.models.database import DatabaseConfig
-from ..dependency.scopes import IScoped
+from ..dependency import IScoped
 from ..utils.utils import Utils
 
 

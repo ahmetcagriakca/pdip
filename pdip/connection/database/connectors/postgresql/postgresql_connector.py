@@ -1,11 +1,12 @@
-import mysql.connector
+import psycopg2
+import psycopg2.extras as extras
 from injector import inject
 
-from .DatabaseConnector import DatabaseConnector
-from ....configuration.models.database.database_config import DatabaseConfig
+from ...base.database_connector import DatabaseConnector
+from .....configuration.models.database import DatabaseConfig
 
 
-class MysqlDbConnector(DatabaseConnector):
+class PostgresqlConnector(DatabaseConnector):
     @inject
     def __init__(self, database_config: DatabaseConfig):
         self.database_config = database_config
@@ -13,11 +14,9 @@ class MysqlDbConnector(DatabaseConnector):
         self.cursor = None
 
     def connect(self):
-        self.connection = mysql.connector.connect(user=self.database_config.user,
-                                                  password=self.database_config.password,
-                                                  database=self.database_config.database,
-                                                  host=self.database_config.host,
-                                                  port=self.database_config.port)
+        self.connection = psycopg2.connect(user=self.database_config.user, password=self.database_config.password,
+                                           database=self.database_config.database, host=self.database_config.host,
+                                           port=self.database_config.port)
         self.cursor = self.connection.cursor()
 
     def disconnect(self):
@@ -35,19 +34,18 @@ class MysqlDbConnector(DatabaseConnector):
 
     def execute_many(self, query, data):
         try:
-            self.cursor.prepare(query)
-            self.cursor.executemany(None, data)
+            extras.execute_batch(self.cursor, query, data, 10000)
             self.connection.commit()
             return self.cursor.rowcount
-        except Exception as error:
+        except (Exception, psycopg2.DatabaseError) as error:
             self.connection.rollback()
             self.cursor.close()
             raise
 
     def get_table_count_query(self, query):
-        count_query = f"SELECT COUNT (*)  \"COUNT\" FROM ({query})"
+        count_query = f"SELECT COUNT (*)  as \"COUNT\" FROM ({query})  as count_table"
         return count_query
 
     def get_target_query_indexer(self):
-        indexer = ':{index}'
+        indexer = '%s'
         return indexer

@@ -1,10 +1,10 @@
 from injector import inject
 
-from .DatabaseContext import DatabaseContext
-from .DatabasePolicy import DatabasePolicy
-from ..models.enums import ConnectorTypes
-from ...configuration.models.database import DatabaseConfig
-from ...dependency import IScoped
+from .database_context import DatabaseContext
+from .database_policy import DatabasePolicy
+from ...models.enums import ConnectorTypes
+from ....configuration.models.database import DatabaseConfig
+from ....dependency import IScoped
 
 
 class DatabaseProvider(IScoped):
@@ -23,7 +23,7 @@ class DatabaseProvider(IScoped):
     def get_context(self, connector_type: ConnectorTypes, host, port, user, password,
                     database=None, service_name=None, sid=None) -> DatabaseContext:
         """
-        Creating Database Context
+        Creating Context
         """
         if connector_type == connector_type.ORACLE:
             config = DatabaseConfig(type=connector_type.ORACLE.name, host=host, port=port,

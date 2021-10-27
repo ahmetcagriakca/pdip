@@ -8,8 +8,8 @@ from typing import List
 from injector import inject
 from pandas import DataFrame
 
-from .connectors.FileConnector import FileConnector
-from ...dependency.scopes import IScoped
+from ..base import FileConnector
+from ....dependency import IScoped
 
 
 class FileContext(IScoped):

@@ -2,7 +2,7 @@ from cryptography.fernet import Fernet
 from injector import inject
 
 from ..configuration.models.application import ApplicationConfig
-from ..dependency.scopes import IScoped
+from ..dependency import IScoped
 
 
 class CryptoService(IScoped):

@@ -103,7 +103,8 @@ class ProcessManager:
                                 process_result_queue: Queue, target_method,
                                 kwargs):
         if initialize_container:
-            DependencyContainer.initialize_service(root_directory)
+            DependencyContainer.initialize_service(
+                root_directory=root_directory, initialize_flask=False)
         ProcessManager().__start_process_operation(sub_process_id=sub_process_id,
                                                    process_queue=process_queue,
                                                    process_result_queue=process_result_queue,

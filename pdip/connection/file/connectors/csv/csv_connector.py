@@ -6,8 +6,8 @@ from queue import Queue
 import pandas as pd
 from pandas import DataFrame
 
-from .FileConnector import FileConnector
-from ...models.DataQueueTask import DataQueueTask
+from ...base import FileConnector
+from ....models import DataQueueTask
 
 
 class CsvConnector(FileConnector):

@@ -2,9 +2,9 @@ import importlib
 
 from injector import inject
 
-from .connectors.DatabaseConnector import DatabaseConnector
-from ..models.enums import ConnectorTypes
-from ...configuration.models.database.database_config import DatabaseConfig
+from .database_connector import DatabaseConnector
+from ...models.enums import ConnectorTypes
+from ....configuration.models.database import DatabaseConfig
 
 
 class DatabasePolicy:
@@ -15,13 +15,13 @@ class DatabasePolicy:
         self.connector_name = None
         database_connector_base_module = "pdip.connection.database.connectors"
         if database_config.type == ConnectorTypes.MSSQL.name:
-            connector_name = "MssqlDbConnector"
+            connector_name = "mssql.MssqlConnector"
         elif database_config.type == ConnectorTypes.ORACLE.name:
-            connector_name = "OracleDbConnector"
+            connector_name = "oracle.OracleConnector"
         elif database_config.type == ConnectorTypes.POSTGRESQL.name:
-            connector_name = "PostgreDbConnector"
+            connector_name = "postgresql.PostgresqlConnector"
         elif database_config.type == ConnectorTypes.MYSQL.name:
-            connector_name = "MssqlDbConnector"
+            connector_name = "mysql.MysqlConnector"
         else:
             raise Exception("Connector type not found")
         module = importlib.import_module(".".join([database_connector_base_module, connector_name]))

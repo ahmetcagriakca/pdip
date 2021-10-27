@@ -140,7 +140,7 @@ class {query_name}Response:
         content = ''
         content += 'from injector import inject\n'
         content += 'from sqlalchemy.orm import Query\n'
-        content += 'from infrastructure.dependency.scopes import IScoped\n'
+        content += 'from infrastructure.dependency import IScoped\n'
         content += 'from infrastructure.data.RepositoryProvider import RepositoryProvider\n'
         content += f'{dao.namespace}\n'
 
@@ -243,7 +243,7 @@ from injector import inject
 {response_namespace}
 {specifications_namespace}
 from infrastructure.cqrs.IQueryHandler import IQueryHandler
-from infrastructure.dependency.scopes import IScoped
+from infrastructure.dependency import IScoped
 
 
 class {query_name}QueryHandler(IQueryHandler[{query_name}Query], IScoped):

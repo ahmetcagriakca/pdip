@@ -1,10 +1,10 @@
 from injector import inject
 
-from .QueueContext import QueueContext
-from .connectors.KafkaConnector import KafkaConnector
-from .connectors.QueueConnector import QueueConnector
-from ..models.enums import ConnectorTypes
-from ...dependency import IScoped
+from .queue_connector import QueueConnector
+from .queue_context import QueueContext
+from ..connectors import KafkaConnector
+from ...models.enums import ConnectorTypes
+from ....dependency import IScoped
 
 
 class QueueProvider(IScoped):
