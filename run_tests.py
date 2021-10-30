@@ -1,3 +1,5 @@
+import os.path
+import sys
 from os import path
 from traceback import format_exc
 from unittest import TestCase
@@ -5,6 +7,7 @@ from unittest.loader import defaultTestLoader, makeSuite
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
+from pdip.dependency.container import DependencyContainer
 from pdip.logging.loggers.console import ConsoleLogger
 from pdip.utils import ModuleFinder
 
@@ -20,8 +23,9 @@ if __name__ == "__main__":
             self.print_results(test_results)
 
         def find_test_modules(self):
-            module_finder = ModuleFinder(root_directory=self.root_directory)
-            module_finder.find_all_modules(folder='tests')
+            module_finder = ModuleFinder(root_directory=self.root_directory,initialize=False)
+            folder=os.path.join(self.root_directory,'tests/unittests')
+            module_finder.find_all_modules(folder=folder)
             test_modules = []
             for module in module_finder.modules:
                 if module["module_name"].startswith('test_') and module["module_address"].startswith('tests'):
@@ -32,6 +36,10 @@ if __name__ == "__main__":
             results = []
             for t in test_modules:
                 suite = TestSuite()
+                if DependencyContainer.Instance is not None:
+                    DependencyContainer.cleanup()
+
+
                 try:
                     # If the module defines a suite() function, call it to get the suite.
                     mod = __import__(t["module_address"], globals(), locals(), ['suite'])
@@ -57,6 +65,13 @@ if __name__ == "__main__":
                 self.print_results(results=[result])
                 self.logger.debug(f"{t['module_address']} tests finished".center(len(header_string) + 2, '-'))
                 self.logger.debug("-" * (len(header_string) + 2))
+
+                modules = [y for y in sys.modules if 'pdip' in y]
+                for module in modules:
+                    del module
+                modules = [y for y in sys.modules if 'tests.unittests' in y]
+                for module in modules:
+                    del module
             return results
 
         def print_results(self, results):

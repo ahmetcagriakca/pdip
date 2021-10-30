@@ -14,9 +14,6 @@ class ClassTest:
 
 class TestUtils(TestCase):
     def tearDown(self):
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     def test_process_info(self):

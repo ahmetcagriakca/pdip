@@ -22,9 +22,8 @@ class TestConfigManager(TestCase):
         if hasattr(self, 'module_finder') and self.module_finder is not None:
             self.module_finder.cleanup()
             del self.module_finder
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
+
+        os.environ["PYTHON_ENVIRONMENT"] = ""
         return super().tearDown()
 
     def test_FindConfiguration(self):

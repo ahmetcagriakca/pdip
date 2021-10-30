@@ -8,16 +8,17 @@ from pdip.base import Pdi
 
 class TestBasicAppWithError(TestCase):
     def setUp(self):
-        self.pdi = Pdi()
-        self.client = self.pdi.get(FlaskAppWrapper).test_client()
+        try:
+            self.pdi = Pdi()
+            self.client = self.pdi.get(FlaskAppWrapper).test_client()
+        except:
+            self.tearDown()
+            raise
 
     def tearDown(self):
         if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     def print_error_detail(self, data):

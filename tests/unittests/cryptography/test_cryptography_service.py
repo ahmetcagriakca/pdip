@@ -14,9 +14,9 @@ class TestCryptographyService(TestCase):
         self.crypto_service = self.pdi.get(CryptoService)
 
     def tearDown(self):
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
+        if hasattr(self, 'pdi') and self.pdi is not None:
+            self.pdi.cleanup()
+            del self.pdi
         return super().tearDown()
 
     def generate_key(self, binder: Binder):

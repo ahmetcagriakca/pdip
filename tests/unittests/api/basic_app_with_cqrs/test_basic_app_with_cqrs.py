@@ -11,18 +11,19 @@ from tests.unittests.api.basic_app_with_cqrs.domain.User import User
 
 class TestBasicAppWithCqrs(TestCase):
     def setUp(self):
-        self.pdi = Pdi()
-        engine = self.pdi.get(DatabaseSessionManager).engine
-        Base.metadata.create_all(engine)
-        self.client = self.pdi.get(FlaskAppWrapper).test_client()
+        try:
+            self.pdi = Pdi()
+            engine = self.pdi.get(DatabaseSessionManager).engine
+            Base.metadata.create_all(engine)
+            self.client = self.pdi.get(FlaskAppWrapper).test_client()
+        except:
+            self.tearDown()
+            raise
 
     def tearDown(self):
         if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     def create_user(self, create_user_request):

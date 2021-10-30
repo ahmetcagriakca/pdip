@@ -7,13 +7,14 @@ from .utils import Utils
 
 
 class ModuleFinder:
-    def __init__(self, root_directory: str):
+    def __init__(self, root_directory: str,initialize:bool=True):
         self.root_directory = root_directory
         self.running_directory = os.getcwd()
         self.modules = []
         self.get_indexes = lambda module_name, modules: [i for (module, i) in zip(modules, range(len(modules))) if
                                                          module["module_name"] == module_name]
-        self.find_all_modules(self.root_directory)
+        if initialize:
+            self.find_all_modules(self.root_directory)
 
     def get_file_name(self, file):
         file_splits = Utils.path_split(file)

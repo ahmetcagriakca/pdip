@@ -20,9 +20,6 @@ class User(Base):
 
 class TestDbModel(TestCase):
     def tearDown(self):
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     def test_model(self):

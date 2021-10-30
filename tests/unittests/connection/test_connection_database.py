@@ -7,9 +7,6 @@ class TestConnectionDatabase(TestCase):
         pass
 
     def tearDown(self):
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     # def test_database_context_postgres_connect(self):

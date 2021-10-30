@@ -28,8 +28,8 @@ class Pdi(object):
                                                    initialize_flask=initialize_flask)
 
     def cleanup(self):
-        DependencyContainer.cleanup()
-        # del DependencyContainer
+        if DependencyContainer is not None:
+            DependencyContainer.cleanup()
 
     def get_root_directory(self, stack):
         file_path = stack[1].filename

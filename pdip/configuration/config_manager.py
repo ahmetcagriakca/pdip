@@ -37,7 +37,7 @@ class ConfigManager:
 
         environment = os.getenv('PYTHON_ENVIRONMENT', None)
         config_name = "application.yml"
-        if environment is not None:
+        if environment is not None and environment != '':
             config_name_split = "application.yml".split('.')
             config_name = f'{config_name_split[0]}.{environment}.{config_name_split[1]}'
         config_path = os.path.join(root_directory, config_name)
