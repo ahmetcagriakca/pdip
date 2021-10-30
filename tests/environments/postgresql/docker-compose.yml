@@ -1,0 +1,17 @@
+
+version: "3.8"
+
+services:
+  postgresql:
+    restart: always
+    image: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      - DEBUG=false
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=pdi
+      - PG_TRUST_LOCALNET=true
+    volumes:
+      - /var/lib/pdipostgresql/data

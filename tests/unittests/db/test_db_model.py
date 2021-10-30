@@ -37,20 +37,3 @@ class TestDbModel(TestCase):
         result = session.query(User).filter_by(Name='User').first()
         assert result is not None
         assert result.Name == 'User'
-
-    # def test_mock_model(self):
-    #     def dump(sql, *multiparams, **params):
-    #         print(sql.compile(dialect=engine.dialect))
-    #
-    #     # engine = create_engine('postgresql://', execution_options={"schema_translate_map": {"Common": None}},
-    #     #                        strategy='mock', executor=dump)
-    #     engine = create_mock_engine('postgresql://',  dump, execution_options={"schema_translate_map": {"Common": None}})
-    #     session_factory = sessionmaker(bind=engine)
-    #     session: Session = session_factory()
-    #
-    #     Base.metadata.create_all(engine, checkfirst=False)
-    #     session.add(User(Name='User'))
-    #     # session.commit()
-    #     result = session.query(User).filter_by(Name='User').first()
-    #     assert result is not None
-    #     assert result.Name == 'User'

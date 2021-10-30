@@ -1,0 +1,23 @@
+version: "2.1"
+
+services:
+  oracle-se:
+    image: daggerok/oracle:se
+    shm_size: 1g
+    environment:
+      ORACLE_SID: xe
+      ORACLE_PWD: password
+    ports:
+    - "1521:1521"
+    - "5500:5500"
+    volumes:
+    - "oracle-se2-data:/opt/oracle/oradata"
+    networks: [backing-services]
+    restart: unless-stopped
+
+volumes:
+  oracle-se2-data: {}
+
+networks:
+  backing-services:
+    driver: bridge
