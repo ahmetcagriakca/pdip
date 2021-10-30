@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: Setup ${{ matrix.pypy }} ${{ matrix.os }}
+    name: Setup ${{ matrix.python }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

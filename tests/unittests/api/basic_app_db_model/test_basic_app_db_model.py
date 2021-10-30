@@ -24,6 +24,9 @@ class TestBasicAppDbModel(TestCase):
         if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
+        modules = [y for y in sys.modules if 'pdip' in y]
+        for module in modules:
+            del module
         return super().tearDown()
 
     def test_user_model_api(self):
