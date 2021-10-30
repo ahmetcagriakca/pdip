@@ -19,7 +19,11 @@ if __name__ == "__main__":
         def run(self):
             all_test_modules = self.find_test_modules()
             test_results = self.run_all_tests(all_test_modules)
-            self.print_results(test_results)
+            total=self.print_results(test_results)
+
+
+            if total["runs"]!=total["successes"]:
+                raise Exception("Tests getting error")
 
         def find_test_modules(self):
             module_finder = ModuleFinder(root_directory=self.root_directory,initialize=False)
@@ -56,7 +60,7 @@ if __name__ == "__main__":
                     trace = format_exc()
                     self.logger.debug(trace)
                     suite.addTest(defaultTestLoader.loadTestsFromName(t["module_name"]))
-                header_string = f'{"Case":100}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
+                header_string = f'{"Case":80}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
                 self.logger.debug(f"{t['module_address']} tests started".center(len(header_string) + 2, '-'))
 
                 test_result = TextTestRunner().run(suite)
@@ -76,7 +80,7 @@ if __name__ == "__main__":
             return results
 
         def print_results(self, results):
-            header_string = f'|{"Case":100}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
+            header_string = f'|{"Case":80}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
             self.logger.debug("-" * len(header_string))
             self.logger.debug(header_string)
             self.logger.debug("-" * len(header_string))
@@ -96,11 +100,13 @@ if __name__ == "__main__":
                 total["successes"] += successes
                 total["errors"] += errors
                 total["failures"] += failures
-                result_string = f'|{result["test_namespace"]:100}|{runs:10}|{successes:10}|{errors:10}|{failures:10}|'
+                result_string = f'|{result["test_namespace"]:80}|{runs:10}|{successes:10}|{errors:10}|{failures:10}|'
                 self.logger.debug(result_string)
-            total_string = f'|{"Total":100}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
+
+            total_string = f'|{"Total":80}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
             self.logger.debug(total_string)
             self.logger.debug("-" * len(header_string))
+            return total
 
 
     TestRunner().run()
