@@ -282,17 +282,6 @@ ul.breadcrumb li a:hover {
         body_content = f'''
 
                 <div class="wrapper">
-
-                    <div class="crumb">
-                        <ul class="breadcrumb">
-                          <li><a href="/Home">Home</a></li>
-                          <li><a href="/Connection">Connections</a></li>
-                          <li><a href="/DataOperation">DataOperations</a></li>
-                          <li><a href="/DataOperation/Job">Jobs</a></li>
-                          <li><a href="/DataOperation/Job/Execution">Executions</a></li>
-                          <li><a href="/documentation">Documentation (Swagger UI)</a></li>
-                        </ul>
-                    </div>
                     {content}
                 </div>
                 '''
