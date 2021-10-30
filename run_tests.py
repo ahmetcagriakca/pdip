@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     trace = format_exc()
                     self.logger.debug(trace)
                     suite.addTest(defaultTestLoader.loadTestsFromName(t["module_name"]))
-                header_string = f'{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
+                header_string = f'{"Case":100}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
                 self.logger.debug(f"{t['module_address']} tests started".center(len(header_string) + 2, '-'))
 
                 test_result = TextTestRunner().run(suite)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             return results
 
         def print_results(self, results):
-            header_string = f'|{"Case":75}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
+            header_string = f'|{"Case":100}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}|'
             self.logger.debug("-" * len(header_string))
             self.logger.debug(header_string)
             self.logger.debug("-" * len(header_string))
@@ -80,9 +80,9 @@ if __name__ == "__main__":
                 total["successes"] += successes
                 total["errors"] += errors
                 total["failures"] += failures
-                result_string = f'|{result["test_namespace"]:75}|{runs:10}|{successes:10}|{errors:10}|{failures:10}|'
+                result_string = f'|{result["test_namespace"]:100}|{runs:10}|{successes:10}|{errors:10}|{failures:10}|'
                 self.logger.debug(result_string)
-            total_string = f'|{"Total":75}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
+            total_string = f'|{"Total":100}|{total["runs"]:10}|{total["successes"]:10}|{total["errors"]:10}|{total["failures"]:10}|'
             self.logger.debug(total_string)
             self.logger.debug("-" * len(header_string))
 

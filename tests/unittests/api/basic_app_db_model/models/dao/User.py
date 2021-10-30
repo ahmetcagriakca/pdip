@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 
 from pdip.data import Entity
-from tests.api.basic_app_db_model.models.dao import Base
+from tests.unittests.api.basic_app_db_model.models.dao import Base
 
 
 class User(Entity, Base):

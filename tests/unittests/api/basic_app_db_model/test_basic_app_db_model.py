@@ -5,8 +5,8 @@ from unittest import TestCase
 from pdip.api.app import FlaskAppWrapper
 from pdip.base import Pdi
 from pdip.data import DatabaseSessionManager, RepositoryProvider
-from tests.api.basic_app_db_model.models.dao import Base
-from tests.api.basic_app_db_model.models.dao.User import User
+from tests.unittests.api.basic_app_db_model.models.dao import Base
+from tests.unittests.api.basic_app_db_model.models.dao.User import User
 
 
 class TestBasicAppDbModel(TestCase):

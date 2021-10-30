@@ -7,8 +7,8 @@ from sqlalchemy import desc
 from pdip.api.app import FlaskAppWrapper
 from pdip.base import Pdi
 from pdip.data import DatabaseSessionManager, RepositoryProvider
-from tests.api.basic_app_with_log.domain.dao import Base
-from tests.api.basic_app_with_log.domain.dao.Log import Log
+from tests.unittests.api.basic_app_with_log.domain.dao import Base
+from tests.unittests.api.basic_app_with_log.domain.dao.Log import Log
 
 
 class TestBasicAppWithLog(TestCase):

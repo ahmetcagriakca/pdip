@@ -2,11 +2,11 @@ from injector import inject
 
 from pdip.api.base import ResourceBase
 from pdip.cqrs import Dispatcher
-from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
-from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserRequest import CreateUserRequest
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserRequest import GetUserRequest
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserResponse import GetUserResponse
+from tests.unittests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
+from tests.unittests.api.basic_app_with_cqrs.application.CreateUser.CreateUserRequest import CreateUserRequest
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserRequest import GetUserRequest
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserResponse import GetUserResponse
 
 
 class UserCqrsResource(ResourceBase):

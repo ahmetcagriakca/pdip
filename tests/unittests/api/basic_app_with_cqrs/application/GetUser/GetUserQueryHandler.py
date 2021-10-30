@@ -2,10 +2,10 @@ from injector import inject
 
 from pdip.cqrs import IQueryHandler
 from pdip.dependency import IScoped
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserMapping import GetUserMapping
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserResponse import GetUserResponse
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserSpecifications import GetUserSpecifications
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserMapping import GetUserMapping
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserResponse import GetUserResponse
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserSpecifications import GetUserSpecifications
 
 
 class GetUserQueryHandler(IQueryHandler[GetUserQuery], IScoped):

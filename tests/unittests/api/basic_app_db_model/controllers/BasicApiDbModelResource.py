@@ -2,7 +2,7 @@ from injector import inject
 
 from pdip.api.base import ResourceBase
 from pdip.data import RepositoryProvider
-from tests.api.basic_app_db_model.models.dao.User import User
+from tests.unittests.api.basic_app_db_model.models.dao.User import User
 
 
 class BasicApiDbModelResource(ResourceBase):

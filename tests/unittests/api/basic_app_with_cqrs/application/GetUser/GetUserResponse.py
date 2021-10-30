@@ -1,5 +1,5 @@
 from pdip.cqrs.decorators import responseclass
-from tests.api.basic_app_with_cqrs.application.GetUser.GetUserDto import GetUserDto
+from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserDto import GetUserDto
 
 
 @responseclass

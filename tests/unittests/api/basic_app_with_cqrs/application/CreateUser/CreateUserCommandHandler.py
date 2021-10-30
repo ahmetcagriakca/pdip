@@ -3,8 +3,8 @@ from injector import inject
 from pdip.cqrs import Dispatcher
 from pdip.cqrs import ICommandHandler
 from pdip.data import RepositoryProvider
-from tests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
-from tests.api.basic_app_with_cqrs.domain.User import User
+from tests.unittests.api.basic_app_with_cqrs.application.CreateUser.CreateUserCommand import CreateUserCommand
+from tests.unittests.api.basic_app_with_cqrs.domain.User import User
 
 
 class CreateUserCommandHandler(ICommandHandler[CreateUserCommand]):

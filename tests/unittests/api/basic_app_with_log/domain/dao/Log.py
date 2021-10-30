@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 
 from pdip.data.entity import Entity
 from pdip.logging.models.log_data import LogData
-from tests.api.basic_app_with_log.domain.dao import Base
+from tests.unittests.api.basic_app_with_log.domain.dao import Base
 
 
 class Log(LogData, Entity, Base):
