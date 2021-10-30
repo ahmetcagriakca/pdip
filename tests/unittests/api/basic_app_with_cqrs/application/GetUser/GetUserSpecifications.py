@@ -4,7 +4,7 @@ from sqlalchemy.orm import Query
 from pdip.data import RepositoryProvider
 from pdip.dependency import IScoped
 from tests.unittests.api.basic_app_with_cqrs.application.GetUser.GetUserQuery import GetUserQuery
-from tests.unittests.api.basic_app_with_cqrs.domain.User import User
+from tests.unittests.api.basic_app_with_cqrs.domain.user.User import User
 
 
 class GetUserSpecifications(IScoped):

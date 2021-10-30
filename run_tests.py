@@ -7,7 +7,6 @@ from unittest.loader import defaultTestLoader, makeSuite
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
-from pdip.dependency.container import DependencyContainer
 from pdip.logging.loggers.console import ConsoleLogger
 from pdip.utils import ModuleFinder
 
@@ -36,13 +35,15 @@ if __name__ == "__main__":
             results = []
             for t in test_modules:
                 suite = TestSuite()
-                if DependencyContainer.Instance is not None:
-                    DependencyContainer.cleanup()
-
-
                 try:
                     # If the module defines a suite() function, call it to get the suite.
-                    mod = __import__(t["module_address"], globals(), locals(), ['suite'])
+
+
+                    try:
+                        mod = __import__(t["module_address"], globals(), locals(), ['suite'])
+                    except KeyError:
+                        self.logger.debug("!!!!Module Address : "+ t["module_address"])
+                        pass
                     module = None
                     for c in TestCase.__subclasses__():
                         if c.__module__.startswith(t["module_address"]):
