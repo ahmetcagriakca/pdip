@@ -11,7 +11,8 @@ class MssqlConnector(DatabaseConnector):
         if self.database_config.connection_string is not None and self.database_config.connection_string != '' and not self.database_config.connection_string.isspace():
             self.connection_string = self.database_config.connection_string
         else:
-            self.database_config.driver = 'ODBC Driver 17 for SQL Server'
+            if self.database_config.driver is None or  self.database_config.driver=='':
+                self.database_config.driver = pyodbc.drivers()[0]
             self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
                 self.database_config.driver, self.database_config.host, self.database_config.database,
                 self.database_config.user, self.database_config.password)
