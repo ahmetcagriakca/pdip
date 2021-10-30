@@ -29,15 +29,15 @@ class TestBasicAppDbModel(TestCase):
             del module
         return super().tearDown()
 
-    def test_user_model_api(self):
-        response = self.client.get(
-            'api/BasicApiDbModel?name=TestUser',
-            content_type='application/json',
-        )
-        assert response.status_code == 200
-        response_data = response.get_data(as_text=True)
-        json_data = json.loads(response_data)
-        assert json_data['Result'] == 'user:TestUser'
+    # def test_user_model_api(self):
+    #     response = self.client.get(
+    #         'api/BasicApiDbModel?name=TestUser',
+    #         content_type='application/json',
+    #     )
+    #     assert response.status_code == 200
+    #     response_data = response.get_data(as_text=True)
+    #     json_data = json.loads(response_data)
+    #     assert json_data['Result'] == 'user:TestUser'
 
     def test_check_user_model(self):
         name = 'test'
