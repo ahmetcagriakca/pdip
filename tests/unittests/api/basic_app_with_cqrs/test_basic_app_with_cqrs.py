@@ -24,9 +24,6 @@ class TestBasicAppWithCqrs(TestCase):
         if hasattr(self, 'pdi') and self.pdi is not None:
             self.pdi.cleanup()
             del self.pdi
-        modules = [y for y in sys.modules if 'pdip' in y]
-        for module in modules:
-            del module
         return super().tearDown()
 
     def create_user(self, create_user_request):
