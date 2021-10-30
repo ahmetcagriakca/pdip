@@ -71,12 +71,6 @@ if __name__ == "__main__":
                 self.logger.debug(f"{t['module_address']} tests finished".center(len(header_string) + 2, '-'))
                 self.logger.debug("-" * (len(header_string) + 2))
 
-                modules = [y for y in sys.modules if 'pdip' in y]
-                for module in modules:
-                    del module
-                modules = [y for y in sys.modules if 'tests.unittests' in y]
-                for module in modules:
-                    del module
             return results
 
         def print_results(self, results):
