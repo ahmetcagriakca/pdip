@@ -66,21 +66,9 @@ node_modules
 # pyenv
 .python-version
 
-# Jet Brains
 .idea
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-Training
-Blog
-About
-Loading complete
+
 *.db
 .pypirc
 *.py,cover
-readme.install.md
+*.log.md
