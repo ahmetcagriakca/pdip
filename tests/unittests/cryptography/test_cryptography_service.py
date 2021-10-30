@@ -10,8 +10,11 @@ from pdip.cryptography import CryptoService
 
 class TestCryptographyService(TestCase):
     def setUp(self):
-        self.pdi = Pdi(configurations=[self.generate_key])
-        self.crypto_service = self.pdi.get(CryptoService)
+        try:
+            self.pdi = Pdi(configurations=[self.generate_key])
+        except:
+            self.tearDown()
+            raise
 
     def tearDown(self):
         if hasattr(self, 'pdi') and self.pdi is not None:
@@ -27,6 +30,7 @@ class TestCryptographyService(TestCase):
 
     def test_cryptography(self):
         test_data = 'data'
-        encrypted_data = self.crypto_service.encrypt(data=test_data)
-        decrypted_data = self.crypto_service.decrypt(data=encrypted_data)
+        crypto_service = self.pdi.get(CryptoService)
+        encrypted_data = crypto_service.encrypt(data=test_data)
+        decrypted_data = crypto_service.decrypt(data=encrypted_data)
         assert test_data == decrypted_data

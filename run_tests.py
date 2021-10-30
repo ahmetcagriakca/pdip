@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         def find_test_modules(self):
             module_finder = ModuleFinder(root_directory=self.root_directory,initialize=False)
-            folder=os.path.join(self.root_directory,'tests/unittests')
+            folder=os.path.join(self.root_directory,'tests','unittests')
             module_finder.find_all_modules(folder=folder)
             test_modules = []
             for module in module_finder.modules:
