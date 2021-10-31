@@ -25,5 +25,6 @@ coverage run -a --source=pdip run_tests.py
 
 coverage run -a --source=pdip run_tests.py
 <!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.processing' -t '.' -->
+<!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests' -t '.' -->
 coverage report -m --omit="*/tests/*,*/site-packages/*"
 coverage html --omit="*/tests/*,*/site-packages/*"
