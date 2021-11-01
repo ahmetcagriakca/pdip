@@ -5,7 +5,7 @@ from ...base.database_connector import DatabaseConnector
 from .....configuration.models.database import DatabaseConfig
 
 
-class MysqlDbConnector(DatabaseConnector):
+class MysqlConnector(DatabaseConnector):
     @inject
     def __init__(self, database_config: DatabaseConfig):
         self.database_config = database_config
@@ -13,7 +13,7 @@ class MysqlDbConnector(DatabaseConnector):
         self.cursor = None
 
     def connect(self):
-        self.connection = mysql.connector.connect(user=self.database_config.username,
+        self.connection = mysql.connector.connect(user=self.database_config.user,
                                                   password=self.database_config.password,
                                                   database=self.database_config.database,
                                                   host=self.database_config.host,

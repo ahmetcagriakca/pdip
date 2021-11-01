@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from injector import inject
 from sqlalchemy import create_engine, pool
+from sqlalchemy.future import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
@@ -15,8 +16,8 @@ class DatabaseSessionManager(IScoped):
     def __init__(self,
                  database_config: DatabaseConfig):
         self.database_config = database_config
-        self.engine = None
-        self._SessionFactory = None
+        self.engine: Engine = None
+        self._SessionFactory: sessionmaker = None
         self.session: Session = None
         self.connect()
 
