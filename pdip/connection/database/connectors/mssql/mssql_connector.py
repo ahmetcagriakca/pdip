@@ -11,12 +11,12 @@ class MssqlConnector(DatabaseConnector):
         if self.database_config.connection_string is not None and self.database_config.connection_string != '' and not self.database_config.connection_string.isspace():
             self.connection_string = self.database_config.connection_string
         else:
-            if self.database_config.driver is None or  self.database_config.driver=='':
-                self.database_config.driver = pyodbc.drivers()[0]
+            if self.database_config.driver is None or self.database_config.driver == '':
+                self.database_config.driver = self.find_driver_name()
+
             self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
                 self.database_config.driver, self.database_config.host, self.database_config.database,
                 self.database_config.user, self.database_config.password)
-
         self.connection = None
         self.cursor = None
 
@@ -35,6 +35,22 @@ class MssqlConnector(DatabaseConnector):
                 self.connection.close()
         except Exception:
             pass
+
+    def find_driver_name(self):
+        drivers = pyodbc.drivers()
+        driver_name = None
+        driver_names = [x for x in drivers if 'for SQL Server' in x]
+        if driver_names:
+            driver_name = list(reversed(driver_names))[0]
+        else:
+
+            driver_names = [
+                x for x in drivers if 'SQL Server' in x or 'FreeTDS' in x]
+            if driver_names:
+                driver_name = list(reversed(driver_names))[0]
+            else:
+                driver_name = drivers[0]
+        return driver_name
 
     def get_connection(self):
         return self.connection
