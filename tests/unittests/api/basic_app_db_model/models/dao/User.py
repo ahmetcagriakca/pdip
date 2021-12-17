@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String
 
-from pdip.data import Entity
+from pdip.data.models import Entity
 from tests.unittests.api.basic_app_db_model.models.dao import Base
 
 

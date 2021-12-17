@@ -8,26 +8,29 @@ from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
 from pdip.logging.loggers.console import ConsoleLogger
-from pdip.utils import ModuleFinder
+from pdip.utils import ModuleFinder, Utils
 
 if __name__ == "__main__":
     class TestRunner:
-        def __init__(self):
-            self.root_directory = path.abspath(path.join(path.dirname(path.abspath(__file__))))
+        def __init__(self, test_folder):
+            self.root_directory = path.abspath(
+                path.join(path.dirname(path.abspath(__file__))))
             self.logger = ConsoleLogger()
+            self.test_folder = test_folder
 
         def run(self):
             all_test_modules = self.find_test_modules()
             test_results = self.run_all_tests(all_test_modules)
-            total=self.print_results(test_results)
-
+            total = self.print_results(test_results)
 
             # if total["runs"]!=total["successes"]:
             #     raise Exception("Tests getting error")
 
         def find_test_modules(self):
-            module_finder = ModuleFinder(root_directory=self.root_directory,initialize=False)
-            folder=os.path.join(self.root_directory,'tests','unittests')
+            module_finder = ModuleFinder(
+                root_directory=self.root_directory, initialize=False)
+            folder = os.path.join(self.root_directory,
+                                  'tests', self.test_folder)
             module_finder.find_all_modules(folder=folder)
             test_modules = []
             for module in module_finder.modules:
@@ -41,9 +44,11 @@ if __name__ == "__main__":
                 suite = TestSuite()
                 try:
                     try:
-                        mod = __import__(t["module_address"], globals(), locals(), ['suite'])
+                        mod = __import__(t["module_address"],
+                                         globals(), locals(), ['suite'])
                     except KeyError:
-                        self.logger.debug("!!!!Module Address : "+ t["module_address"])
+                        self.logger.debug(
+                            "!!!!Module Address : " + t["module_address"])
                         pass
                     module = None
                     for c in TestCase.__subclasses__():
@@ -56,16 +61,20 @@ if __name__ == "__main__":
                     # else, just load all the test cases from the module.
                     trace = format_exc()
                     self.logger.debug(trace)
-                    suite.addTest(defaultTestLoader.loadTestsFromName(t["module_name"]))
+                    suite.addTest(
+                        defaultTestLoader.loadTestsFromName(t["module_name"]))
                 header_string = f'{"Case":80}|{"Runs".center(10)}|{"Success".center(10)}|{"Errors".center(10)}|{"Failures".center(10)}'
-                self.logger.debug(f"{t['module_address']} tests started".center(len(header_string) + 2, '-'))
+                self.logger.debug(f"{t['module_address']} tests started".center(
+                    len(header_string) + 2, '-'))
 
                 test_result = TextTestRunner().run(suite)
-                result = {"test_namespace": t["module_address"], "result": test_result}
+                result = {
+                    "test_namespace": t["module_address"], "result": test_result}
 
                 results.append(result)
                 self.print_results(results=[result])
-                self.logger.debug(f"{t['module_address']} tests finished".center(len(header_string) + 2, '-'))
+                self.logger.debug(f"{t['module_address']} tests finished".center(
+                    len(header_string) + 2, '-'))
                 self.logger.debug("-" * (len(header_string) + 2))
 
                 modules = [y for y in sys.modules if 'pdip' in y]
@@ -105,5 +114,5 @@ if __name__ == "__main__":
             self.logger.debug("-" * len(header_string))
             return total
 
-
-    TestRunner().run()
+    TestRunner('unittests').run()
+    #TestRunner('integrationtests').run()

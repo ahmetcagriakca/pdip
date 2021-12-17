@@ -3,7 +3,7 @@ import traceback
 
 from injector import inject
 
-from ...data import RepositoryProvider
+from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
 from ...logging.loggers.database import SqlLogger
 

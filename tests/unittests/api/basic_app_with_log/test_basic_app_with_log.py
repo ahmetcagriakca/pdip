@@ -1,12 +1,12 @@
 import json
-import sys
 from unittest import TestCase
 
 from sqlalchemy import desc
 
 from pdip.api.app import FlaskAppWrapper
 from pdip.base import Pdi
-from pdip.data import DatabaseSessionManager, RepositoryProvider
+from pdip.data.base import DatabaseSessionManager
+from pdip.data.repository import RepositoryProvider
 from tests.unittests.api.basic_app_with_log.domain.dao import Base
 from tests.unittests.api.basic_app_with_log.domain.dao.Log import Log
 

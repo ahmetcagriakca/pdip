@@ -1,1 +1,1 @@
-from .process_manager import ProcessManager
+from pdip.processing.base.process_manager import ProcessManager

@@ -1,4 +1,3 @@
-import sys
 from unittest import TestCase
 
 from flask import Flask

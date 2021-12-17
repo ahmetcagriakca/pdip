@@ -1,5 +1,5 @@
 # This decorator will check unexpected database error for thread operations
-from ...data import RepositoryProvider
+from ..repository import RepositoryProvider
 from ...dependency.container import DependencyContainer
 
 

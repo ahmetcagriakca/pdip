@@ -4,14 +4,17 @@ from typing import TypeVar
 from flask import Flask
 from flask_injector import FlaskInjector, request
 from flask_restx import Api
-from injector import Injector, Binder,singleton
+from injector import Injector, Binder, singleton
 from werkzeug.utils import redirect
+
+from pdip.logging.loggers.console.console_logger import ConsoleLogger
+
+from ...utils.utils import Utils
 
 from ...api.base import ResourceBase
 from ...api.base.controller_base import Controller
 from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
-from ...logging.loggers.console.console_logger import ConsoleLogger
 
 T = TypeVar('T')
 
@@ -35,9 +38,13 @@ class ApiProvider:
         del self.api
         del self.app
 
+        if hasattr(self, 'logger'):
+            del self.logger
+
     def initialize(self):
         self.initialize_flask()
-        FlaskInjector(app=self.app, modules=[self.api_configure] + self.modules, injector=self.injector)
+        FlaskInjector(app=self.app, modules=[
+                      self.api_configure] + self.modules, injector=self.injector)
 
     def api_configure(self, binder: Binder):
         self.binder = binder
@@ -60,6 +67,7 @@ class ApiProvider:
                 to=controller,
                 scope=request
             )
+        del self.logger
 
     def initialize_flask(self):
         application_name = ''

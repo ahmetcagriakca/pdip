@@ -9,9 +9,12 @@ services:
       - "5434:5432"
     environment:
       - DEBUG=false
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123456
-      - POSTGRES_DB=pdi
+      - POSTGRES_USER=pdi
+      - POSTGRES_PASSWORD=pdi!123456
+      - POSTGRES_DB=test_pdi
       - PG_TRUST_LOCALNET=true
     volumes:
-      - /var/lib/pdipostgresql/data
+      - pdipgdata:/var/lib/postgresql/data
+# Names our volume
+volumes:
+  pdipgdata:
