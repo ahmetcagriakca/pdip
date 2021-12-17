@@ -1,4 +1,3 @@
-import sys
 from unittest import TestCase
 
 from sqlalchemy import MetaData, create_engine, Column, String, Integer

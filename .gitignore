@@ -72,3 +72,4 @@ node_modules
 .pypirc
 *.py,cover
 *.log.md
+_trial*

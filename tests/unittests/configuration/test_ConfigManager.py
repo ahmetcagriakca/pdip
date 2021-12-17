@@ -1,5 +1,4 @@
 import os
-import sys
 from unittest import TestCase
 
 from pdip.configuration import ConfigManager

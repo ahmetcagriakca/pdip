@@ -2,7 +2,7 @@ from flask import request, Response
 from injector import inject
 
 from ...configuration.models.api import ApiConfig
-from ...data import RepositoryProvider
+from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
 
 

@@ -19,6 +19,7 @@ coverage report -m --omit="*/tests/*,*/site-packages/*"
 coverage html --omit="*/tests/*,*/site-packages/*"
 
 ## run tests for test modules with append
+coverage run --source=pdip run_tests.py
 coverage run -a --source=pdip run_tests.py
 
 # run all tests and generate coverage informations
@@ -26,5 +27,5 @@ coverage run -a --source=pdip run_tests.py
 coverage run -a --source=pdip run_tests.py
 <!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests.processing' -t '.' -->
 <!-- coverage run -a --source=pdip -m unittest discover -v -b -s 'tests' -t '.' -->
-coverage report -m --omit="*/tests/*,*/site-packages/*"
-coverage html --omit="*/tests/*,*/site-packages/*"
+coverage report -m --omit="*/tests/*,*/site-packages/*,*__init__.py"
+coverage html --omit="*/tests/*,*/site-packages/*,*__init__.py"

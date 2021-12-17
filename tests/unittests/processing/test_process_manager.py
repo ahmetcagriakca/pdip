@@ -1,6 +1,6 @@
-import sys
 from unittest import TestCase
 
+from pdip.logging.loggers.console import ConsoleLogger
 from pdip.processing import ProcessManager
 
 
@@ -17,7 +17,7 @@ class TestProcessManager(TestCase):
         return data
 
     def test_process(self):
-        process_manager = ProcessManager()
+        process_manager = ProcessManager(logger=ConsoleLogger())
         test_data = 1
         data_kwargs = {
             "data": test_data
@@ -40,7 +40,7 @@ class TestProcessManager(TestCase):
         return data
 
     def test_process_error(self):
-        process_manager = ProcessManager()
+        process_manager = ProcessManager(logger=ConsoleLogger())
         test_data = 1
         data_kwargs = {
             "data": test_data

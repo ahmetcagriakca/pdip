@@ -32,7 +32,12 @@ class ServiceProvider:
         self.config_manager: ConfigManager = None
         self.module_finder: ModuleFinder = None
         self.binder: Injector = None
+        
         self.logger = ConsoleLogger()
+        # self.logger = logging.getLogger('test')
+        # process_info = Utils.get_process_info()
+        # logging.basicConfig(
+        #     level=logging.INFO, format=f"%(asctime)s:%(name)s:%(levelname)s: - {process_info} - %(message)s")
         self.logger.info(f"Application initialize started")
         if configurations is not None:
             self.modules = [self.configure] + configurations
@@ -46,6 +51,8 @@ class ServiceProvider:
         if hasattr(self, 'api_provider') and self.api_provider is not None:
             del self.api_provider
         self.module_finder.cleanup()
+        if hasattr(self, 'logger'):
+            del self.logger
 
     def get(self, instance_type: Type[T]) -> T:
         return self.injector.get(instance_type)
@@ -118,18 +125,18 @@ class ServiceProvider:
                 to=scoped,
                 scope=threadlocal,
             )
+        del self.logger
 
     def get_process_info(self):
         return f"{current_process().name} ({os.getpid()},{os.getppid()})"
 
     def process_info(self):
-        logger = ConsoleLogger()
         application_config: ApplicationConfig = self.config_manager.get(
             ApplicationConfig)
         if application_config is not None:
             hostname = f'-{application_config.hostname}' if (
                     application_config.hostname is not None and application_config.hostname != '') else ''
-            logger.info(f"Application : {application_config.name}{hostname}")
+            self.logger.info(f"Application : {application_config.name}{hostname}")
 
     def initialize_injection(self, initialize_flask):
         if self.is_flask_api() and initialize_flask:

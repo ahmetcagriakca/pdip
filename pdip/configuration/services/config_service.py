@@ -3,7 +3,7 @@ from functools import lru_cache
 from injector import inject
 
 from .config_parameter_base import ConfigParameterBase
-from ...data import RepositoryProvider
+from ...data.repository import RepositoryProvider
 from ...dependency import IScoped
 from ...exceptions import RequiredClassException
 

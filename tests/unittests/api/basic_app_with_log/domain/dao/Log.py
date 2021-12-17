@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime
 
-from pdip.data.entity import Entity
+from pdip.data.models import Entity
 from pdip.logging.models.log_data import LogData
 from tests.unittests.api.basic_app_with_log.domain.dao import Base
 

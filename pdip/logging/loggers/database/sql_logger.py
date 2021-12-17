@@ -1,19 +1,20 @@
 import traceback
 from datetime import datetime
-from logging import DEBUG, FATAL, ERROR, WARNING, INFO, NOTSET
+from logging import CRITICAL, DEBUG, FATAL, ERROR, WARNING, INFO, NOTSET
 
 from injector import inject
 
+from ..base import ILogger
 from ..console import ConsoleLogger
 from ...models import LogData
 from ....configuration.models.application import ApplicationConfig
 from ....configuration.models.database import DatabaseConfig
-from ....data import RepositoryProvider
+from ....data.repository import RepositoryProvider
 from ....dependency import IScoped
 from ....utils.utils import Utils
 
 
-class SqlLogger(IScoped):
+class SqlLogger(IScoped, ILogger):
     @inject
     def __init__(self,
                  application_config: ApplicationConfig,
@@ -66,8 +67,15 @@ class SqlLogger(IScoped):
     #######################################################################################
     def exception(self, exception: Exception, message: str = None, job_id=None):
         exc = traceback.format_exc() + '\n' + str(exception)
-        message += f"Error: {exc}"
+        if message is not None:
+            message += f"Error: {exc}"
+        else:
+            message = f"Error: {exc}"
         self.logger_method(ERROR, message, job_id)
+
+    #######################################################################################
+    def critical(self, message, job_id):
+        self.logger_method(CRITICAL, message, job_id)
 
     #######################################################################################
     def fatal(self, message, job_id=None):
