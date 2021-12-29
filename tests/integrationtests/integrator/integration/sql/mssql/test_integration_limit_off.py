@@ -55,6 +55,8 @@ class TestMssqlIntegration(TestCase):
                 Name varchar(100) NULL
             )
             end'''
+
+            integrator = self.pdi.get(Integrator)
             operation = OperationBase(
                 Name='TestOperation',
                 Integrations=[
@@ -118,7 +120,6 @@ class TestMssqlIntegration(TestCase):
                     )
                 ]
             )
-            integrator = self.pdi.get(Integrator)
             integrator.integrate(operation)
         except Exception as ex:
             self.pdi.get(ConsoleLogger).exception(ex)
