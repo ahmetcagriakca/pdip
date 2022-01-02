@@ -11,7 +11,7 @@ from pdip.integrator.integration.domain.base import IntegrationBase, Integration
     IntegrationConnectionSqlBase
 from pdip.integrator.operation.domain.operation import OperationIntegrationBase, OperationBase
 from pdip.logging.loggers.console import ConsoleLogger
-from tests.integrationtests.integrator.integration.sql.utils.utils import TestSqlUtils
+from tests.integrationtests.integrator.integration.sql.utils import TestSqlUtils
 
 
 class TestMssqlIntegration(TestCase):

@@ -19,7 +19,6 @@ class MysqlConnector(SqlConnector):
                                                   host=self.config.Server.Host,
                                                   port=self.config.Server.Port)
         self.cursor = self.connection.cursor()
-        self.cursor.executescript
 
     def disconnect(self):
         try:

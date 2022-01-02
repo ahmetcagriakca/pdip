@@ -12,8 +12,14 @@ class OperationIntegrationBase:
     ProcessCount: int = None
     Integration: IntegrationBase = None
 
+    def initialize(self):
+        pass
+
 
 @dataclass
 class OperationBase:
     Name: str = None
     Integrations: List[OperationIntegrationBase] = None
+
+    def initialize(self):
+        pass

@@ -6,7 +6,9 @@ from ....connection.factories import ConnectionAdapterFactory
 from ....models.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET
 from ....operation.domain.operation import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
+from ....pubsub.domain import TaskMessage
+from ....pubsub.publisher import Publisher
 from .....dependency import IScoped
 
 
@@ -20,20 +22,22 @@ class TargetIntegration(IntegrationAdapter, IScoped):
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ) -> int:
+        publisher = Publisher(channel=channel)
         target_adapter = self.connection_adapter_factory.get_adapter(
             connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
         if operation_integration.Integration.IsTargetTruncate:
             truncate_affected_row_count = target_adapter.clear_data(integration=operation_integration.Integration)
-            event_channel.publish(EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, operation_integration,
-                                  row_count=truncate_affected_row_count)
+            publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE,
+                                                  kwargs={"data": operation_integration,
+                                                          "row_count": truncate_affected_row_count
+                                                          }))
         affected_row_count = target_adapter.do_target_operation(integration=operation_integration.Integration)
-        event_channel.publish(
-            EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET,
-            operation_integration,
-            row_count=affected_row_count
-        )
+        publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET,
+                                              kwargs={"data": operation_integration,
+                                                      "row_count": affected_row_count
+                                                      }))
         return affected_row_count
 
     def get_start_message(self, integration: IntegrationBase):

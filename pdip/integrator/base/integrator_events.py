@@ -11,20 +11,20 @@ class IntegratorEvents(IScoped):
                  logger: ConsoleLogger):
         self.logger = logger
 
-    def log(self, data: any, log: str, exception=None):
+    def log(self, data: any, message: str, exception=None):
         if exception is not None:
             if isinstance(data, OperationBase):
-                message = f'{data.Name} - {log}'
+                log_message = f'{data.Name} - {message}'
             else:
-                message = f'{data.Order} - {data.Integration.Name} - {log}'
+                log_message = f'{data.Order} - {data.Integration.Name} - {message}'
 
-            self.logger.exception(exception, message)
+            self.logger.exception(exception, log_message)
         else:
             if isinstance(data, OperationBase):
-                message = f'{data.Name} - {log}'
+                log_message = f'{data.Name} - {message}'
             else:
-                message = f'{data.Order} - {data.Integration.Name} - {log}'
-            self.logger.info(message)
+                log_message = f'{data.Order} - {data.Integration.Name} - {message}'
+            self.logger.info(log_message)
 
     def initialize(self, data: OperationBase):
         message = f'{data.Name} initialized.'

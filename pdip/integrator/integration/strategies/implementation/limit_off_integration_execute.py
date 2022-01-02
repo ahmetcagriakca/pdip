@@ -7,7 +7,9 @@ from ..base import IntegrationExecuteStrategy
 from ....connection.factories import ConnectionAdapterFactory
 from ....models.enums.events import EVENT_LOG
 from ....operation.domain.operation import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
+from ....pubsub.domain import TaskMessage
+from ....pubsub.publisher import Publisher
 from .....dependency import IScoped
 
 
@@ -22,23 +24,27 @@ class LimitOffIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ) -> int:
+        publisher = Publisher(channel=channel)
         start_time = time()
         try:
-            event_channel.publish(
-                event=EVENT_LOG,
-                data=operation_integration,
-                log=f"0 - process got a new task")
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"0 - process got a new task"
+                                                  }))
             source_adapter = self.connection_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.SourceConnections.ConnectionType)
             source_data = source_adapter.get_source_data(
                 integration=operation_integration.Integration)
             data_count = len(source_data)
-            event_channel.publish(
-                event=EVENT_LOG,
-                data=operation_integration,
-                log=f"0 - {data_count} readed from db")
+
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"0 - {data_count} readed from db"
+                                                  }))
             target_adapter = self.connection_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
             prepared_data = target_adapter.prepare_data(integration=operation_integration.Integration,
@@ -46,15 +52,17 @@ class LimitOffIntegrationExecute(IntegrationExecuteStrategy, IScoped):
             target_adapter.write_target_data(
                 integration=operation_integration.Integration, prepared_data=prepared_data)
             end_time = time()
-            event_channel.publish(
-                event=EVENT_LOG,
-                data=operation_integration,
-                log=f"0 - {data_count} process finished task. time:{end_time - start_time}")
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"0 - {data_count} process finished task. time:{end_time - start_time}"
+                                                  }))
             return data_count
         except Exception as ex:
             end_time = time()
-            event_channel.publish(
-                event=EVENT_LOG,
-                data=operation_integration,
-                log=f"Integration getting error. time:{end_time - start_time}", exception=ex)
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={'data': operation_integration,
+                                                          'message': f"Integration getting error. time:{end_time - start_time}",
+                                                          'exception': ex}
+                                                  ))
             raise

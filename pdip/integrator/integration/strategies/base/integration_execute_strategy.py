@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from injector import inject
 
 from ....operation.domain import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
 from .....dependency import IScoped
 
 
@@ -16,6 +16,6 @@ class IntegrationExecuteStrategy(ABC, IScoped):
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ) -> int:
         pass
