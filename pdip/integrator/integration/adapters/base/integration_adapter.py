@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from ...domain.base import IntegrationBase
 from ....operation.domain.operation import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
 
 
 class IntegrationAdapter(ABC):
@@ -10,7 +10,7 @@ class IntegrationAdapter(ABC):
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ):
         pass
 

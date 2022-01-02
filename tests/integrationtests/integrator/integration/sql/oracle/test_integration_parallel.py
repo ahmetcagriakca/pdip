@@ -14,7 +14,7 @@ from pdip.logging.loggers.console import ConsoleLogger
 from tests.integrationtests.integrator.integration.sql.utils import TestSqlUtils
 
 
-class TestMssqlIntegration(TestCase):
+class TestOracleIntegration(TestCase):
     def setUp(self):
         try:
             self.pdi = Pdi()
@@ -33,29 +33,37 @@ class TestMssqlIntegration(TestCase):
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
                 ConnectionType=ConnectionTypes.Database,
-                ConnectorType=ConnectorTypes.MSSQL,
+                ConnectorType=ConnectorTypes.ORACLE,
                 Server=Server(
-                    Host='localhost,1433'
+                    Host='localhost',
+                    Port=1521
                 ),
-                Database='test_pdi',
+                Sid='xe',
                 BasicAuthentication=BasicAuthentication(
                     User='pdi',
                     Password='pdi!123456'
                 )
             )
-            TestSqlUtils.prepare_test_data(connection, data_count=10000)
-            query = '''IF NOT EXISTS (SELECT 0 
-                       FROM INFORMATION_SCHEMA.TABLES 
-                       WHERE TABLE_SCHEMA = 'test_pdi' 
-                       AND TABLE_NAME = 'test_target')
-            begin
-            CREATE TABLE test_pdi.test_target (
-                Id INT NULL,
-                Name varchar(100) NULL
-            )
-            end'''
+            TestSqlUtils.prepare_test_data(connection, data_count=1000000)
+            query = '''declare
+v_sql LONG;
+begin
 
-            integrator = self.pdi.get(Integrator)
+v_sql:='CREATE TABLE test_pdi.test_target (
+    Id INT NULL,
+    Name varchar(100) NULL
+)';
+execute immediate v_sql;
+
+EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -955 THEN
+        NULL; -- suppresses ORA-00955 exception
+      ELSE
+         RAISE;
+      END IF;
+END;
+'''
             operation = OperationBase(
                 Name='TestOperation',
                 Integrations=[
@@ -77,8 +85,8 @@ class TestMssqlIntegration(TestCase):
                     ),
                     OperationIntegrationBase(
                         Order=2,
-                        Limit=0,
-                        ProcessCount=0,
+                        Limit=50000,
+                        ProcessCount=5,
                         Integration=IntegrationBase(
                             Name='TestIntegrationLoadData',
                             SourceConnections=IntegrationConnectionBase(
@@ -119,6 +127,7 @@ class TestMssqlIntegration(TestCase):
                     )
                 ]
             )
+            integrator = self.pdi.get(Integrator)
             integrator.integrate(operation)
         except Exception as ex:
             self.pdi.get(ConsoleLogger).exception(ex)

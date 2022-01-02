@@ -7,7 +7,9 @@ from ....connection.factories import ConnectionAdapterFactory
 from ....models.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
 from ....operation.domain import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
+from ....pubsub.domain import TaskMessage
+from ....pubsub.publisher import Publisher
 from .....dependency import IScoped
 
 
@@ -23,14 +25,17 @@ class SourceIntegration(IntegrationAdapter, IScoped):
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ) -> int:
+        publisher = Publisher(channel=channel)
         target_adapter = self.connection_adapter_factory.get_adapter(
             connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
         if operation_integration.Integration.IsTargetTruncate:
             truncate_affected_row_count = target_adapter.clear_data(integration=operation_integration.Integration)
-            event_channel.publish(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, data=operation_integration,
-                                  row_count=truncate_affected_row_count)
+            publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE,
+                                                  kwargs={"data": operation_integration,
+                                                        "row_count": truncate_affected_row_count
+                                                        }))
         order = operation_integration.Order
         process_count = operation_integration.ProcessCount
         limit = operation_integration.Limit
@@ -38,18 +43,18 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             limit=limit,
             process_count=process_count)
         strategy_name = type(execute_integration_strategy).__name__
-        event_channel.publish(
-            event=EVENT_LOG,
-            data=operation_integration,
-            log=f"{order} - integration will execute on {strategy_name}. {process_count}-{limit}")
+        publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                              kwargs={
+                                                  'data': operation_integration,
+                                                  'message': f"{order} - integration will execute on {strategy_name}. {process_count}-{limit}"
+                                              }))
         affected_row_count = execute_integration_strategy.execute(
             operation_integration=operation_integration,
-            event_channel=event_channel)
-        event_channel.publish(
-            event=EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE,
-            data=operation_integration,
-            row_count=affected_row_count
-        )
+            channel=channel)
+        publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE,
+                                              kwargs={"data": operation_integration,
+                                                    "row_count": affected_row_count
+                                                    }))
         return affected_row_count
 
     def get_start_message(self, integration: IntegrationBase):

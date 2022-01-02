@@ -14,11 +14,12 @@ from ....connection.domain.task import DataQueueTask
 from ....connection.factories import ConnectionAdapterFactory
 from ....models.enums.events import EVENT_LOG
 from ....operation.domain import OperationIntegrationBase
-from ....pubsub import EventChannel
+from ....pubsub.base import ChannelQueue
+from ....pubsub.domain import TaskMessage
+from ....pubsub.publisher import Publisher
 from .....data.decorators import transactionhandler
 from .....dependency import IScoped
 from .....dependency.container import DependencyContainer
-from .....logging.loggers.database import SqlLogger
 from .....processing import ProcessManager
 from .....processing.factories import ProcessManagerFactory
 
@@ -27,19 +28,18 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     @inject
     def __init__(
             self,
-            logger: SqlLogger,
             process_manager_factory: ProcessManagerFactory,
             connection_adapter_factory: ConnectionAdapterFactory
     ):
         self.process_manager_factory = process_manager_factory
-        self.logger = logger
         self.connection_adapter_factory = connection_adapter_factory
 
     def execute(
             self,
             operation_integration: OperationIntegrationBase,
-            event_channel: EventChannel
+            channel: ChannelQueue
     ) -> int:
+        publisher = Publisher(channel=channel)
         try:
             try:
                 manager = multiprocessing.Manager()
@@ -48,34 +48,40 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                 data_queue = manager.Queue()
                 data_result_queue = manager.Queue()
 
-                event_channel.publish(
-                    event=EVENT_LOG,
-                    data=operation_integration,
-                    log=f"Source data process will start")
+                publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                      kwargs={
+                                                          'data': operation_integration,
+                                                          'message': f"Source data process will start"
+                                                      }))
                 self.start_source_data_subprocess(source_data_process_manager=source_data_process_manager,
+                                                  channel=channel,
                                                   operation_integration=operation_integration,
                                                   data_queue=data_queue,
                                                   data_result_queue=data_result_queue)
 
-                event_channel.publish(
-                    event=EVENT_LOG,
-                    data=operation_integration,
-                    log=f"Source data process started")
+                publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                      kwargs={
+                                                          'data': operation_integration,
+                                                          'message': f"Source data process started"
+                                                      }))
 
-                event_channel.publish(
-                    event=EVENT_LOG,
-                    data=operation_integration,
-                    log=f"Execute data process will start")
+                publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                      kwargs={
+                                                          'data': operation_integration,
+                                                          'message': f"Execute data process will start"
+                                                      }))
                 total_row_count = self.start_execute_data_subprocess(
                     execute_data_process_manager=execute_data_process_manager,
+                    channel=channel,
                     operation_integration=operation_integration,
                     data_queue=data_queue,
                     data_result_queue=data_result_queue)
 
-                event_channel.publish(
-                    event=EVENT_LOG,
-                    data=operation_integration,
-                    log=f"Execute data process finished")
+                publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                      kwargs={
+                                                          'data': operation_integration,
+                                                          'message': f"Execute data process finished"
+                                                      }))
             finally:
                 manager.shutdown()
                 del source_data_process_manager
@@ -83,16 +89,18 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
 
             return total_row_count
         except Exception as ex:
-            event_channel.publish(
-                event=EVENT_LOG,
-                data=operation_integration,
-                log=f"Integration getting error.",
-                exception=ex)
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"Integration getting error.",
+                                                      'exception': ex
+                                                  }))
             raise
 
     def start_source_data_subprocess(
             self,
             source_data_process_manager: ProcessManager,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
@@ -100,6 +108,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
 
         source_data_kwargs = {
             "operation_integration": operation_integration,
+            "channel": channel,
             "data_queue": data_queue,
             "data_result_queue": data_result_queue,
         }
@@ -112,12 +121,14 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     def start_execute_data_subprocess(
             self,
             execute_data_process_manager: ProcessManager,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
     ) -> int:
         total_row_count = 0
         execute_data_kwargs = {
+            "channel": channel,
             "operation_integration": operation_integration,
             "data_queue": data_queue,
             "data_result_queue": data_result_queue,
@@ -137,6 +148,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     @staticmethod
     def start_source_data_process(
             sub_process_id,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
@@ -144,6 +156,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
 
         return DependencyContainer.Instance.get(ParallelIntegrationExecute).start_source_data_operation(
             sub_process_id=sub_process_id,
+            channel=channel,
             operation_integration=operation_integration,
             data_queue=data_queue,
             data_result_queue=data_result_queue,
@@ -153,11 +166,18 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     def start_source_data_operation(
             self,
             sub_process_id,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
     ):
-        self.logger.info(f"Source data operation started on process. SubProcessId: {sub_process_id}")
+
+        publisher = Publisher(channel=channel)
+        publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                              kwargs={
+                                                  'data': operation_integration,
+                                                  'message': f"Source data operation started on process. SubProcessId: {sub_process_id}"
+                                              }))
         try:
 
             source_adapter = self.connection_adapter_factory.get_adapter(
@@ -191,25 +211,40 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                 data_queue_finish_task = DataQueueTask(IsFinished=True)
                 data_queue.put(data_queue_finish_task)
 
-            self.logger.info(f"Source data operation finished successfully. SubProcessId: {sub_process_id}")
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"Source data operation finished successfully. SubProcessId: {sub_process_id}"
+                                                  }))
+            # self.logger.info(f"Source data operation finished successfully. SubProcessId: {sub_process_id}")
         except Exception as ex:
             exception_traceback = traceback.format_exc()
             for i in range(operation_integration.ProcessCount):
                 data_queue_error_task = DataQueueTask(IsFinished=True, Traceback=exception_traceback, Exception=ex)
                 data_queue.put(data_queue_error_task)
-            self.logger.info(
-                f"Source data operation finished with error. SubProcessId: {sub_process_id}. Error:{ex} traceback:{exception_traceback}")
+
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"Source data operation finished with error. SubProcessId: {sub_process_id}.",
+                                                      'exception':ex
+
+                                                  }))
+            # self.logger.info(
+            #     f"Source data operation finished with error. SubProcessId: {sub_process_id}. Error:{ex} traceback:{exception_traceback}")
             raise
 
     @staticmethod
     def start_execute_data_process(
             sub_process_id,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
     ) -> int:
         return DependencyContainer.Instance.get(ParallelIntegrationExecute).start_execute_data_operation(
             sub_process_id=sub_process_id,
+            channel=channel,
             operation_integration=operation_integration,
             data_queue=data_queue,
             data_result_queue=data_result_queue,
@@ -218,11 +253,13 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     def start_execute_data_operation(
             self,
             sub_process_id: int,
+            channel: ChannelQueue,
             operation_integration: OperationIntegrationBase,
             data_queue: Queue,
             data_result_queue: Queue
     ) -> int:
 
+        publisher = Publisher(channel=channel)
         total_row_count = 0
         try:
             while True:
@@ -231,7 +268,11 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                     if data_task.Exception is not None:
                         exc = Exception(data_task.Traceback + '\n' + str(data_task.Exception))
                         raise exc
-                    self.logger.info(f"{sub_process_id} process tasks finished")
+                    publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                          kwargs={
+                                                              'data': operation_integration,
+                                                              'message': f"{sub_process_id} process tasks finished"
+                                                          }))
                     return total_row_count
                 else:
                     start = time()
@@ -241,8 +282,11 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                         data: DataFrame = DataFrame(source_data_json)
                     data_count = 0
                     if data is None:
-                        self.logger.info(
-                            f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got a new task without data", )
+                        publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                              kwargs={
+                                                                  'data': operation_integration,
+                                                                  'message': f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got a new task without data"
+                                                              }))
                         data_count = self.start_execute_integration_with_paging(
                             integration=operation_integration.Integration,
                             start=data_task.Start,
@@ -256,27 +300,38 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                             source_data = source_data.where(notnull(data), None)
                             source_data = source_data.replace({pd.NaT: None})
 
-                        self.logger.info(
-                            f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got a new task")
+                        publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                              kwargs={
+                                                                  'data': operation_integration,
+                                                                  'message': f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got a new task"
+                                                              }))
                         data_count = self.start_execute_integration_with_source_data(
                             integration=operation_integration.Integration,
                             source_data=source_data)
                     else:
-                        self.logger.info(
-                            f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got an empty task")
-
+                        publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                              kwargs={
+                                                                  'data': operation_integration,
+                                                                  'message': f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process got an empty task"
+                                                              }))
                     total_row_count = total_row_count + data_count
                     end = time()
-                    self.logger.info(
-                        f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process finished task. time:{end - start}")
+                    publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                          kwargs={
+                                                              'data': operation_integration,
+                                                              'message': f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process finished task. time:{end - start}"
+                                                          }))
                     data_task.IsProcessed = True
                     data_result_queue.put(True)
                 data_queue.task_done()
         except FunctionTimedOut as fto:
             data_result_queue.put(False)
             end = time()
-            self.logger.info(
-                f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process getting error. time:{end - start} - Error {fto.getMsg()}")
+            publisher.publish(message=TaskMessage(event=EVENT_LOG,
+                                                  kwargs={
+                                                      'data': operation_integration,
+                                                      'message': f"{sub_process_id}-{data_task.Message}:{data_task.Id}-{data_task.Start}-{data_task.End} process getting error. time:{end - start} - Error {fto.getMsg()}"
+                                                  }))
             raise Exception(f'Execution Operation timed out after {fto.timedOutAfter} seconds.')
         except Exception as ex:
             data_result_queue.put(False)

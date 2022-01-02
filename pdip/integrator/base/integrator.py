@@ -5,7 +5,7 @@ from ..models.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_F
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET, EVENT_LOG, EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE
 from ..operation.base import OperationExecution
 from ..operation.domain import OperationBase
-from ..pubsub.event_channel import EventChannel
+from ..pubsub.base.message_broker import MessageBroker
 from ...dependency.container import DependencyContainer
 from ...logging.loggers.console import ConsoleLogger
 
@@ -14,22 +14,23 @@ class Integrator:
     def __init__(self):
         self.handlers = []
         self.logger = DependencyContainer.Instance.get(ConsoleLogger)
-        self.event_channel = EventChannel(self.logger)
         self.operation_execution = DependencyContainer.Instance.get(OperationExecution)
         self.integrator_events = DependencyContainer.Instance.get(IntegratorEvents)
+        self.message_broker = MessageBroker(self.logger)
         self.register_default_event_listeners()
 
     def integrate(self, operation: any):
+        self.message_broker.start()
         if isinstance(operation, OperationBase):
-            self.operation_execution.start(operation, self.event_channel)
+            self.operation_execution.start(operation, self.message_broker.publish_channel)
         elif isinstance(operation, str) or isinstance(operation, dict):
-            self.operation_execution.start(operation)
+            self.operation_execution.start(operation, self.message_broker.publish_channel)
 
     def subscribe(self, event, callback):
-        self.event_channel.subscribe(event, callback)
+        self.message_broker.subscribe(event, callback)
 
     def unsubscribe(self, event, callback):
-        self.event_channel.unsubscribe(event, callback)
+        self.message_broker.unsubscribe(event, callback)
 
     def register_default_event_listeners(self):
         self.subscribe(EVENT_LOG, self.integrator_events.log)

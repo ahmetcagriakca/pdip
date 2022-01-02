@@ -14,7 +14,7 @@ from pdip.logging.loggers.console import ConsoleLogger
 from tests.integrationtests.integrator.integration.sql.utils import TestSqlUtils
 
 
-class TestMssqlIntegration(TestCase):
+class TestMysqlIntegration(TestCase):
     def setUp(self):
         try:
             self.pdi = Pdi()
@@ -33,9 +33,10 @@ class TestMssqlIntegration(TestCase):
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
                 ConnectionType=ConnectionTypes.Database,
-                ConnectorType=ConnectorTypes.MSSQL,
+                ConnectorType=ConnectorTypes.MYSQL,
                 Server=Server(
-                    Host='localhost,1433'
+                    Host='localhost',
+                    Port=3306
                 ),
                 Database='test_pdi',
                 BasicAuthentication=BasicAuthentication(
@@ -43,19 +44,11 @@ class TestMssqlIntegration(TestCase):
                     Password='pdi!123456'
                 )
             )
-            TestSqlUtils.prepare_test_data(connection, data_count=10000)
-            query = '''IF NOT EXISTS (SELECT 0 
-                       FROM INFORMATION_SCHEMA.TABLES 
-                       WHERE TABLE_SCHEMA = 'test_pdi' 
-                       AND TABLE_NAME = 'test_target')
-            begin
-            CREATE TABLE test_pdi.test_target (
+            TestSqlUtils.prepare_test_data(connection, data_count=200000)
+            query = '''CREATE TABLE IF NOT EXISTS  test_pdi.test_target (
                 Id INT NULL,
                 Name varchar(100) NULL
-            )
-            end'''
-
-            integrator = self.pdi.get(Integrator)
+            )'''
             operation = OperationBase(
                 Name='TestOperation',
                 Integrations=[
@@ -77,8 +70,8 @@ class TestMssqlIntegration(TestCase):
                     ),
                     OperationIntegrationBase(
                         Order=2,
-                        Limit=0,
-                        ProcessCount=0,
+                        Limit=10000,
+                        ProcessCount=5,
                         Integration=IntegrationBase(
                             Name='TestIntegrationLoadData',
                             SourceConnections=IntegrationConnectionBase(
@@ -119,6 +112,7 @@ class TestMssqlIntegration(TestCase):
                     )
                 ]
             )
+            integrator = self.pdi.get(Integrator)
             integrator.integrate(operation)
         except Exception as ex:
             self.pdi.get(ConsoleLogger).exception(ex)
