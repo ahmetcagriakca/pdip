@@ -24,7 +24,7 @@ class MessageBroker:
 
     def start(self):
         self.worker.start()
-        self.listener = EventListener(channel=self.message_channel, subscribers=self.subscribers)
+        self.listener = EventListener(channel=self.message_channel, subscribers=self.subscribers, logger=self.logger)
         self.listener.start()
 
     def subscribe(self, event, callback):
@@ -49,7 +49,4 @@ class MessageBroker:
                 )
             )
         else:
-            self.logger.warning(
-                "Cant unsubscribe function '{0}' from event '{1}' ".format(
-                    event,
-                    callback))
+            self.logger.warning("Cant unsubscribe function '{0}' from event '{1}' ".format(event, callback))

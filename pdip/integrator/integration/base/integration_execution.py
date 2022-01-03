@@ -26,11 +26,6 @@ class IntegrationExecution(IScoped):
         integration_adapter: IntegrationAdapter = self.integration_adapter_factory.get(
             integration=operation_integration.Integration)
         try:
-            initialize_message = f'{operation_integration.Integration.Name} integration initialized.'
-            publisher.publish(
-                message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_INITIALIZED,
-                                    kwargs={'data': operation_integration,
-                                            'message': initialize_message}))
             start_message = integration_adapter.get_start_message(integration=operation_integration.Integration)
             publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_STARTED,
                                                   kwargs={'data': operation_integration,
