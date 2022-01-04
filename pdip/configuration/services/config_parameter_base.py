@@ -1,4 +1,4 @@
-from ...data import EntityBase
+from pdip.data.domain import EntityBase
 
 
 class ConfigParameterBase(EntityBase):

@@ -6,7 +6,7 @@ from injector import inject
 
 from ..base import ILogger
 from ..console import ConsoleLogger
-from ...models import LogData
+from ...domain import LogData
 from ....configuration.models.application import ApplicationConfig
 from ....configuration.models.database import DatabaseConfig
 from ....data.repository import RepositoryProvider

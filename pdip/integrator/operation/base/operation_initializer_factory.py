@@ -1,15 +1,8 @@
 from injector import inject
 
-from pdip.integrator.operation.domain import OperationBase
-from ...base import Initializer
+from .operation_initializer import OperationInitializer
 from ....dependency import IScoped
 from ....dependency.container import DependencyContainer
-
-
-class OperationInitializer(Initializer):
-    @inject
-    def initialize(self, operation: OperationBase) -> int:
-        pass
 
 
 class OperationInitializerFactory(IScoped):

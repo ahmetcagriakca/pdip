@@ -38,7 +38,10 @@ class Integrator:
             del self.message_broker
 
     def integrate(self, operation: any):
+        if operation is None:
+            raise Exception('Operation required')
         self.initialize()
+
         if isinstance(operation, OperationBase):
             self.initialize_events(execution_id=None, operation=operation)
             self.operation_execution.start(operation, self.message_broker.get_publish_channel())
