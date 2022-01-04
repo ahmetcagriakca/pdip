@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ...data.models import EntityBase
+from ...data.domain import EntityBase
 
 
 class LogData(EntityBase):

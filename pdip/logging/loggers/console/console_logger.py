@@ -28,7 +28,7 @@ class ConsoleLogger(ISingleton, ILogger):
         if not self.logger.handlers:
             self.logger.setLevel(self.log_level)
             process_info = Utils.get_process_info()
-            format = logging.Formatter(f"%(asctime)s:%(name)s:%(levelname)s: - {process_info} - %(message)s")
+            format = logging.Formatter(f"%(asctime)s|%(name)s|%(levelname)s|{process_info}|%(message)s")
             self.console_handler = logging.StreamHandler(sys.stdout)
             self.console_handler.setFormatter(format)
             self.logger.addHandler(self.console_handler)
