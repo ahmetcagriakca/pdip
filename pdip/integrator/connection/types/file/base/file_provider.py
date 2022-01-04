@@ -8,7 +8,7 @@ from ..connectors.csv import CsvConnector
 from pdip.integrator.connection.domain.enums import ConnectorTypes
 from pdip.configuration.models.application import ApplicationConfig
 from pdip.dependency import IScoped
-from pdip.logging.loggers.database import SqlLogger
+from pdip.logging.loggers.sql import SqlLogger
 
 
 class FileProvider(IScoped):

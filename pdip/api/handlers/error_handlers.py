@@ -5,7 +5,7 @@ from injector import inject
 
 from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
-from ...logging.loggers.database import SqlLogger
+from ...logging.loggers.sql import SqlLogger
 
 
 class ErrorHandlers(ISingleton):

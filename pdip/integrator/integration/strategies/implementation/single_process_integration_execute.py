@@ -4,7 +4,7 @@ from injector import inject
 
 from ..base import IntegrationExecuteStrategy
 from ....connection.factories import ConnectionAdapterFactory
-from ....models.enums.events import EVENT_LOG
+from ....domain.enums.events import EVENT_LOG
 from ....operation.domain.operation import OperationIntegrationBase
 from ....pubsub.base import ChannelQueue
 from ....pubsub.domain import TaskMessage

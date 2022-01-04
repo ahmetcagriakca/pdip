@@ -32,7 +32,7 @@ class TestMysqlIntegration(TestCase):
         try:
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
-                ConnectionType=ConnectionTypes.Database,
+                ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.MYSQL,
                 Server=Server(
                     Host='localhost',

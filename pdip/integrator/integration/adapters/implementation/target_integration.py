@@ -3,7 +3,7 @@ from injector import inject
 from ..base import IntegrationAdapter
 from ...domain.base import IntegrationBase
 from ....connection.factories import ConnectionAdapterFactory
-from ....models.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
+from ....domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET
 from ....operation.domain.operation import OperationIntegrationBase
 from ....pubsub.base import ChannelQueue

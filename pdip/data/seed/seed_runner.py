@@ -5,7 +5,7 @@ from .seed import Seed
 from ..base import DatabaseSessionManager
 from ...dependency import IScoped
 from ...dependency.container import DependencyContainer
-from ...logging.loggers.database import SqlLogger
+from ...logging.loggers.sql import SqlLogger
 
 
 class SeedRunner(IScoped):

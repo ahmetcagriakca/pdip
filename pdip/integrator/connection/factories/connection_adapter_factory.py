@@ -21,7 +21,7 @@ class ConnectionAdapterFactory(IScoped):
         self.sql_adapter = sql_adapter
 
     def get_adapter(self, connection_type: ConnectionTypes) -> ConnectionAdapter:
-        if connection_type == ConnectionTypes.Database:
+        if connection_type == ConnectionTypes.Sql:
             if isinstance(self.sql_adapter, ConnectionAdapter):
                 return self.sql_adapter
             else:

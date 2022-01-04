@@ -32,7 +32,7 @@ class TestPostgresqlIntegration(TestCase):
         try:
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
-                ConnectionType=ConnectionTypes.Database,
+                ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.POSTGRESQL,
                 Server=Server(
                     Host='localhost',

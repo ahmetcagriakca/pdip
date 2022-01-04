@@ -34,7 +34,7 @@ class TestMssqlIntegration(TestCase):
         try:
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
-                ConnectionType=ConnectionTypes.Database,
+                ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.MSSQL,
                 Server=Server(
                     Host='localhost,1433'

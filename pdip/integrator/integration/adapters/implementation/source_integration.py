@@ -4,7 +4,7 @@ from ..base import IntegrationAdapter
 from ...domain.base import IntegrationBase
 from ...factories import IntegrationExecuteStrategyFactory
 from ....connection.factories import ConnectionAdapterFactory
-from ....models.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
+from ....domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
 from ....operation.domain import OperationIntegrationBase
 from ....pubsub.base import ChannelQueue
