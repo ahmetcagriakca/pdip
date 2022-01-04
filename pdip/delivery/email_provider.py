@@ -7,7 +7,7 @@ from injector import inject
 
 from ..configuration.services import ConfigService
 from ..dependency import IScoped
-from ..logging.loggers.database import SqlLogger
+from ..logging.loggers.sql import SqlLogger
 
 
 class EmailProvider(IScoped):

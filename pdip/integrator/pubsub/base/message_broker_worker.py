@@ -23,7 +23,8 @@ class MessageBrokerWorker(threading.Thread):
                 self.message_channel.put(work)
                 if work.is_finished:
                     break
+                self.publish_channel.done()
             except queue.Empty:
                 return
             finally:
-                self.publish_channel.done()
+                pass

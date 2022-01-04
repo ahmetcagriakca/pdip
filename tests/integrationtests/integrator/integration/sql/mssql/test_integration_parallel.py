@@ -32,7 +32,7 @@ class TestMssqlIntegration(TestCase):
         try:
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
-                ConnectionType=ConnectionTypes.Database,
+                ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.MSSQL,
                 Server=Server(
                     Host='localhost,1433'
@@ -58,11 +58,11 @@ class TestMssqlIntegration(TestCase):
                 Name='TestOperation',
                 Integrations=[
                     OperationIntegrationBase(
+                        Name='TestIntegrationCreateTable',
                         Order=1,
                         Limit=0,
                         ProcessCount=0,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationCreateTable',
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
@@ -74,11 +74,11 @@ class TestMssqlIntegration(TestCase):
                         )
                     ),
                     OperationIntegrationBase(
+                        Name='TestIntegrationLoadData',
                         Order=2,
                         Limit=50000,
                         ProcessCount=5,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationLoadData',
                             SourceConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
@@ -100,11 +100,11 @@ class TestMssqlIntegration(TestCase):
                         )
                     ),
                     OperationIntegrationBase(
+                        Name='TestIntegrationDropTable',
                         Order=3,
                         Limit=0,
                         ProcessCount=0,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationDropTable',
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,

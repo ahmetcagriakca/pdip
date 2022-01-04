@@ -12,7 +12,7 @@ from ..base import IntegrationExecuteStrategy
 from ...domain.base import IntegrationBase
 from ....connection.domain.task import DataQueueTask
 from ....connection.factories import ConnectionAdapterFactory
-from ....models.enums.events import EVENT_LOG
+from ....domain.enums.events import EVENT_LOG
 from ....operation.domain import OperationIntegrationBase
 from ....pubsub.base import ChannelQueue
 from ....pubsub.domain import TaskMessage

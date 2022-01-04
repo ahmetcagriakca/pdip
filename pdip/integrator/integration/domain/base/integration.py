@@ -40,7 +40,6 @@ class IntegrationConnectionBase:
 
 @dataclass
 class IntegrationBase:
-    Name: str = None
     SourceConnections: IntegrationConnectionBase = None
     TargetConnections: IntegrationConnectionBase = None
     IsTargetTruncate: bool = None

@@ -28,25 +28,25 @@ class SqlProvider(IScoped):
         Creating Context
         """
         if connector_type == ConnectorTypes.ORACLE:
-            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Database,
+            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=connector_type.ORACLE,
                                                 Server=Server(Host=host, Port=port),
                                                 BasicAuthentication=BasicAuthentication(User=user, Password=password),
                                                 Sid=sid, ServiceName=service_name)
         elif connector_type == ConnectorTypes.MSSQL:
-            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Database,
+            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MSSQL,
                                                 Server=Server(Host=host, Port=port),
                                                 BasicAuthentication=BasicAuthentication(User=user, Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.POSTGRESQL:
-            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Database,
+            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.POSTGRESQL,
                                                 Server=Server(Host=host, Port=port),
                                                 BasicAuthentication=BasicAuthentication(User=user, Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.MYSQL:
-            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Database,
+            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MYSQL,
                                                 Server=Server(Host=host, Port=port),
                                                 BasicAuthentication=BasicAuthentication(User=user, Password=password),

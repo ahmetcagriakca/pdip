@@ -32,7 +32,7 @@ class TestOracleIntegration(TestCase):
         try:
             connection = SqlConnectionConfiguration(
                 Name='TestConnection',
-                ConnectionType=ConnectionTypes.Database,
+                ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.ORACLE,
                 Server=Server(
                     Host='localhost',

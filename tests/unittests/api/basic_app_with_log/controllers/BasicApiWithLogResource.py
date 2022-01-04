@@ -1,7 +1,7 @@
 from injector import inject
 
 from pdip.api.base import ResourceBase
-from pdip.logging.loggers.database import SqlLogger
+from pdip.logging.loggers.sql import SqlLogger
 
 
 # @inject

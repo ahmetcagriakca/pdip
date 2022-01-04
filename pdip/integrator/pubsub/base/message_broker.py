@@ -18,19 +18,32 @@ class MessageBroker:
                                                                other_arg=None)
         self.listener: EventListener = None
         self.subscribers = {}
+        self.max_join_time = 60
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def __del__(self):
+        self.close()
+
+    def close(self):
         self.manager.shutdown()
+
+    def get_publish_channel(self):
+        return self.publish_channel
 
     def start(self):
         self.worker.start()
         self.listener = EventListener(channel=self.message_channel, subscribers=self.subscribers, logger=self.logger)
         self.listener.start()
 
+    def join(self):
+        self.worker.join(self.max_join_time)
+        self.listener.join(self.max_join_time)
+
     def subscribe(self, event, callback):
         if not callable(callback):
             raise ValueError("callback must be callable")
-
         if event is None or event == "":
             raise ValueError("Event cant be empty")
 

@@ -10,7 +10,7 @@ class EventListener(threading.Thread):
     def __init__(self,
                  channel: ChannelQueue,
                  subscribers: {},
-                 logger:ConsoleLogger,
+                 logger: ConsoleLogger,
                  *args, **kwargs
                  ):
         self.logger = logger
@@ -29,7 +29,8 @@ class EventListener(threading.Thread):
                     self.logger.warning("Event {0} has no subscribers".format(task.event))
                 if task.is_finished:
                     break
+                self.channel.done()
             except queue.Empty:
                 return
             finally:
-                self.channel.done()
+                pass
