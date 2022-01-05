@@ -54,17 +54,17 @@ class TestMysqlConnection(TestCase):
         Name varchar(100) NULL
     )''')
             self.database_context.execute('''insert into test_pdi.test_source(Id,Name) values(1,'test')''')
-            data = self.database_context.fetch('''select * from test_pdi.test_source''')
+            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
             assert len(data) == 1
             assert data[0]["Id"] == 1
             assert data[0]["Name"] == 'test'
 
             self.database_context.execute('''update test_pdi.test_source set Name='Update' where Id=1''')
-            data = self.database_context.fetch('''select * from test_pdi.test_source''')
+            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
             assert data[0]["Id"] == 1
             assert data[0]["Name"] == 'Update'
             self.database_context.execute('''delete from test_pdi.test_source where Id=1''')
-            data = self.database_context.fetch('''select * from test_pdi.test_source''')
+            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
             assert len(data) == 0
         except Exception as ex:
             print(ex)
