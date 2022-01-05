@@ -12,9 +12,9 @@ from ..logging.loggers.sql import SqlLogger
 
 class EmailProvider(IScoped):
     @inject
-    def __init__(self, config_service: ConfigService, sql_logger: SqlLogger):
+    def __init__(self, config_service: ConfigService, logger: SqlLogger):
         super().__init__()
-        self.sql_logger = sql_logger
+        self.logger = logger
         self.config_service = config_service
 
     def send(self, to, subject, body):
@@ -28,13 +28,13 @@ class EmailProvider(IScoped):
             password = self.config_service.get_config_by_name("EMAIL_PASSWORD")
 
             if host is None:
-                self.sql_logger.error("Email not configured")
+                self.logger.error("Email not configured")
                 return
             if smtp_address is None:
-                self.sql_logger.error("Email smtp not configured")
+                self.logger.error("Email smtp not configured")
                 return
             if from_address is None:
-                self.sql_logger.error("Email from_address not configured")
+                self.logger.error("Email from_address not configured")
                 return
 
             # Create the root message and fill in the from, to, and subject headers
@@ -80,13 +80,13 @@ class EmailProvider(IScoped):
 
         except (gaierror, ConnectionRefusedError)as ex:
             # tell the script to report if your message was sent or which errors need to be fixed
-            self.sql_logger.error('Failed to connect to the server. Bad connection settings? Error:' + str(ex))
+            self.logger.error('Failed to connect to the server. Bad connection settings? Error:' + str(ex))
         except smtplib.SMTPServerDisconnected as ex:
-            self.sql_logger.error('Failed to connect to the server. Wrong user/password? Error:' + str(ex))
+            self.logger.error('Failed to connect to the server. Wrong user/password? Error:' + str(ex))
         except smtplib.SMTPException as ex:
-            self.sql_logger.error('SMTP error occurred: ' + str(ex))
+            self.logger.error('SMTP error occurred: ' + str(ex))
         else:
-            self.sql_logger.info('Email sent successfully')
+            self.logger.info('Email sent successfully')
         finally:
             if smtp is not None:
                 smtp.close()

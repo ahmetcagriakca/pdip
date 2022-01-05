@@ -15,12 +15,12 @@
 # class FileAdapter(ConnectionAdapter):
 #     @inject
 #     def __init__(self,
-#                  sql_logger: SqlLogger,
+#                  logger: SqlLogger,
 #                  file_provider: FileProvider,
 #                  operation_cache_service: OperationCacheService,
 #                  ):
 #         self.operation_cache_service = operation_cache_service
-#         self.sql_logger = sql_logger
+#         self.logger = logger
 #         self.file_provider = file_provider
 #
 #     def clear_data(self, data_integration_id) -> int:
@@ -84,7 +84,7 @@
 #
 #             csv_files = source_context.get_all_files(folder_name=source_connection.File.Folder, file_regex='(.*csv$)')
 #             for csv_file in csv_files:
-#                 self.sql_logger.info(f"file read started. FilePath:{csv_file} ")
+#                 self.logger.info(f"file read started. FilePath:{csv_file} ")
 #                 source_context.get_unpredicted_data(file=csv_file,
 #                                                     names=headers,
 #                                                     header=has_header,
