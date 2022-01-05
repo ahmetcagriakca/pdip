@@ -53,11 +53,11 @@ class TestPostgresqlIntegration(TestCase):
                 Name='TestOperation',
                 Integrations=[
                     OperationIntegrationBase(
+                        Name='TestIntegrationCreateTable',
                         Order=1,
                         Limit=0,
                         ProcessCount=0,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationCreateTable',
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
@@ -69,11 +69,11 @@ class TestPostgresqlIntegration(TestCase):
                         )
                     ),
                     OperationIntegrationBase(
+                        Name='TestIntegrationLoadData',
                         Order=2,
                         Limit=50000,
                         ProcessCount=5,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationLoadData',
                             SourceConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
@@ -95,11 +95,11 @@ class TestPostgresqlIntegration(TestCase):
                         )
                     ),
                     OperationIntegrationBase(
+                        Name='TestIntegrationDropTable',
                         Order=3,
                         Limit=0,
                         ProcessCount=0,
                         Integration=IntegrationBase(
-                            Name='TestIntegrationDropTable',
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
