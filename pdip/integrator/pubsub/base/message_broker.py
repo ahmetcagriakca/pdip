@@ -27,11 +27,11 @@ class MessageBroker:
         self.close()
 
     def close(self):
-        if self.worker.is_alive():
-            self.worker.terminate()
-        if self.listener.is_alive():
-            self.listener.terminate()
         self.manager.shutdown()
+        if self.worker.is_alive() and not self.worker.stopped():
+            self.worker.stop()
+        if self.listener.is_alive() and not self.listener.stopped():
+            self.listener.stop()
 
     def get_publish_channel(self):
         return self.publish_channel
