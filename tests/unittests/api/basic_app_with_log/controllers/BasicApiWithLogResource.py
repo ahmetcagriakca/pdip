@@ -11,11 +11,11 @@ from pdip.logging.loggers.sql import SqlLogger
 class BasicApiWithLogResource(ResourceBase):
     @inject
     def __init__(self,
-                 sql_logger: SqlLogger,
+                 logger: SqlLogger,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sql_logger = sql_logger
+        self.logger = logger
 
     def get(self, value: int) -> str:
-        self.sql_logger.info('data:' + str(value))
+        self.logger.info('data:' + str(value))
         return "testdata:" + str(value)

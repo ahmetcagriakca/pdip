@@ -11,10 +11,10 @@ from ...logging.loggers.sql import SqlLogger
 class ErrorHandlers(ISingleton):
     @inject
     def __init__(self,
-                 sql_logger: SqlLogger,
+                 logger: SqlLogger,
                  repository_provider: RepositoryProvider):
         self.repository_provider = repository_provider
-        self.sql_logger = sql_logger
+        self.logger = logger
         self.separator = '|'
         self.default_content_type = "application/json"
         self.mime_type_string = "mimetype"
@@ -34,7 +34,7 @@ class ErrorHandlers(ISingleton):
         message = "empty"
         if exception is not None and exception.description is not None:
             message = exception.description
-        self.sql_logger.error(f'code:{exception.code} - name:{exception.name} - Message:{message}')
+        self.logger.error(f'code:{exception.code} - name:{exception.name} - Message:{message}')
         response.content_type = self.default_content_type
         return response
 
@@ -56,7 +56,7 @@ class ErrorHandlers(ISingleton):
         trace_message = "empty"
         if exception_traceback is not None and exception_traceback != "":
             trace_message = exception_traceback
-        self.sql_logger.error(f'Messsage:{output_message} - Trace:{trace_message}')
+        self.logger.error(f'Messsage:{output_message} - Trace:{trace_message}')
         return {
                    "Result": "",
                    "IsSuccess": "false",
@@ -78,7 +78,7 @@ class ErrorHandlers(ISingleton):
         trace_message = "empty"
         if exception_traceback is not None and exception_traceback != "":
             trace_message = exception_traceback
-        self.sql_logger.error(
+        self.logger.error(
             f'Operational Exception Messsage:{output_message} - Trace:{trace_message}')
         return {
                    "Result": "",
