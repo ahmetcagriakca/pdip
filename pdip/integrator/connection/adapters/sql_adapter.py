@@ -95,13 +95,14 @@ class SqlAdapter(ConnectionAdapter):
         target_context = self.sql_provider.get_context_by_config(
             config=integration.TargetConnections.Sql.Connection)
 
-        columns = integration.TargetConnections.Columns
+        columns = integration.SourceConnections.Columns
         if columns is not None:
-            target_columns = [(column.Name, column.Type) for column in
+            source_columns = [(column.Name, column.Type) for column in
                               columns]
             prepared_target_query = target_context.prepare_target_query(
-                column_rows=target_columns,
-                query=integration.TargetConnections.Sql.Query)
+                column_rows=source_columns,
+                query=integration.TargetConnections.Sql.Query
+            )
         else:
             schema = integration.TargetConnections.Sql.Schema
             table = integration.TargetConnections.Sql.ObjectName

@@ -5,8 +5,8 @@ from ..domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_F
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET, EVENT_LOG, EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE
 from ..operation.base import OperationExecution
 from ..operation.domain import OperationBase
-from ..operation.domain.operation import OperationExecutionBase, \
-    OperationIntegrationExecutionBase
+from ..operation.domain.operation import ExecutionOperationBase, \
+    ExecutionOperationIntegrationBase
 from ..pubsub.base import MessageBroker
 from ...dependency.container import DependencyContainer
 from ...logging.loggers.console import ConsoleLogger
@@ -37,36 +37,41 @@ class Integrator:
         if hasattr(self, 'message_broker'):
             del self.message_broker
 
-    def integrate(self, operation: any):
+    def integrate(self, operation: any, execution_id: int = None, ap_scheduler_job_id: int = None):
         if operation is None:
             raise Exception('Operation required')
         self.initialize()
 
         if isinstance(operation, OperationBase):
-            self.initialize_events(execution_id=None, operation=operation)
+            self.initialize_execution(operation=operation, execution_id=execution_id,
+                                      ap_scheduler_job_id=ap_scheduler_job_id)
             self.operation_execution.start(operation, self.message_broker.get_publish_channel())
         elif isinstance(operation, str) or isinstance(operation, dict):
             self.operation_execution.start(operation, self.message_broker.get_publish_channel())
         self.message_broker.join()
         self.close()
 
-    def initialize_events(self, execution_id: int, operation: OperationBase):
-        operation_execution = OperationExecutionBase(
+    def initialize_execution(self, operation: OperationBase, execution_id: int = None, ap_scheduler_job_id: int = None):
+        execution_operation = ExecutionOperationBase(
             Id=execution_id,
+            ApSchedulerJobId=ap_scheduler_job_id,
             OperationId=operation.Id,
             Name=operation.Name,
             Events=[]
         )
-        operation.Execution = operation_execution
+        operation.Execution = execution_operation
 
         for operation_integration in operation.Integrations:
-            operation_integration_execution = OperationIntegrationExecutionBase(
+            execution_operation_integration = ExecutionOperationIntegrationBase(
                 Id=None,
+                OperationId=operation.Id,
+                OperationExecutionId=execution_id,
+                ApSchedulerJobId=ap_scheduler_job_id,
                 OperationIntegrationId=operation_integration.Id,
                 Name=operation_integration.Name,
                 Events=[]
             )
-            operation_integration.Execution = operation_integration_execution
+            operation_integration.Execution = execution_operation_integration
 
     def subscribe(self, event, callback):
         self.message_broker.subscribe(event, callback)

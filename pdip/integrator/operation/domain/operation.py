@@ -10,6 +10,7 @@ from ...integration.domain.base import IntegrationBase
 @dataclass
 class ExecutionBase:
     Id: int = None
+    ApSchedulerJobId: int = None
     Status: StatusTypes = None
     StartDate: datetime = None
     EndDate: datetime = None
@@ -23,30 +24,31 @@ class EventBase:
 
 
 @dataclass
-class OperationIntegrationExecutionEvent(EventBase):
+class ExecutionOperationIntegrationEvent(EventBase):
     pass
 
 
 @dataclass
-class OperationIntegrationExecutionBase(ExecutionBase):
+class ExecutionOperationIntegrationBase(ExecutionBase):
     Name: str = None
+    OperationId: int = None
     OperationExecutionId: int = None
     OperationIntegrationId: int = None
-    Events: List[OperationIntegrationExecutionEvent] = None
+    Events: List[ExecutionOperationIntegrationEvent] = None
 
 
 @dataclass
-class OperationExecutionEvent(EventBase):
+class ExecutionOperationEvent(EventBase):
     OperationId: int = None
     Status: StatusTypes = None
     Event: int = None
 
 
 @dataclass
-class OperationExecutionBase(ExecutionBase):
+class ExecutionOperationBase(ExecutionBase):
     Name: str = None
     OperationId: int = None
-    Events: List[OperationExecutionEvent] = None
+    Events: List[ExecutionOperationEvent] = None
 
 
 @dataclass
@@ -57,7 +59,7 @@ class OperationIntegrationBase:
     Limit: int = None
     ProcessCount: int = None
     Integration: IntegrationBase = None
-    Execution: OperationIntegrationExecutionBase = None
+    Execution: ExecutionOperationIntegrationBase = None
 
 
 @dataclass
@@ -65,4 +67,4 @@ class OperationBase:
     Id: int = None
     Name: str = None
     Integrations: List[OperationIntegrationBase] = None
-    Execution: OperationExecutionBase = None
+    Execution: ExecutionOperationBase = None
