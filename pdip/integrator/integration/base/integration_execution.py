@@ -33,7 +33,7 @@ class IntegrationExecution(IScoped):
             initializer = self.operation_integration_initializer_factory.get_initializer()
             if initializer is not None:
                 initializer.initialize(operation_integration)
-            initialize_message = f'{operation_integration.Name} integration initialized.'
+            initialize_message = f'integration initialized.'
             publisher.publish(
                 message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_INITIALIZED,
                                     kwargs={'data': operation_integration,

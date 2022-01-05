@@ -97,12 +97,12 @@ class BigDataAdapter(ConnectionAdapter):
         target_context = self.provider.get_context_by_config(
             config=integration.TargetConnections.BigData.Connection)
 
-        columns = integration.TargetConnections.Columns
+        columns = integration.SourceConnections.Columns
         if columns is not None:
-            target_columns = [(column.Name, column.Type) for column in
+            source_columns = [(column.Name, column.Type) for column in
                               columns]
             prepared_target_query = target_context.prepare_target_query(
-                column_rows=target_columns,
+                column_rows=source_columns,
                 query=integration.TargetConnections.BigData.Query)
         else:
             schema = integration.TargetConnections.BigData.Schema

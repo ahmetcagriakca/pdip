@@ -30,7 +30,7 @@ class OperationExecution(IScoped):
     def start(self, operation: OperationBase, channel: ChannelQueue):
         publisher = Publisher(channel=channel)
         try:
-            initializer=self.operation_initializer_factory.get_initializer()
+            initializer = self.operation_initializer_factory.get_initializer()
             if initializer is not None:
                 initializer.initialize(operation)
             publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INITIALIZED, kwargs={'data': operation}))
