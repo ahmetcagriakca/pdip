@@ -4,15 +4,14 @@ from injector import inject
 from ...configuration.models.api import ApiConfig
 from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
+from ...dependency.container import DependencyContainer
 
 
 class RequestHandler(ISingleton):
     @inject
     def __init__(self,
-                 api_config: ApiConfig,
-                 repository_provider: RepositoryProvider
+                 api_config: ApiConfig
                  ):
-        self.repository_provider = repository_provider
         self.api_config = api_config
 
     def set_headers(self, response):
@@ -29,5 +28,5 @@ class RequestHandler(ISingleton):
 
     def after_request(self, response: Response):
         response = self.set_headers(response=response)
-        self.repository_provider.close()
+        DependencyContainer.Instance.get(RepositoryProvider).close()
         return response
