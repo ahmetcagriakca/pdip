@@ -12,7 +12,6 @@ def transactionhandler(func):
             return result
         except Exception as ex:
             repository_provider.rollback()
-            print(ex)
             raise
         finally:
             repository_provider.close()

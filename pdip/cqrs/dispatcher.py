@@ -46,12 +46,11 @@ class Dispatcher(IScoped):
             raise Exception("Handler not founded")
         try:
             result = handler.handle(cq)
-            self.service_provider.get(RepositoryProvider).commit()
             if isinstance(cq, IQuery):
                 return result
         except Exception as ex:
-            self.service_provider.get(RepositoryProvider).rollback()
             self.service_provider.get(SqlLogger).exception(ex, str(ex))
             raise
         finally:
-            self.service_provider.get(RepositoryProvider).close()
+            # self.service_provider.get(RepositoryProvider).close()
+            pass

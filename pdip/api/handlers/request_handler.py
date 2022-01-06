@@ -1,17 +1,20 @@
 from flask import request, Response
 from injector import inject
 
+from ...dependency.provider import ServiceProvider
 from ...configuration.models.api import ApiConfig
 from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
-from ...dependency.container import DependencyContainer
 
 
 class RequestHandler(ISingleton):
     @inject
-    def __init__(self,
-                 api_config: ApiConfig
-                 ):
+    def __init__(
+            self,
+            api_config: ApiConfig,
+            service_provider: ServiceProvider
+    ):
+        self.service_provider = service_provider
         self.api_config = api_config
 
     def set_headers(self, response):
@@ -29,5 +32,5 @@ class RequestHandler(ISingleton):
     def after_request(self, response: Response):
         response = self.set_headers(response=response)
         # To terminate database operations at the end of the transaction
-        DependencyContainer.Instance.get(RepositoryProvider).close()
+        self.service_provider.get(RepositoryProvider).close()
         return response

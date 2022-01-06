@@ -2,7 +2,6 @@ import queue
 import threading
 
 from pdip.logging.loggers.console import ConsoleLogger
-
 from .channel_queue import ChannelQueue
 from ..domain import TaskMessage
 
@@ -42,8 +41,8 @@ class EventListener(threading.Thread):
                 self.channel.done()
             except queue.Empty:
                 return
-            except Exception as e:
-                self.logger.error('error')
+            except Exception as ex:
+                self.logger.exception(ex, f'Event listener getting error.')
                 return
             finally:
                 pass
