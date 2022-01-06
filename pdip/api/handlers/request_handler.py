@@ -28,5 +28,6 @@ class RequestHandler(ISingleton):
 
     def after_request(self, response: Response):
         response = self.set_headers(response=response)
+        # To terminate database operations at the end of the transaction
         DependencyContainer.Instance.get(RepositoryProvider).close()
         return response
