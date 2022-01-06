@@ -8,8 +8,11 @@ from .icommand import ICommand
 from .icommand_handler import ICommandHandler
 from .iquery import IQuery
 from .iquery_handler import IQueryHandler
+from ..data.repository import RepositoryProvider
 from ..dependency import IScoped
 from ..dependency.provider import ServiceProvider
+from ..exceptions import OperationalException
+from ..logging.loggers.sql import SqlLogger
 
 T = TypeVar('T', covariant=True)
 
@@ -31,7 +34,6 @@ class Dispatcher(IScoped):
                 instance = self.service_provider.get(handler_class)
                 return instance
 
-
     def dispatch(self, cq: CommandQueryBase[T]) -> T:
         if isinstance(cq, IQuery):
             handler_type = IQueryHandler
@@ -42,4 +44,14 @@ class Dispatcher(IScoped):
         handler = self.find_handler(cq, handler_type)
         if handler is None:
             raise Exception("Handler not founded")
-        return handler.handle(cq)
+        try:
+            result = handler.handle(cq)
+            self.service_provider.get(RepositoryProvider).commit()
+            if isinstance(cq, IQuery):
+                return result
+        except Exception as ex:
+            self.service_provider.get(RepositoryProvider).rollback()
+            self.service_provider.get(SqlLogger).exception(ex, str(ex))
+            raise
+        finally:
+            self.service_provider.get(RepositoryProvider).close()

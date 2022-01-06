@@ -52,7 +52,7 @@ class EndpointWrapper:
         elif value == bool:
             specified_value = fields.Boolean(description=f'{key}')
         elif value == datetime:
-            specified_value = fields.DateTime(description=f'{key}', example=(datetime.now().isoformat()))
+            specified_value = fields.DateTime(description=f'{key}', example=datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         elif value == float:
             specified_value = fields.Float(description=f'{key}')
         elif value == any:
