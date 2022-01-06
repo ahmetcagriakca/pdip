@@ -2,7 +2,7 @@ from injector import inject
 from sqlalchemy.exc import OperationalError
 
 from .seed import Seed
-from ..repository import RepositoryProvider
+from ..base import DatabaseSessionManager
 from ...dependency import IScoped
 from ...dependency.provider import ServiceProvider
 from ...logging.loggers.sql import SqlLogger
@@ -12,22 +12,23 @@ class SeedRunner(IScoped):
     @inject
     def __init__(self,
                  logger: SqlLogger,
-                 repository_provider: RepositoryProvider,
                  service_provider: ServiceProvider,
                  ):
         self.service_provider = service_provider
-        self.repository_provider = repository_provider
         self.logger = logger
 
     def run(self):
         try:
-            for seedClass in Seed.__subclasses__():
+            # trying to connect database first
+            database_session_manager = self.service_provider.get(DatabaseSessionManager)
+            database_session_manager.connect()
+            for seed_class in Seed.__subclasses__():
                 try:
-                    instance = self.service_provider.get(seedClass)
+                    instance = self.service_provider.get(seed_class)
                     instance.seed()
                 except Exception as ex:
                     self.logger.exception(ex, "Class instance not found on container.")
-                    instance = seedClass()
+                    instance = seed_class()
                     instance.seed()
 
         except OperationalError as opex:
@@ -35,4 +36,4 @@ class SeedRunner(IScoped):
         except Exception as ex:
             self.logger.exception(ex, "Seeds getting error.")
         finally:
-            self.repository_provider.close()
+            self.service_provider.get(DatabaseSessionManager).close()
