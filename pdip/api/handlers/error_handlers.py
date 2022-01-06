@@ -5,15 +5,18 @@ from injector import inject
 
 from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
+from ...dependency.provider import ServiceProvider
 from ...logging.loggers.sql import SqlLogger
 
 
 class ErrorHandlers(ISingleton):
     @inject
-    def __init__(self,
-                 logger: SqlLogger,
-                 repository_provider: RepositoryProvider):
-        self.repository_provider = repository_provider
+    def __init__(
+            self,
+            logger: SqlLogger,
+            service_provider: ServiceProvider
+    ):
+        self.service_provider = service_provider
         self.logger = logger
         self.separator = '|'
         self.default_content_type = "application/json"
@@ -40,7 +43,7 @@ class ErrorHandlers(ISingleton):
 
     def handle_exception(self, exception):
         """Return JSON instead of HTML for HTTP errors."""
-        self.repository_provider.rollback()
+        self.service_provider.get(RepositoryProvider).rollback()
         # start with the correct headers and status code from the error
         exception_traceback = traceback.format_exc()
         output = self.separator.join(exception.args)
@@ -68,7 +71,7 @@ class ErrorHandlers(ISingleton):
         default_content_type = "application/json"
         mime_type_string = "mimetype"
         """Return JSON instead of HTML for HTTP errors."""
-        self.repository_provider.rollback()
+        self.service_provider.get(RepositoryProvider).rollback()
         # start with the correct headers and status code from the error
         exception_traceback = traceback.format_exc()
         output = separator.join(exception.args)
