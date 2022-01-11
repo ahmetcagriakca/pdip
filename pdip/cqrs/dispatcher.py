@@ -44,13 +44,6 @@ class Dispatcher(IScoped):
         handler = self.find_handler(cq, handler_type)
         if handler is None:
             raise Exception("Handler not founded")
-        try:
-            result = handler.handle(cq)
-            if isinstance(cq, IQuery):
-                return result
-        except Exception as ex:
-            self.service_provider.get(SqlLogger).exception(ex, str(ex))
-            raise
-        finally:
-            # self.service_provider.get(RepositoryProvider).close()
-            pass
+        result = handler.handle(cq)
+        if isinstance(cq, IQuery):
+            return result
