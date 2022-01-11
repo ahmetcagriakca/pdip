@@ -74,3 +74,4 @@ node_modules
 *.log.md
 _trial*
 .vscode/settings.json
+**/temp/
