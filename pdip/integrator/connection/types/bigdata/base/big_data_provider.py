@@ -1,14 +1,14 @@
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.integrator.connection.domain.authentication.basic import BasicAuthentication
-from pdip.integrator.connection.domain.authentication.kerberos import KerberosAuthentication
-from pdip.integrator.connection.domain.authentication.mechanism import MechanismTypes
-from pdip.integrator.connection.domain.bigdata import BigDataConnectionConfiguration
-from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
-from pdip.integrator.connection.domain.server.base import Server
 from .big_data_context import BigDataContext
 from .big_data_policy import BigDataPolicy
+from ....domain.authentication.basic import BasicAuthentication
+from ....domain.authentication.kerberos import KerberosAuthentication
+from ....domain.authentication.mechanism import MechanismTypes
+from ....domain.bigdata import BigDataConnectionConfiguration
+from ....domain.enums import ConnectorTypes, ConnectionTypes
+from ....domain.server.base import Server
+from ......dependency import IScoped
 
 
 class BigDataProvider(IScoped):

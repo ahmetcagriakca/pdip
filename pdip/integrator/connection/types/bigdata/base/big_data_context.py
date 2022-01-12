@@ -1,7 +1,6 @@
 import re
 import time
 
-import pandas as pd
 from injector import inject
 
 from .big_data_connector import BigDataConnector

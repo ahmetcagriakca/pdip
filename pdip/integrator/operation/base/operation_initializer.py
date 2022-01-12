@@ -1,7 +1,7 @@
 from injector import inject
 
-from pdip.integrator.base import Initializer
-from pdip.integrator.operation.domain import OperationBase
+from ..domain import OperationBase
+from ...base import Initializer
 
 
 class OperationInitializer(Initializer):

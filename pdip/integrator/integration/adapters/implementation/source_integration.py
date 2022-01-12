@@ -63,6 +63,8 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             message = f"{integration.TargetConnections.Sql.Schema}.{integration.TargetConnections.Sql.ObjectName} integration execute started."
         elif integration.TargetConnections.BigData is not None:
             message = f"{integration.TargetConnections.BigData.Schema}.{integration.TargetConnections.BigData.ObjectName} integration execute started."
+        elif integration.TargetConnections.WebService is not None:
+            message = f"{integration.TargetConnections.WebService.Method} integration execute started."
         elif integration.TargetConnections.File is not None:
             message = f"{integration.TargetConnections.File.Folder}\\{integration.TargetConnections.File.FileName} integration execute started."
         elif integration.TargetConnections.Queue is not None:
@@ -75,6 +77,8 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             message = f"{integration.TargetConnections.Sql.Schema}.{integration.TargetConnections.Sql.ObjectName} integration execute finished."
         elif integration.TargetConnections.BigData is not None:
             message = f"{integration.TargetConnections.BigData.Schema}.{integration.TargetConnections.BigData.ObjectName} integration execute finished."
+        elif integration.TargetConnections.BigData is not None:
+            message = f"{integration.TargetConnections.WebService.Method} integration execute finished."
         elif integration.TargetConnections.File is not None:
             message = f"{integration.TargetConnections.File.Folder}\\{integration.TargetConnections.File.FileName} integration execute finished."
         elif integration.TargetConnections.Queue is not None:
@@ -88,6 +92,8 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             message = f"{integration.TargetConnections.Sql.Schema}.{integration.TargetConnections.Sql.ObjectName} integration execute getting error."
         elif integration.TargetConnections.BigData is not None:
             message = f"{integration.TargetConnections.BigData.Schema}.{integration.TargetConnections.BigData.ObjectName} integration execute getting error."
+        if integration.TargetConnections.WebService is not None:
+            message = f"{integration.TargetConnections.WebService.Method} integration execute getting error."
         elif integration.TargetConnections.File is not None:
             message = f"{integration.TargetConnections.File.Folder}\\{integration.TargetConnections.File.FileName} integration execute getting error."
         elif integration.TargetConnections.Queue is not None:

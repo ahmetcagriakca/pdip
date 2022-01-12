@@ -1,6 +1,6 @@
 from injector import inject
 
-from ..adapters import SqlAdapter, BigDataAdapter  # , FileAdapter, QueueAdapter
+from ..adapters import SqlAdapter, BigDataAdapter, WebServiceAdapter  # , FileAdapter, QueueAdapter
 from ..base import ConnectionAdapter
 from ..domain.enums import ConnectionTypes
 from ....dependency import IScoped
@@ -12,11 +12,13 @@ class ConnectionAdapterFactory(IScoped):
     def __init__(self,
                  sql_adapter: SqlAdapter,
                  big_data_adapter: BigDataAdapter,
+                 web_service_adapter: WebServiceAdapter,
                  # file_adapter: FileAdapter,
                  # queue_adapter: QueueAdapter,
                  ):
         # self.queue_adapter = queue_adapter
         # self.file_adapter = file_adapter
+        self.web_service_adapter = web_service_adapter
         self.big_data_adapter = big_data_adapter
         self.sql_adapter = sql_adapter
 
@@ -41,5 +43,10 @@ class ConnectionAdapterFactory(IScoped):
                 return self.big_data_adapter
             else:
                 raise IncompatibleAdapterException(f"{self.big_data_adapter} is incompatible with ConectionAdapter")
+        elif connection_type == ConnectionTypes.WebService:
+            if isinstance(self.web_service_adapter, ConnectionAdapter):
+                return self.web_service_adapter
+            else:
+                raise IncompatibleAdapterException(f"{self.web_service_adapter} is incompatible with ConectionAdapter")
         else:
             raise NotSupportedFeatureException(f"{connection_type.name}")

@@ -2,8 +2,8 @@ import importlib
 
 from injector import inject
 
-from ....domain.bigdata import BigDataConnectionConfiguration
 from .big_data_connector import BigDataConnector
+from ....domain.bigdata import BigDataConnectionConfiguration
 from ....domain.enums import ConnectorTypes
 
 
