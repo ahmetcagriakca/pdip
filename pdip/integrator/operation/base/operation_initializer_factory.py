@@ -1,8 +1,8 @@
 from injector import inject
 
-from pdip.dependency.provider import ServiceProvider
 from .operation_initializer import OperationInitializer
 from ....dependency import IScoped
+from ....dependency.provider import ServiceProvider
 
 
 class OperationInitializerFactory(IScoped):

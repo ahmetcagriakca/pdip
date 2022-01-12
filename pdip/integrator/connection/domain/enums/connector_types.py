@@ -10,3 +10,4 @@ class ConnectorTypes(Enum):
     Kafka = 6
     MYSQL = 7
     Impala = 8
+    Soap = 8

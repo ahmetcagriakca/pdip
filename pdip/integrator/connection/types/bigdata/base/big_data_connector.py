@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from pdip.dependency import IScoped
+from ......dependency import IScoped
 
 
 class BigDataConnector(IScoped):
