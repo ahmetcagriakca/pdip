@@ -1,4 +1,4 @@
-from .integrator_event_manager import DefaultIntegratorEventManager
+from . import DefaultIntegratorEventManager
 from ..domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_FINISHED, \
     EVENT_EXECUTION_STARTED, EVENT_EXECUTION_INTEGRATION_INITIALIZED, EVENT_EXECUTION_INTEGRATION_STARTED, \
     EVENT_EXECUTION_INTEGRATION_FINISHED, EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, \
@@ -23,33 +23,33 @@ class Integrator:
             self.logger = DependencyContainer.Instance.get(ConsoleLogger)
         else:
             self.integrator_event_manager = logger
-        self.message_broker: MessageBroker = None
+        self.message_broker = MessageBroker(self.logger)
 
     def __del__(self):
         self.close()
-
-    def initialize(self):
-        self.message_broker = MessageBroker(self.logger)
-        self.register_default_event_listeners(self.integrator_event_manager)
-        self.message_broker.start()
 
     def close(self):
         if hasattr(self, 'message_broker'):
             del self.message_broker
 
+    def __initialize(self):
+        self.message_broker.initialize()
+        self.register_default_event_listeners(self.integrator_event_manager)
+        self.message_broker.start()
+
     def integrate(self, operation: any, execution_id: int = None, ap_scheduler_job_id: int = None):
         if operation is None:
             raise Exception('Operation required')
-        self.initialize()
 
         if isinstance(operation, OperationBase):
-            self.initialize_execution(operation=operation, execution_id=execution_id,
-                                      ap_scheduler_job_id=ap_scheduler_job_id)
+            self.__initialize()
+            operation = self.initialize_execution(operation=operation, execution_id=execution_id,
+                                                  ap_scheduler_job_id=ap_scheduler_job_id)
             self.operation_execution.start(operation, self.message_broker.get_publish_channel())
-        elif isinstance(operation, str) or isinstance(operation, dict):
-            self.operation_execution.start(operation, self.message_broker.get_publish_channel())
-        self.message_broker.join()
-        self.close()
+            self.message_broker.join()
+            self.close()
+        else:
+            raise Exception('Operation type is not suitable')
 
     def initialize_execution(self, operation: OperationBase, execution_id: int = None, ap_scheduler_job_id: int = None):
         execution_operation = ExecutionOperationBase(
@@ -72,6 +72,7 @@ class Integrator:
                 Events=[]
             )
             operation_integration.Execution = execution_operation_integration
+        return operation
 
     def subscribe(self, event, callback):
         self.message_broker.subscribe(event, callback)
