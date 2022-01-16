@@ -16,7 +16,7 @@ class TestSqlUtils:
         )''')
 
         indexer_array = []
-        indexer = context.connector.get_target_query_indexer()
+        indexer = context.dialect.get_query_indexer()
         for index in range(2):
             column_indexer = indexer.format(index=index)
             indexer_array.append(column_indexer)

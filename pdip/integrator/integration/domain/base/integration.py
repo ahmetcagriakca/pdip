@@ -52,7 +52,6 @@ class IntegrationConnectionBase:
     Sql: IntegrationConnectionSqlBase = None
     BigData: IntegrationConnectionBigDataBase = None
     WebService: IntegrationConnectionWebServiceBase = None
-    WebService: IntegrationConnectionWebServiceBase = None
     File: any = None
     Queue: any = None
     Columns: List[IntegrationConnectionColumnBase] = None

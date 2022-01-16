@@ -1,13 +1,13 @@
 import psycopg2
 import psycopg2.extras as extras
-from injector import inject
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
-from ...base.sql_connector import SqlConnector
+from ...base import SqlConnector
+from .....domain.sql import SqlConnectionConfiguration
 
 
 class PostgresqlConnector(SqlConnector):
-    @inject
     def __init__(self, config: SqlConnectionConfiguration):
         self.config = config
         self.connection = None
@@ -33,6 +33,22 @@ class PostgresqlConnector(SqlConnector):
     def get_connection(self):
         return self.connection
 
+    def get_engine_connection_url(self):
+        connection_url = URL.create(
+            "postgresql+psycopg2",
+            username=self.config.BasicAuthentication.User,
+            password=self.config.BasicAuthentication.Password,
+            host=self.config.Server.Host,
+            port=self.config.Server.Port,
+            database=self.config.Database,
+        )
+        return connection_url
+
+    def get_engine(self):
+        connection_url = self.get_engine_connection_url()
+        engine = create_engine(connection_url)
+        return engine
+
     def execute_many(self, query, data):
         try:
             extras.execute_batch(self.cursor, query, data, 10000)
@@ -42,11 +58,3 @@ class PostgresqlConnector(SqlConnector):
             self.connection.rollback()
             self.cursor.close()
             raise
-
-    def get_table_count_query(self, query):
-        count_query = f"SELECT COUNT (*)  as \"COUNT\" FROM ({query})  as count_table"
-        return count_query
-
-    def get_target_query_indexer(self):
-        indexer = '%s'
-        return indexer

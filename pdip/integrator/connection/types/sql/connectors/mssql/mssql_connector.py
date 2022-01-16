@@ -1,9 +1,11 @@
 import os
 
 import pyodbc
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
-from ...base.sql_connector import SqlConnector
+from ...base import SqlConnector
+from .....domain.sql import SqlConnectionConfiguration
 
 
 class MssqlConnector(SqlConnector):
@@ -37,6 +39,21 @@ class MssqlConnector(SqlConnector):
         except Exception:
             pass
 
+    def get_connection(self):
+        return self.connection
+
+    def get_engine_connection_url(self):
+        connection_url = URL.create(
+            "mssql+pyodbc",
+            query={"odbc_connect": self.connection_string}
+        )
+        return connection_url
+
+    def get_engine(self):
+        connection_url = self.get_engine_connection_url()
+        engine = create_engine(connection_url)
+        return engine
+
     def find_driver_name(self):
         drivers = pyodbc.drivers()
         driver_name = None
@@ -52,9 +69,6 @@ class MssqlConnector(SqlConnector):
             else:
                 driver_name = drivers[0]
         return driver_name
-
-    def get_connection(self):
-        return self.connection
 
     def execute_many(self, query, data):
         self.cursor.fast_executemany = True
@@ -73,10 +87,3 @@ class MssqlConnector(SqlConnector):
                 self.connection.rollback()
                 self.cursor.close()
                 raise
-
-    def get_target_query_indexer(self):
-        indexer = '?'
-        return indexer
-
-    def get_table_data_with_paging_query(self, query, start, end):
-        return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by (select null)) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
