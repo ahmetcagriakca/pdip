@@ -1,3 +1,5 @@
+import os
+
 import pyodbc
 
 from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
@@ -7,16 +9,15 @@ from ...base.sql_connector import SqlConnector
 class MssqlConnector(SqlConnector):
     def __init__(self, config: SqlConnectionConfiguration):
         self.config: SqlConnectionConfiguration = config
-        # ;Client_CSet=UTF-8;Server_CSet=WINDOWS-1251
         if self.config.ConnectionString is not None and self.config.ConnectionString != '' and not self.config.ConnectionString.isspace():
             self.connection_string = self.config.ConnectionString
         else:
             if self.config.Driver is None or self.config.Driver == '':
                 self.config.Driver = self.find_driver_name()
-
-            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
+            app_name = os.getenv('MSSQL_APP_NAME', 'pdi')
+            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;APP=%s' % (
                 self.config.Driver, self.config.Server.Host, self.config.Database,
-                self.config.BasicAuthentication.User, self.config.BasicAuthentication.Password)
+                self.config.BasicAuthentication.User, self.config.BasicAuthentication.Password, app_name)
         self.connection = None
         self.cursor = None
 
@@ -79,14 +80,3 @@ class MssqlConnector(SqlConnector):
 
     def get_table_data_with_paging_query(self, query, start, end):
         return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by (select null)) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
-
-    def prepare_data(self, data):
-        # if data is not None and isinstance(data, str):
-        #     data = data\
-        #         .replace("ı", "i")\
-        #         .replace("ş", "s")\
-        #         .replace("ğ", "g")\
-        #         .replace("İ", "I")\
-        #         .replace("Ş","S")\
-        #         .replace("Ğ", "G")
-        return data

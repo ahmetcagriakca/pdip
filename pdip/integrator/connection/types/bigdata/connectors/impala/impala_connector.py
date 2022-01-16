@@ -78,14 +78,3 @@ class ImpalaConnector(BigDataConnector):
     def get_target_query_indexer(self):
         indexer = '?'
         return indexer
-
-    def prepare_data(self, data):
-        # if data is not None and isinstance(data, str):
-        #     data = data\
-        #         .replace("ı", "i")\
-        #         .replace("ş", "s")\
-        #         .replace("ğ", "g")\
-        #         .replace("İ", "I")\
-        #         .replace("Ş","S")\
-        #         .replace("Ğ", "G")
-        return data
