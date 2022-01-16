@@ -109,7 +109,7 @@ class SqlAdapter(ConnectionAdapter):
             if schema is None or schema == '' or table is None or table == '':
                 raise Exception(f"Schema and table required. {schema}.{table}")
             indexer_array = []
-            indexer = target_context.connector.get_target_query_indexer()
+            indexer = target_context.dialect.get_query_indexer()
             for index in range(source_column_count):
                 column_indexer = indexer.format(index=index)
                 indexer_array.append(column_indexer)
