@@ -7,3 +7,4 @@ class ConnectionTypes(Enum):
     Queue = 3
     BigData = 4
     WebService = 5
+    InMemory = 6

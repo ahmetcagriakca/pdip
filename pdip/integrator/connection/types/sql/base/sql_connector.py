@@ -46,6 +46,3 @@ class SqlConnector(IScoped):
     def get_table_data_with_paging_query(self, query, start, end):
         return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by null) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
 
-    @abstractmethod
-    def prepare_data(self, data):
-        return data
