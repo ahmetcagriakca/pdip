@@ -34,6 +34,10 @@ class OracleDialect(SqlDialect):
         schemas = self.inspector.get_schema_names()
         return schemas
 
+    def has_table(self, object_name, schema=None):
+        result = self.inspector.has_table(table_name=object_name, schema=schema)
+        return result
+
     def get_tables(self, schema):
         tables = self.inspector.get_table_names(schema=schema)
         return tables

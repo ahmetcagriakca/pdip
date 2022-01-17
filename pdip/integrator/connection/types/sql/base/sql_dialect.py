@@ -34,6 +34,10 @@ class SqlDialect:
         pass
 
     @abstractmethod
+    def has_table(self, object_name, schema=None):
+        pass
+
+    @abstractmethod
     def get_tables(self, schema):
         pass
 
