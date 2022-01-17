@@ -2,8 +2,8 @@ from typing import List
 
 from injector import inject
 
-from .operation_initializer_factory import OperationInitializerFactory
 from ...domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_STARTED, EVENT_EXECUTION_FINISHED
+from ...initializer.operation import OperationExecutionInitializerFactory
 from ...integration.base import IntegrationExecution
 from ...operation.domain import OperationBase, OperationIntegrationBase
 from ...pubsub.base import ChannelQueue
@@ -17,9 +17,9 @@ class OperationExecution(IScoped):
     @inject
     def __init__(self,
                  integration_execution: IntegrationExecution,
-                 operation_initializer_factory: OperationInitializerFactory,
+                 operation_execution_initializer_factory: OperationExecutionInitializerFactory,
                  ):
-        self.operation_initializer_factory = operation_initializer_factory
+        self.operation_execution_initializer_factory = operation_execution_initializer_factory
         self.integration_execution = integration_execution
 
     def __start_execution(self, operation_integrations: List[OperationIntegrationBase], channel: ChannelQueue):
@@ -30,9 +30,8 @@ class OperationExecution(IScoped):
     def start(self, operation: OperationBase, channel: ChannelQueue):
         publisher = Publisher(channel=channel)
         try:
-            initializer = self.operation_initializer_factory.get_initializer()
-            if initializer is not None:
-                initializer.initialize(operation)
+            initializer = self.operation_execution_initializer_factory.get()
+            operation = initializer.initialize(operation)
             publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INITIALIZED, kwargs={'data': operation}))
 
             publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_STARTED, kwargs={'data': operation}))

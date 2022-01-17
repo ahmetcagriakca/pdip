@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ..operation.domain import OperationBase, OperationIntegrationBase
+from ...operation.domain import OperationBase, OperationIntegrationBase
 
 
 class IntegratorEventManager(ABC):
@@ -43,5 +43,3 @@ class IntegratorEventManager(ABC):
     @abstractmethod
     def integration_execute_target(self, data: OperationIntegrationBase, row_count):
         pass
-
-

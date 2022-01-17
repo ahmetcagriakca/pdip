@@ -1,6 +1,5 @@
 import multiprocessing
 from multiprocessing.managers import SyncManager
-from queue import Queue
 
 from .channel_queue import ChannelQueue
 from .event_listener import EventListener
@@ -11,9 +10,9 @@ class MessageBroker:
     def __init__(self, logger):
         self.logger = logger
         self.manager: SyncManager = None
-        self.publish_queue: Queue = None
+        self.publish_queue = None
+        self.message_queue = None
         self.publish_channel: ChannelQueue = None
-        self.message_queue: Queue = None
         self.message_channel: ChannelQueue = None
         self.worker: MessageBrokerWorker = None
         self.listener: EventListener = None
@@ -37,8 +36,8 @@ class MessageBroker:
     def initialize(self):
         self.manager = multiprocessing.Manager()
         self.publish_queue = self.manager.Queue()
-        self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
         self.message_queue = self.manager.Queue()
+        self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
         self.message_channel = ChannelQueue(channel_queue=self.message_queue)
         self.worker: MessageBrokerWorker = MessageBrokerWorker(publish_channel=self.publish_channel,
                                                                message_channel=self.message_channel,
@@ -49,12 +48,12 @@ class MessageBroker:
         self.listener = EventListener(channel=self.message_channel, subscribers=self.subscribers, logger=self.logger)
         self.listener.start()
 
-    def get_publish_channel(self):
-        return self.publish_channel
-
     def join(self):
         self.worker.join(self.max_join_time)
         self.listener.join(self.max_join_time)
+
+    def get_publish_channel(self):
+        return self.publish_channel
 
     def subscribe(self, event, callback):
         if not callable(callback):
