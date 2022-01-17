@@ -2,10 +2,10 @@ import time
 
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.integrator.base import IntegratorEventManager
-from pdip.integrator.operation.domain import OperationBase, OperationIntegrationBase
-from pdip.logging.loggers.console import ConsoleLogger
+from .integrator_event_manager import IntegratorEventManager
+from ...operation.domain import OperationBase, OperationIntegrationBase
+from ....dependency import IScoped
+from ....logging.loggers.console import ConsoleLogger
 
 
 class DefaultIntegratorEventManager(IScoped, IntegratorEventManager):

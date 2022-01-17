@@ -2,11 +2,12 @@ from time import time
 
 from injector import inject
 
-from .integration_initializer_factory import OperationIntegrationInitializerFactory
 from ..adapters.base import IntegrationAdapter
 from ..factories import IntegrationAdapterFactory
-from ...domain.enums.events import EVENT_EXECUTION_INTEGRATION_FINISHED, EVENT_EXECUTION_INTEGRATION_STARTED, \
+from ...domain.enums.events import EVENT_EXECUTION_INTEGRATION_FINISHED, \
+    EVENT_EXECUTION_INTEGRATION_STARTED, \
     EVENT_EXECUTION_INTEGRATION_INITIALIZED
+from ...initializer.integration import OperationIntegrationExecutionInitializerFactory
 from ...operation.domain.operation import OperationIntegrationBase
 from ...pubsub.base import ChannelQueue
 from ...pubsub.domain import TaskMessage
@@ -18,10 +19,10 @@ class IntegrationExecution(IScoped):
     @inject
     def __init__(self,
                  integration_adapter_factory: IntegrationAdapterFactory,
-                 operation_integration_initializer_factory: OperationIntegrationInitializerFactory,
+                 operation_integration_execution_initializer_factory: OperationIntegrationExecutionInitializerFactory,
 
                  ):
-        self.operation_integration_initializer_factory = operation_integration_initializer_factory
+        self.operation_integration_execution_initializer_factory = operation_integration_execution_initializer_factory
         self.integration_adapter_factory = integration_adapter_factory
 
     def start(self, operation_integration: OperationIntegrationBase, channel: ChannelQueue):
@@ -30,9 +31,8 @@ class IntegrationExecution(IScoped):
         integration_adapter: IntegrationAdapter = self.integration_adapter_factory.get(
             integration=operation_integration.Integration)
         try:
-            initializer = self.operation_integration_initializer_factory.get_initializer()
-            if initializer is not None:
-                initializer.initialize(operation_integration)
+            initializer = self.operation_integration_execution_initializer_factory.get()
+            operation_integration = initializer.initialize(operation_integration)
             initialize_message = f'integration initialized.'
             publisher.publish(
                 message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_INITIALIZED,
