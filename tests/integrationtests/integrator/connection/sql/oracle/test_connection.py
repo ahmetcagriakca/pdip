@@ -1,7 +1,10 @@
 from unittest import TestCase
 
+from sqlalchemy import Column, Table, MetaData
+
 from pdip.integrator.connection.domain.enums import ConnectorTypes
 from pdip.integrator.connection.types.sql.base import SqlProvider
+from pdip.logging.loggers.console import ConsoleLogger
 
 
 class TestOracleConnection(TestCase):
@@ -77,3 +80,35 @@ class TestOracleConnection(TestCase):
         except Exception as ex:
             print(ex)
             raise
+
+    def test_integration(self):
+        try:
+            engine = self.context.connector.get_engine()
+            self.context.execute('''CREATE TABLE test_pdi.test_source (
+                Id INT NULL,
+                Name varchar(100) NULL
+            )''')
+            self.context.execute('''insert into test_pdi.test_source(Id,Name) values(1,'test')''')
+            TABLE_SPEC = [
+                ('id'),
+                ('name')
+            ]
+
+            TABLE_NAME = 'test_source'
+            TABLE_SCHEMA = 'test_pdi'
+            columns = [Column(n) for n in TABLE_SPEC]
+            table = Table(TABLE_NAME, MetaData(), schema=TABLE_SCHEMA, *columns)
+            from sqlalchemy.orm import sessionmaker, Session
+            _SessionFactory = sessionmaker(bind=engine)
+            session = _SessionFactory()
+
+            qu = table.select().limit(1).offset(0)
+            res = session.execute(qu)
+            result = list(res)
+            session.commit()
+            assert result[0][0] == 1
+        except Exception as ex:
+            ConsoleLogger().exception(ex)
+            raise
+        finally:
+            self.context.execute('''DROP TABLE test_pdi.test_source''')
