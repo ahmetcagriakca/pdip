@@ -38,7 +38,6 @@ FROM TEMP_INTEGRATION
 WHERE "row_number" > {start} AND "row_number" <= {end}
 '''
 
-
     def get_insert_query(self, schema, table, values_query):
         return f'insert into "{schema}"."{table}" values({values_query})'
 
