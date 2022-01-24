@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from pdip.base import Pdi
 from pdip.integrator.base import Integrator
-from pdip.integrator.connection.domain.authentication.basic import BasicAuthentication
+from pdip.integrator.connection.domain.authentication.basic import ConnectionBasicAuthentication
 from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
-from pdip.integrator.connection.domain.server.base import Server
+from pdip.integrator.connection.domain.server.base import ConnectionServer
 from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
 from pdip.integrator.connection.types.sql.base import SqlProvider
 from pdip.integrator.integration.domain.base import IntegrationBase, IntegrationConnectionBase, \
@@ -34,11 +34,11 @@ class TestMssqlIntegration(TestCase):
                 Name='TestConnection',
                 ConnectionType=ConnectionTypes.Sql,
                 ConnectorType=ConnectorTypes.MSSQL,
-                Server=Server(
+                Server=ConnectionServer(
                     Host='localhost,1433'
                 ),
                 Database='test_pdi',
-                BasicAuthentication=BasicAuthentication(
+                BasicAuthentication=ConnectionBasicAuthentication(
                     User='pdi',
                     Password='pdi!123456'
                 )

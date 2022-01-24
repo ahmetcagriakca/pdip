@@ -28,7 +28,18 @@ class MysqlDialect(SqlDialect):
         return f"SELECT * FROM ({query}) base_query"
 
     def get_table_data_with_paging_query(self, query, start, end):
-        return f"SELECT * FROM (select * from ({query}) base_query order by null) ordered_query limit {end - start} offset {start}"
+        return f'''
+SELECT * 
+FROM (
+    select * 
+    from ({query}) base_query 
+    order by null
+    ) ordered_query 
+limit {end - start} offset {start}
+'''
+
+    def get_insert_query(self, schema, table, values_query):
+        return f'insert into `{schema}`.`{table}` values({values_query})'
 
     def get_schemas(self):
         schemas = self.inspector.get_schema_names()

@@ -1,21 +1,25 @@
+from typing import Optional
+
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 
-from ..authentication.basic import BasicAuthentication
+from ..authentication.basic import ConnectionBasicAuthentication
 from ..enums import ConnectionTypes, ConnectorTypes
-from ..server.base import Server
+from ..server.base import ConnectionServer
 
 
+@dataclass_json
 @dataclass
 class SqlConnectionConfiguration:
     Name: str = None
     ConnectionType: ConnectionTypes = None
     ConnectorType: ConnectorTypes = None
-    ConnectionString: str = None
-    Driver: str = None
-    Server: Server = None
-    Sid: str = None
-    ServiceName: str = None
-    Database: str = None
-    BasicAuthentication: BasicAuthentication = None
-    application_name: str = None
-    execution_options: str = None
+    ConnectionString: Optional[str] = None
+    Driver: Optional[str] = None
+    Server: ConnectionServer = None
+    Sid: Optional[str] = None
+    ServiceName: Optional[str] = None
+    Database: Optional[str] = None
+    BasicAuthentication: ConnectionBasicAuthentication = None
+    ApplicationName: Optional[str] = None
+    ExecutionOptions: Optional[str] = None

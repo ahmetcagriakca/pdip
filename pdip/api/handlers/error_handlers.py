@@ -51,7 +51,7 @@ class ErrorHandlers(ISingleton):
         # response = json.dumps({
         #     "result": "",
         #     "isSuccess": "false",
-        #     "message": f"Server exception occurred. Exception Message:{output}",
+        #     "message": f"ConnectionServer exception occurred. Exception Message:{output}",
         # })
         output_message = "empty"
         if output is not None and output != "":
@@ -63,7 +63,7 @@ class ErrorHandlers(ISingleton):
         return {
                    "Result": "",
                    "IsSuccess": "false",
-                   "Message": f"Server exception occurred. Exception Message:{output}",
+                   "Message": f"ConnectionServer exception occurred. Exception Message:{output}",
                }, 500, {self.mime_type_string: self.default_content_type}
 
     def handle_operational_exception(self, exception):
