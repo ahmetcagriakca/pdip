@@ -28,7 +28,18 @@ class PostgresqlDialect(SqlDialect):
         return f"SELECT * FROM ({query}) base_query"
 
     def get_table_data_with_paging_query(self, query, start, end):
-        return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by (select null)) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
+        return f'''
+WITH TEMP_INTEGRATION AS(
+SELECT ordered_query.*,ROW_NUMBER() OVER ( order by (select null)) "row_number" 
+FROM ({query}) ordered_query
+) 
+SELECT * 
+FROM TEMP_INTEGRATION 
+WHERE "row_number" > {start} AND "row_number" <= {end}
+'''
+
+    def get_insert_query(self, schema, table, values_query):
+        return f'insert into "{schema}"."{table}" values({values_query})'
 
     def get_schemas(self):
         schemas = self.inspector.get_schema_names()

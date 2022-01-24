@@ -2,9 +2,9 @@ from injector import inject
 
 from .web_service_context import WebServiceContext
 from .web_service_policy import WebServicePolicy
-from ....domain.authentication.basic import BasicAuthentication
+from ....domain.authentication.basic import ConnectionBasicAuthentication
 from ....domain.enums import ConnectorTypes, ConnectionTypes
-from ....domain.server.base import Server
+from ....domain.server.base import ConnectionServer
 from ....domain.webservice.base import WebServiceConnectionConfiguration
 from ....domain.webservice.soap.soap_configuration import SoapConfiguration
 from ......dependency import IScoped
@@ -38,9 +38,9 @@ class WebServiceProvider(IScoped):
             config = WebServiceConnectionConfiguration(
                 ConnectionType=ConnectionTypes.WebService,
                 ConnectorType=ConnectorTypes.Soap,
-                Server=Server(Host=host, Port=port),
-                BasicAuthentication=BasicAuthentication(User=user,
-                                                        Password=password),
+                Server=ConnectionServer(Host=host, Port=port),
+                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                  Password=password),
                 Soap=SoapConfiguration(Wsdl=wsdl),
                 Ssl=ssl
             )

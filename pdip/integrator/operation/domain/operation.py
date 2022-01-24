@@ -1,25 +1,28 @@
-from typing import List
+from typing import List, Optional
 
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 
 from ...execution.domain import ExecutionOperationIntegrationBase, ExecutionOperationBase
 from ...integration.domain.base import IntegrationBase
 
 
+@dataclass_json
 @dataclass
 class OperationIntegrationBase:
-    Id: int = None
+    Id: Optional[int] = None
     Name: str = None
     Order: int = None
-    Limit: int = None
-    ProcessCount: int = None
+    Limit: Optional[int] = None
+    ProcessCount: Optional[int] = None
     Integration: IntegrationBase = None
-    Execution: ExecutionOperationIntegrationBase = None
+    Execution: Optional[ExecutionOperationIntegrationBase] = None
 
 
+@dataclass_json
 @dataclass
 class OperationBase:
-    Id: int = None
+    Id: Optional[int] = None
     Name: str = None
     Integrations: List[OperationIntegrationBase] = None
-    Execution: ExecutionOperationBase = None
+    Execution: Optional[ExecutionOperationBase] = None

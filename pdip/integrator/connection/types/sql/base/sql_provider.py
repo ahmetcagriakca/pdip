@@ -1,12 +1,12 @@
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.integrator.connection.domain.authentication.basic import BasicAuthentication
-from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
-from pdip.integrator.connection.domain.server.base import Server
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
 from .sql_context import SqlContext
 from .sql_policy import SqlPolicy
+from ....domain.authentication.basic import ConnectionBasicAuthentication
+from ....domain.enums import ConnectorTypes, ConnectionTypes
+from ....domain.server.base import ConnectionServer
+from ....domain.sql import SqlConnectionConfiguration
+from ......dependency import IScoped
 
 
 class SqlProvider(IScoped):
@@ -30,26 +30,26 @@ class SqlProvider(IScoped):
         if connector_type == ConnectorTypes.ORACLE:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=connector_type.ORACLE,
-                                                Server=Server(Host=host, Port=port),
-                                                BasicAuthentication=BasicAuthentication(User=user, Password=password),
+                                                Server=ConnectionServer(Host=host, Port=port),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
                                                 Sid=sid, ServiceName=service_name)
         elif connector_type == ConnectorTypes.MSSQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MSSQL,
-                                                Server=Server(Host=host, Port=port),
-                                                BasicAuthentication=BasicAuthentication(User=user, Password=password),
+                                                Server=ConnectionServer(Host=host, Port=port),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.POSTGRESQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.POSTGRESQL,
-                                                Server=Server(Host=host, Port=port),
-                                                BasicAuthentication=BasicAuthentication(User=user, Password=password),
+                                                Server=ConnectionServer(Host=host, Port=port),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.MYSQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MYSQL,
-                                                Server=Server(Host=host, Port=port),
-                                                BasicAuthentication=BasicAuthentication(User=user, Password=password),
+                                                Server=ConnectionServer(Host=host, Port=port),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
                                                 Database=database)
         else:
             raise Exception(f"{connector_type.name} connector type not supported")

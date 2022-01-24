@@ -30,6 +30,10 @@ class SqlDialect:
         pass
 
     @abstractmethod
+    def get_insert_query(self, schema, table, values_query):
+        pass
+
+    @abstractmethod
     def get_schemas(self):
         pass
 
@@ -39,6 +43,10 @@ class SqlDialect:
 
     @abstractmethod
     def get_tables(self, schema):
+        pass
+
+    @abstractmethod
+    def get_sorted_table_and_fkc_names(self, schema):
         pass
 
     @abstractmethod

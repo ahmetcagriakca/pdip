@@ -28,7 +28,20 @@ class OracleDialect(SqlDialect):
         return f"SELECT * FROM ({query}) base_query"
 
     def get_table_data_with_paging_query(self, query, start, end):
-        return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by null) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
+        return f'''
+SELECT * FROM
+(
+    SELECT a.*, rownum "row_number"
+    FROM
+    (
+        {query}
+    ) base_query
+    WHERE rownum <= {end}
+)
+WHERE "row_number" > {start}
+'''
+    def get_insert_query(self, schema, table, values_query):
+        return f'insert into "{schema}"."{table}" values({values_query})'
 
     def get_schemas(self):
         schemas = self.inspector.get_schema_names()

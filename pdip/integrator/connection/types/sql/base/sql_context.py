@@ -57,33 +57,6 @@ class SqlContext(IScoped):
         return results
 
     @connect
-    def execute(self, query) -> any:
-        self.connector.cursor.execute(query)
-        self.connector.connection.commit()
-        return self.connector.cursor.rowcount
-
-    @connect
-    def execute_many(self, query, data):
-        return self._execute_with_retry(query=query, data=data, retry=self.default_retry)
-
-    def _execute_many_start(self, query, data):
-        return self.connector.execute_many(query=query, data=data)
-
-    def _execute_with_retry(self, query, data, retry):
-        try:
-            return self._execute_many_start(query=query, data=data)
-        except Exception as ex:
-            if retry > self.retry_count:
-                print(f"Db write error on Error:{ex}")
-                raise
-            print(
-                f"Getting error on insert (Operation will be retried. Retry Count:{retry}). Error:{ex}")
-            # retrying connect to db,
-            self.connector.connect()
-            time.sleep(1)
-            return self._execute_with_retry(query=query, data=data, retry=retry + 1)
-
-    @connect
     def get_table_count(self, query):
         count_query = self.dialect.get_table_count_query(query=query)
         self.connector.cursor.execute(count_query)
@@ -95,11 +68,12 @@ class SqlContext(IScoped):
         return self.fetch_query(data_query)
 
     def get_table_data_with_paging(self, query, start, end):
-        data_query = self.dialect.get_table_data_with_paging_query(query=query,
-                                                                     start=start,
-                                                                     end=end)
+        data_query = self.dialect.get_table_data_with_paging_query(
+            query=query,
+            start=start,
+            end=end
+        )
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
-
         return results
 
     @connect
@@ -128,6 +102,33 @@ class SqlContext(IScoped):
                     transmitted_data_count = transmitted_data_count - 1
                 else:
                     break
+
+    @connect
+    def execute(self, query) -> any:
+        self.connector.cursor.execute(query)
+        self.connector.connection.commit()
+        return self.connector.cursor.rowcount
+
+    @connect
+    def execute_many(self, query, data):
+        return self._execute_with_retry(query=query, data=data, retry=self.default_retry)
+
+    def _execute_many_start(self, query, data):
+        return self.connector.execute_many(query=query, data=data)
+
+    def _execute_with_retry(self, query, data, retry):
+        try:
+            return self._execute_many_start(query=query, data=data)
+        except Exception as ex:
+            if retry > self.retry_count:
+                print(f"Db write error on Error:{ex}")
+                raise
+            print(
+                f"Getting error on insert (Operation will be retried. Retry Count:{retry}). Error:{ex}")
+            # retrying connect to db,
+            self.connector.connect()
+            time.sleep(1)
+            return self._execute_with_retry(query=query, data=data, retry=retry + 1)
 
     def truncate_table(self, schema, table):
         truncate_query = self.dialect.get_truncate_query(schema=schema, table=table)

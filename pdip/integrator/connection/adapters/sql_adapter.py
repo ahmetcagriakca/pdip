@@ -1,4 +1,3 @@
-from asyncio import Queue
 from typing import List
 
 from injector import inject
@@ -33,7 +32,7 @@ class SqlAdapter(ConnectionAdapter):
             table = integration.SourceConnections.Sql.ObjectName
             if schema is None or schema == '' or table is None or table == '':
                 raise Exception(f"Source Schema and Table required. {schema}.{table}")
-            query = f'select * from {schema}.{table}'
+            query = source_context.dialect.get_table_select_query(selected_rows='*', schema=schema, table=table)
         data_count = source_context.get_table_count(query=query)
         return data_count
 
@@ -46,7 +45,7 @@ class SqlAdapter(ConnectionAdapter):
             table = integration.SourceConnections.Sql.ObjectName
             if schema is None or schema == '' or table is None or table == '':
                 raise Exception(f"Source Schema and Table required. {schema}.{table}")
-            query = f'select * from {schema}.{table}'
+            query = source_context.dialect.get_table_select_query(selected_rows='*', schema=schema, table=table)
         data = source_context.get_table_data(query=query)
         return data
 
@@ -54,12 +53,14 @@ class SqlAdapter(ConnectionAdapter):
         source_context = self.sql_provider.get_context_by_config(
             config=integration.SourceConnections.Sql.Connection)
         query = integration.SourceConnections.Sql.Query
+
         if integration.SourceConnections.Sql.Query is None or integration.SourceConnections.Sql.Query == '':
             schema = integration.SourceConnections.Sql.Schema
             table = integration.SourceConnections.Sql.ObjectName
             if schema is None or schema == '' or table is None or table == '':
                 raise Exception(f"Source Schema and Table required. {schema}.{table}")
-            query = f'select * from {schema}.{table}'
+            query = source_context.dialect.get_table_select_query(selected_rows='*', schema=schema, table=table)
+
         data = source_context.get_table_data_with_paging(
             query=query,
             start=start,
@@ -74,7 +75,6 @@ class SqlAdapter(ConnectionAdapter):
             for column in columns:
                 column_data = extracted_data[column]
                 row.append(column_data)
-
             insert_rows.append(tuple(row))
         return insert_rows
 
@@ -96,7 +96,7 @@ class SqlAdapter(ConnectionAdapter):
             config=integration.TargetConnections.Sql.Connection)
 
         columns = integration.SourceConnections.Columns
-        if columns is not None:
+        if columns is not None and len(columns) > 0:
             source_columns = [(column.Name, column.Type) for column in
                               columns]
             prepared_target_query = target_context.prepare_target_query(
@@ -114,7 +114,9 @@ class SqlAdapter(ConnectionAdapter):
                 column_indexer = indexer.format(index=index)
                 indexer_array.append(column_indexer)
             values_query = ','.join(indexer_array)
-            prepared_target_query = f'insert into {schema}.{table} values({values_query})'
+            prepared_target_query = target_context.dialect.get_insert_query(values_query=values_query,
+                                                                            schema=schema,
+                                                                            table=table)
         return prepared_target_query
 
     def write_target_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:

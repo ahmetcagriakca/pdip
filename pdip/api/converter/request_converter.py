@@ -1,3 +1,4 @@
+import enum
 import inspect
 import json
 from datetime import datetime
@@ -70,10 +71,13 @@ class RequestConverter(object):
                         # TODO:Base generic class
                         print('value type should be a structure of', value.__args__[0])
                     elif inspect.isclass(value):
-                        self.register(value)
-                        instance = value()
-                        nested_annotations = self.get_annotations(instance)
-                        if nested_annotations is not None:
-                            self.register_subclasses(nested_annotations)
+                        if issubclass(value, enum.Enum):
+                            pass
+                        else:
+                            instance = value()
+                            self.register(value)
+                            nested_annotations = self.get_annotations(instance)
+                            if nested_annotations is not None:
+                                self.register_subclasses(nested_annotations)
                     else:
                         print('Type not know', value)
