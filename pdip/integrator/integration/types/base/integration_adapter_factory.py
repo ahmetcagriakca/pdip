@@ -1,11 +1,12 @@
 from injector import inject
 
-from pdip.integrator.integration.types.base import IntegrationAdapter
-from pdip.integrator.integration.types.source.base import SourceIntegration
-from pdip.integrator.integration.types.adapters.implementation import TargetIntegration
-from pdip.integrator.integration.domain.base import IntegrationBase
 from pdip.dependency import IScoped
 from pdip.exceptions import IncompatibleAdapterException
+from pdip.integrator.integration.domain.base import IntegrationBase
+from pdip.integrator.integration.types.base import IntegrationAdapter
+from pdip.integrator.integration.types.source.base.source_integration import SourceIntegration
+from pdip.integrator.integration.types.sourcetotarget.base import SourceToTargetIntegration
+from pdip.integrator.integration.types.target.base import TargetIntegration
 
 
 class IntegrationAdapterFactory(IScoped):
@@ -13,7 +14,9 @@ class IntegrationAdapterFactory(IScoped):
     def __init__(self,
                  source_integration: SourceIntegration,
                  target_integration: TargetIntegration,
+                 source_to_target_integration: SourceToTargetIntegration,
                  ):
+        self.source_to_target_integration = source_to_target_integration
         self.source_integration = source_integration
         self.target_integration = target_integration
 
@@ -29,7 +32,7 @@ class IntegrationAdapterFactory(IScoped):
                     f"{self.target_integration} is incompatible with {IntegrationAdapter}")
         else:
             if isinstance(self.source_integration, IntegrationAdapter):
-                return self.source_integration
+                return self.source_to_target_integration
             else:
                 raise IncompatibleAdapterException(
                     f"{self.source_integration} is incompatible with {IntegrationAdapter}")

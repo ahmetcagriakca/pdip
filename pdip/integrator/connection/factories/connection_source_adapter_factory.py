@@ -1,12 +1,12 @@
 from injector import inject
 
-from .connection_source_adapter import ConnectionSourceAdapter
-from ..domain.enums import ConnectionTypes
-from ..types.bigdata.adapters.source import BigDataSourceAdapter
-from ..types.sql.adapters.source import SqlSourceAdapter
-from ..types.webservice.adapters.source import WebServiceSourceAdapter
-from ....dependency import IScoped
-from ....exceptions import IncompatibleAdapterException, NotSupportedFeatureException
+from pdip.integrator.connection.base.connection_source_adapter import ConnectionSourceAdapter
+from pdip.integrator.connection.domain.enums import ConnectionTypes
+from pdip.integrator.connection.types.bigdata.adapters.source import BigDataSourceAdapter
+from pdip.integrator.connection.types.sql.adapters.source import SqlSourceAdapter
+from pdip.integrator.connection.types.webservice.adapters.source import WebServiceSourceAdapter
+from pdip.dependency import IScoped
+from pdip.exceptions import IncompatibleAdapterException, NotSupportedFeatureException
 
 
 class ConnectionSourceAdapterFactory(IScoped):

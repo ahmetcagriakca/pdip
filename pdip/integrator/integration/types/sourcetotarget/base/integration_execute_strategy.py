@@ -6,7 +6,7 @@ from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 
 
-class IntegrationExecuteStrategy(ABC, IScoped):
+class IntegrationSourceToTargetExecuteStrategy(ABC, IScoped):
     @inject
     def __init__(self):
         pass
