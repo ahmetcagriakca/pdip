@@ -31,7 +31,7 @@ class OracleDialect(SqlDialect):
         return f'''
 SELECT * FROM
 (
-    SELECT a.*, rownum "row_number"
+    SELECT base_query.*, rownum "row_number"
     FROM
     (
         {query}

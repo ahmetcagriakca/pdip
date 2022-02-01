@@ -94,8 +94,8 @@ END;
                                 ConnectionType=connection.ConnectionType,
                                 Sql=IntegrationConnectionSqlBase(
                                     Connection=connection,
-                                    Schema='test_pdi',
-                                    ObjectName='test_source'
+                                    Schema='TEST_PDI',
+                                    ObjectName='TEST_SOURCE'
                                 )
                             ),
                             TargetConnections=IntegrationConnectionBase(
@@ -103,8 +103,8 @@ END;
                                 ConnectionType=connection.ConnectionType,
                                 Sql=IntegrationConnectionSqlBase(
                                     Connection=connection,
-                                    Schema='test_pdi',
-                                    ObjectName='test_target'
+                                    Schema='TEST_PDI',
+                                    ObjectName='TEST_TARGET'
                                 )
                             )
                         )
