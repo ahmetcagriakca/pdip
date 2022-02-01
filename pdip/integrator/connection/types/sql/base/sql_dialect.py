@@ -30,7 +30,11 @@ class SqlDialect:
         pass
 
     @abstractmethod
-    def get_insert_query(self, schema, table, values_query):
+    def get_insert_query(self, schema, table, columns_query, values_query):
+        pass
+
+    @abstractmethod
+    def get_insert_values_query(self, schema, table, values_query):
         pass
 
     @abstractmethod

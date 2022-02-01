@@ -8,7 +8,7 @@ from func_timeout import FunctionTimedOut, func_set_timeout
 from injector import inject
 from pandas import DataFrame, notnull
 
-from ..base import IntegrationSourceToTargetExecuteStrategy
+from .integration_execute_strategy import IntegrationSourceToTargetExecuteStrategy
 from ....domain.base import IntegrationBase
 from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from .....connection.domain.task import DataQueueTask

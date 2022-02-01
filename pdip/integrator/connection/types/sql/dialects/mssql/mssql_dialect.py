@@ -38,8 +38,11 @@ FROM TEMP_INTEGRATION
 WHERE "row_number" > {start} AND "row_number" <= {end}
 '''
 
-    def get_insert_query(self, schema, table, values_query):
+    def get_insert_values_query(self, schema, table, values_query):
         return f'insert into "{schema}"."{table}" values({values_query})'
+
+    def get_insert_query(self, schema, table,columns_query, values_query):
+        return f'insert into "{schema}"."{table}"({columns_query}) values({values_query})'
 
     def get_schemas(self):
         schemas = self.inspector.get_schema_names()

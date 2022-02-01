@@ -3,7 +3,7 @@ from time import time
 from func_timeout import func_set_timeout
 from injector import inject
 
-from ..base import IntegrationSourceToTargetExecuteStrategy
+from .integration_execute_strategy import IntegrationSourceToTargetExecuteStrategy
 from .....connection.base import ConnectionSourceAdapter, ConnectionTargetAdapter
 from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from .....domain.enums.events import EVENT_LOG
