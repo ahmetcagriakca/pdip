@@ -1,1 +1,1 @@
-from .basic_authentication import BasicAuthentication
+from .connection_basic_authentication import ConnectionBasicAuthentication

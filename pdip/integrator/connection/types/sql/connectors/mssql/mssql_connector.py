@@ -1,22 +1,25 @@
-import pyodbc
+import os
 
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
-from ...base.sql_connector import SqlConnector
+import pyodbc
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
+
+from ...base import SqlConnector
+from .....domain.sql import SqlConnectionConfiguration
 
 
 class MssqlConnector(SqlConnector):
     def __init__(self, config: SqlConnectionConfiguration):
         self.config: SqlConnectionConfiguration = config
-        # ;Client_CSet=UTF-8;Server_CSet=WINDOWS-1251
         if self.config.ConnectionString is not None and self.config.ConnectionString != '' and not self.config.ConnectionString.isspace():
             self.connection_string = self.config.ConnectionString
         else:
             if self.config.Driver is None or self.config.Driver == '':
                 self.config.Driver = self.find_driver_name()
-
-            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
+            app_name = os.getenv('MSSQL_APP_NAME', 'pdi')
+            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;APP=%s' % (
                 self.config.Driver, self.config.Server.Host, self.config.Database,
-                self.config.BasicAuthentication.User, self.config.BasicAuthentication.Password)
+                self.config.BasicAuthentication.User, self.config.BasicAuthentication.Password, app_name)
         self.connection = None
         self.cursor = None
 
@@ -36,6 +39,21 @@ class MssqlConnector(SqlConnector):
         except Exception:
             pass
 
+    def get_connection(self):
+        return self.connection
+
+    def get_engine_connection_url(self):
+        connection_url = URL.create(
+            "mssql+pyodbc",
+            query={"odbc_connect": self.connection_string}
+        )
+        return connection_url
+
+    def get_engine(self):
+        connection_url = self.get_engine_connection_url()
+        engine = create_engine(connection_url)
+        return engine
+
     def find_driver_name(self):
         drivers = pyodbc.drivers()
         driver_name = None
@@ -51,9 +69,6 @@ class MssqlConnector(SqlConnector):
             else:
                 driver_name = drivers[0]
         return driver_name
-
-    def get_connection(self):
-        return self.connection
 
     def execute_many(self, query, data):
         self.cursor.fast_executemany = True
@@ -72,21 +87,3 @@ class MssqlConnector(SqlConnector):
                 self.connection.rollback()
                 self.cursor.close()
                 raise
-
-    def get_target_query_indexer(self):
-        indexer = '?'
-        return indexer
-
-    def get_table_data_with_paging_query(self, query, start, end):
-        return f'WITH TEMP_INTEGRATION AS(SELECT ordered_query.*,ROW_NUMBER() OVER ( order by (select null)) "row_number" FROM ({query}) ordered_query) SELECT * FROM TEMP_INTEGRATION WHERE "row_number" > {start} AND "row_number" <= {end}'
-
-    def prepare_data(self, data):
-        # if data is not None and isinstance(data, str):
-        #     data = data\
-        #         .replace("ı", "i")\
-        #         .replace("ş", "s")\
-        #         .replace("ğ", "g")\
-        #         .replace("İ", "I")\
-        #         .replace("Ş","S")\
-        #         .replace("Ğ", "G")
-        return data

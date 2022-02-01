@@ -7,13 +7,15 @@ cryptography==3.3.2
 SQLAlchemy==1.4.19
 rpyc==5.0.1
 Flask==1.1.4
-Flask_Cors==3.0.9
+Flask_Cors==3.0.10
 Flask-Ext==0.1
 Flask-Injector==0.12.3
 flask-restx==0.5.1
 Werkzeug==1.0.1
 dataclasses==0.6
+dataclasses==0.6
 requests==2.26.0
 kafka-python==2.0.2
 pandas~=1.1.5
 coverage==5.5
+func-timeout==4.3.5

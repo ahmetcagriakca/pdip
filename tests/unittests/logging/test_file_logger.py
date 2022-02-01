@@ -15,7 +15,7 @@ class TestProcessManager(TestCase):
         print(f"{sub_process_id}-{data}")
         return data
 
-    def test_process(self):
+    def test_log(self):
         file_logger = FileLogger()
         file_logger.debug('debug')
         file_logger.info('info')

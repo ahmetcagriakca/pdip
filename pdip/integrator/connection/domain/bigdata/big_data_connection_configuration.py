@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from ..authentication.basic import BasicAuthentication
+from ..authentication.basic import ConnectionBasicAuthentication
 from ..authentication.kerberos import KerberosAuthentication
 from ..authentication.mechanism import MechanismTypes
 from ..enums import ConnectionTypes
-from ..server.base import Server
+from ..server.base import ConnectionServer
 from ...domain.enums import ConnectorTypes
 
 
@@ -15,9 +15,9 @@ class BigDataConnectionConfiguration:
     ConnectionType: ConnectionTypes = None
     ConnectorType: ConnectorTypes = None
     Driver: str = None
-    Server: Server = None
+    Server: ConnectionServer = None
     Database: str = None
-    BasicAuthentication: BasicAuthentication = None
+    BasicAuthentication: ConnectionBasicAuthentication = None
     KerberosAuthentication: KerberosAuthentication = None
     AuthenticationMechanismType: MechanismTypes = None
     Ssl: bool = None
