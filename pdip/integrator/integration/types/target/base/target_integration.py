@@ -1,15 +1,15 @@
 from injector import inject
 
-from ..base import IntegrationAdapter
-from ...domain.base import IntegrationBase
-from ....connection.factories import ConnectionAdapterFactory
-from ....domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
+from ...base import IntegrationAdapter
+from pdip.integrator.integration.domain.base import IntegrationBase
+from pdip.integrator.connection.factories import ConnectionAdapterFactory
+from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET
-from ....operation.domain.operation import OperationIntegrationBase
-from ....pubsub.base import ChannelQueue
-from ....pubsub.domain import TaskMessage
-from ....pubsub.publisher import Publisher
-from .....dependency import IScoped
+from pdip.integrator.operation.domain.operation import OperationIntegrationBase
+from pdip.integrator.pubsub.base import ChannelQueue
+from pdip.integrator.pubsub.domain import TaskMessage
+from pdip.integrator.pubsub.publisher import Publisher
+from pdip.dependency import IScoped
 
 
 class TargetIntegration(IntegrationAdapter, IScoped):
