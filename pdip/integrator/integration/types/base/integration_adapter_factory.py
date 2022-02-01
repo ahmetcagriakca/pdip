@@ -1,12 +1,12 @@
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.exceptions import IncompatibleAdapterException
-from pdip.integrator.integration.domain.base import IntegrationBase
-from pdip.integrator.integration.types.base import IntegrationAdapter
-from pdip.integrator.integration.types.source.base.source_integration import SourceIntegration
-from pdip.integrator.integration.types.sourcetotarget.base import SourceToTargetIntegration
-from pdip.integrator.integration.types.target.base import TargetIntegration
+from ...domain.base import IntegrationBase
+from ...types.base import IntegrationAdapter
+from ...types.source.base import SourceIntegration
+from ...types.sourcetotarget.base import SourceToTargetIntegration
+from ...types.target.base import TargetIntegration
+from .....dependency import IScoped
+from .....exceptions import IncompatibleAdapterException
 
 
 class IntegrationAdapterFactory(IScoped):

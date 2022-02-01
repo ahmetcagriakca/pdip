@@ -1,7 +1,7 @@
 from injector import inject
 
 from pdip.dependency import IScoped
-from pdip.integrator.connection.base import ConnectionTargetAdapterFactory
+from pdip.integrator.connection.factories import ConnectionTargetAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
 from pdip.integrator.integration.domain.base import IntegrationBase
@@ -9,7 +9,7 @@ from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
-from pdip.integrator.integration.types.sourcetotarget.factories.integration_execute_strategy_factory import IntegrationSourceToTargetExecuteStrategyFactory
+from pdip.integrator.integration.types.sourcetotarget.factories import IntegrationSourceToTargetExecuteStrategyFactory
 from ...base import IntegrationAdapter
 
 

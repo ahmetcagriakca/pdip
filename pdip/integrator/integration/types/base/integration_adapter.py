@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from pdip.integrator.integration.domain.base import IntegrationBase
-from pdip.integrator.operation.domain.operation import OperationIntegrationBase
-from pdip.integrator.pubsub.base import ChannelQueue
+from ...domain.base import IntegrationBase
+from ....operation.domain.operation import OperationIntegrationBase
+from ....pubsub.base import ChannelQueue
 
 
 class IntegrationAdapter(ABC):

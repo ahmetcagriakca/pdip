@@ -3,14 +3,14 @@ from time import time
 from func_timeout import func_set_timeout
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.integrator.connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
-from pdip.integrator.domain.enums.events import EVENT_LOG
-from pdip.integrator.integration.types.sourcetotarget.base import IntegrationSourceToTargetExecuteStrategy
-from pdip.integrator.operation.domain import OperationIntegrationBase
-from pdip.integrator.pubsub.base import ChannelQueue
-from pdip.integrator.pubsub.domain import TaskMessage
-from pdip.integrator.pubsub.publisher import Publisher
+from .integration_execute_strategy import IntegrationSourceToTargetExecuteStrategy
+from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
+from .....domain.enums.events import EVENT_LOG
+from .....operation.domain import OperationIntegrationBase
+from .....pubsub.base import ChannelQueue
+from .....pubsub.domain import TaskMessage
+from .....pubsub.publisher import Publisher
+from ......dependency import IScoped
 
 
 class LimitOffIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):

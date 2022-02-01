@@ -17,7 +17,7 @@ class MessageBroker:
         self.worker: MessageBrokerWorker = None
         self.listener: EventListener = None
         self.subscribers = {}
-        self.max_join_time = 60
+        self.max_join_time = 120
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
