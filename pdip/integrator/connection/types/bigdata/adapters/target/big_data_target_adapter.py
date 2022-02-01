@@ -3,23 +3,23 @@ from typing import List
 from injector import inject
 from pandas import DataFrame
 
-from pdip.integrator.connection.base import ConnectionAdapter
-from pdip.integrator.connection.types.sql.base import SqlProvider
+from pdip.integrator.connection.base import ConnectionTargetAdapter
+from pdip.integrator.connection.types.bigdata.base import BigDataProvider
 from pdip.integrator.integration.domain.base import IntegrationBase
 
 
-class SqlTargetAdapter(ConnectionAdapter):
+class BigDataTargetAdapter(ConnectionTargetAdapter):
     @inject
     def __init__(self,
-                 sql_provider: SqlProvider,
+                 provider: BigDataProvider,
                  ):
-        self.sql_provider = sql_provider
+        self.provider = provider
 
     def clear_data(self, integration: IntegrationBase) -> int:
-        target_context = self.sql_provider.get_context_by_config(
-            config=integration.TargetConnections.Sql.Connection)
-        truncate_affected_rowcount = target_context.truncate_table(schema=integration.TargetConnections.Sql.Schema,
-                                                                   table=integration.TargetConnections.Sql.ObjectName)
+        target_context = self.provider.get_context_by_config(
+            config=integration.TargetConnections.BigData.Connection)
+        truncate_affected_rowcount = target_context.truncate_table(schema=integration.TargetConnections.BigData.Schema,
+                                                                   table=integration.TargetConnections.BigData.ObjectName)
         return truncate_affected_rowcount
 
     def prepare_insert_row(self, data, columns):
@@ -46,8 +46,8 @@ class SqlTargetAdapter(ConnectionAdapter):
         return prepared_data
 
     def prepare_target_query(self, integration: IntegrationBase, source_column_count: int) -> str:
-        target_context = self.sql_provider.get_context_by_config(
-            config=integration.TargetConnections.Sql.Connection)
+        target_context = self.provider.get_context_by_config(
+            config=integration.TargetConnections.BigData.Connection)
 
         columns = integration.SourceConnections.Columns
         if columns is not None and len(columns) > 0:
@@ -55,11 +55,11 @@ class SqlTargetAdapter(ConnectionAdapter):
                               columns]
             prepared_target_query = target_context.prepare_target_query(
                 column_rows=source_columns,
-                query=integration.TargetConnections.Sql.Query
+                query=integration.TargetConnections.BigData.Query
             )
         else:
-            schema = integration.TargetConnections.Sql.Schema
-            table = integration.TargetConnections.Sql.ObjectName
+            schema = integration.TargetConnections.BigData.Schema
+            table = integration.TargetConnections.BigData.ObjectName
             if schema is None or schema == '' or table is None or table == '':
                 raise Exception(f"Schema and table required. {schema}.{table}")
             indexer_array = []
@@ -75,8 +75,8 @@ class SqlTargetAdapter(ConnectionAdapter):
 
     def write_target_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
         if prepared_data is not None and len(prepared_data) > 0:
-            target_context = self.sql_provider.get_context_by_config(
-                config=integration.TargetConnections.Sql.Connection)
+            target_context = self.provider.get_context_by_config(
+                config=integration.TargetConnections.BigData.Connection)
 
             prepared_target_query = self.prepare_target_query(integration=integration,
                                                               source_column_count=len(prepared_data[0]))
@@ -86,8 +86,8 @@ class SqlTargetAdapter(ConnectionAdapter):
             return 0
 
     def do_target_operation(self, integration: IntegrationBase) -> int:
-        target_context = self.sql_provider.get_context_by_config(
-            config=integration.TargetConnections.Sql.Connection)
+        target_context = self.provider.get_context_by_config(
+            config=integration.TargetConnections.BigData.Connection)
 
-        affected_rowcount = target_context.execute(query=integration.TargetConnections.Sql.Query)
+        affected_rowcount = target_context.execute(query=integration.TargetConnections.BigData.Query)
         return affected_rowcount

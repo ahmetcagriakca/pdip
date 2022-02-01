@@ -74,7 +74,3 @@ class ImpalaConnector(BigDataConnector):
                 self.connection.rollback()
                 self.cursor.close()
                 raise
-
-    def get_target_query_indexer(self):
-        indexer = '?'
-        return indexer

@@ -3,20 +3,20 @@ from typing import List
 from injector import inject
 from pandas import DataFrame
 
-from pdip.integrator.connection.base import ConnectionAdapter
+from pdip.integrator.connection.base import ConnectionTargetAdapter
 from pdip.integrator.connection.types.sql.base import SqlProvider
 from pdip.integrator.integration.domain.base import IntegrationBase
 
 
-class SqlTargetAdapter(ConnectionAdapter):
+class SqlTargetAdapter(ConnectionTargetAdapter):
     @inject
     def __init__(self,
-                 sql_provider: SqlProvider,
+                 provider: SqlProvider,
                  ):
-        self.sql_provider = sql_provider
+        self.provider = provider
 
     def clear_data(self, integration: IntegrationBase) -> int:
-        target_context = self.sql_provider.get_context_by_config(
+        target_context = self.provider.get_context_by_config(
             config=integration.TargetConnections.Sql.Connection)
         truncate_affected_rowcount = target_context.truncate_table(schema=integration.TargetConnections.Sql.Schema,
                                                                    table=integration.TargetConnections.Sql.ObjectName)
@@ -46,7 +46,7 @@ class SqlTargetAdapter(ConnectionAdapter):
         return prepared_data
 
     def prepare_target_query(self, integration: IntegrationBase, source_column_count: int) -> str:
-        target_context = self.sql_provider.get_context_by_config(
+        target_context = self.provider.get_context_by_config(
             config=integration.TargetConnections.Sql.Connection)
 
         columns = integration.SourceConnections.Columns
@@ -75,7 +75,7 @@ class SqlTargetAdapter(ConnectionAdapter):
 
     def write_target_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
         if prepared_data is not None and len(prepared_data) > 0:
-            target_context = self.sql_provider.get_context_by_config(
+            target_context = self.provider.get_context_by_config(
                 config=integration.TargetConnections.Sql.Connection)
 
             prepared_target_query = self.prepare_target_query(integration=integration,
@@ -86,7 +86,7 @@ class SqlTargetAdapter(ConnectionAdapter):
             return 0
 
     def do_target_operation(self, integration: IntegrationBase) -> int:
-        target_context = self.sql_provider.get_context_by_config(
+        target_context = self.provider.get_context_by_config(
             config=integration.TargetConnections.Sql.Connection)
 
         affected_rowcount = target_context.execute(query=integration.TargetConnections.Sql.Query)
