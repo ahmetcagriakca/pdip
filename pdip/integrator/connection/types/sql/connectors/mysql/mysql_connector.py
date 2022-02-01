@@ -1,12 +1,12 @@
 import mysql.connector
-from injector import inject
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
-from ...base.sql_connector import SqlConnector
+from ...base import SqlConnector
+from .....domain.sql import SqlConnectionConfiguration
 
 
 class MysqlConnector(SqlConnector):
-    @inject
     def __init__(self, config: SqlConnectionConfiguration):
         self.config = config
         self.connection = None
@@ -33,6 +33,22 @@ class MysqlConnector(SqlConnector):
     def get_connection(self):
         return self.connection
 
+    def get_engine_connection_url(self):
+        connection_url = URL.create(
+            "mysql",
+            username=self.config.BasicAuthentication.User,
+            password=self.config.BasicAuthentication.Password,
+            host=self.config.Server.Host,
+            port=self.config.Server.Port,
+            database=self.config.Database,
+        )
+        return connection_url
+
+    def get_engine(self):
+        connection_url = self.get_engine_connection_url()
+        engine = create_engine(connection_url)
+        return engine
+
     def execute_many(self, query, data):
         try:
             self.cursor.executemany(query, data)
@@ -42,24 +58,3 @@ class MysqlConnector(SqlConnector):
             self.connection.rollback()
             self.cursor.close()
             raise
-
-    def get_truncate_query(self, schema, table):
-        count_query = f'TRUNCATE TABLE `{schema}`.`{table}`'
-        return count_query
-
-    def get_table_count_query(self, query):
-        count_query = f"SELECT COUNT(*)  as \"COUNT\" FROM ({query})  as count_table"
-        return count_query
-
-    def get_table_select_query(self, selected_rows, schema, table):
-        return f'SELECT {selected_rows} FROM `{schema}`.`{table}`'
-
-    def get_target_query_indexer(self):
-        indexer = '%s'
-        return indexer
-
-    def get_table_data_query(self, query):
-        return f"SELECT * FROM ({query}) base_query"
-
-    def get_table_data_with_paging_query(self, query, start, end):
-        return f"SELECT * FROM (select * from ({query}) base_query order by null) ordered_query limit {end - start} offset {start}"

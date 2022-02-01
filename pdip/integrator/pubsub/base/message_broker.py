@@ -1,4 +1,5 @@
 import multiprocessing
+from multiprocessing.managers import SyncManager
 
 from .channel_queue import ChannelQueue
 from .event_listener import EventListener
@@ -8,17 +9,15 @@ from .message_broker_worker import MessageBrokerWorker
 class MessageBroker:
     def __init__(self, logger):
         self.logger = logger
-        self.manager = multiprocessing.Manager()
-        self.publish_queue = self.manager.Queue()
-        self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
-        self.message_queue = self.manager.Queue()
-        self.message_channel = ChannelQueue(channel_queue=self.message_queue)
-        self.worker: MessageBrokerWorker = MessageBrokerWorker(publish_channel=self.publish_channel,
-                                                               message_channel=self.message_channel,
-                                                               other_arg=None)
+        self.manager: SyncManager = None
+        self.publish_queue = None
+        self.message_queue = None
+        self.publish_channel: ChannelQueue = None
+        self.message_channel: ChannelQueue = None
+        self.worker: MessageBrokerWorker = None
         self.listener: EventListener = None
         self.subscribers = {}
-        self.max_join_time = 60
+        self.max_join_time = 120
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
@@ -31,10 +30,18 @@ class MessageBroker:
             self.worker.stop()
         if self.listener.is_alive() and not self.listener.stopped():
             self.listener.stop()
-        self.manager.shutdown()
+        if self.manager is not None:
+            self.manager.shutdown()
 
-    def get_publish_channel(self):
-        return self.publish_channel
+    def initialize(self):
+        self.manager = multiprocessing.Manager()
+        self.publish_queue = self.manager.Queue()
+        self.message_queue = self.manager.Queue()
+        self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
+        self.message_channel = ChannelQueue(channel_queue=self.message_queue)
+        self.worker: MessageBrokerWorker = MessageBrokerWorker(publish_channel=self.publish_channel,
+                                                               message_channel=self.message_channel,
+                                                               other_arg=None)
 
     def start(self):
         self.worker.start()
@@ -44,6 +51,9 @@ class MessageBroker:
     def join(self):
         self.worker.join(self.max_join_time)
         self.listener.join(self.max_join_time)
+
+    def get_publish_channel(self):
+        return self.publish_channel
 
     def subscribe(self, event, callback):
         if not callable(callback):

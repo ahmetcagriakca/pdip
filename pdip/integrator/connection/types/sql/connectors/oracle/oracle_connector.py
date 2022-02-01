@@ -1,12 +1,11 @@
 import cx_Oracle
-from injector import inject
+from sqlalchemy import create_engine
 
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
-from ...base.sql_connector import SqlConnector
+from ...base import SqlConnector
+from .....domain.sql import SqlConnectionConfiguration
 
 
 class OracleConnector(SqlConnector):
-    @inject
     def __init__(self, config: SqlConnectionConfiguration):
         self.config = config
         self._tns = None
@@ -40,6 +39,18 @@ class OracleConnector(SqlConnector):
     def get_connection(self):
         return self.connection
 
+    def get_engine_connection_url(self):
+        if self.config.Sid is not None and self.config.Sid != '':
+            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
+        else:
+            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
+        return connection_url
+
+    def get_engine(self):
+        connection_url = self.get_engine_connection_url()
+        engine = create_engine(connection_url)
+        return engine
+
     def execute_many(self, query, data):
         try:
             self.cursor.prepare(query)
@@ -50,11 +61,3 @@ class OracleConnector(SqlConnector):
             self.connection.rollback()
             self.cursor.close()
             raise
-
-    def get_table_count_query(self, query):
-        count_query = f"SELECT COUNT (*)  \"COUNT\" FROM ({query})"
-        return count_query
-
-    def get_target_query_indexer(self):
-        indexer = ':{index}'
-        return indexer

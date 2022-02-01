@@ -2,9 +2,10 @@ import importlib
 
 from injector import inject
 
-from pdip.integrator.connection.domain.enums import ConnectorTypes
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
 from .sql_connector import SqlConnector
+from .sql_dialect import SqlDialect
+from ....domain.enums import ConnectorTypes
+from ....domain.sql import SqlConnectionConfiguration
 
 
 class SqlPolicy:
@@ -13,22 +14,31 @@ class SqlPolicy:
         self.config = config
         self.connector: SqlConnector = None
         self.connector_name = None
-        sql_connector_base_module = "pdip.integrator.connection.types.sql.connectors"
+        connector_base_module = "pdip.integrator.connection.types.sql.connectors"
+        dialect_base_module = "pdip.integrator.connection.types.sql.dialects"
         if self.config.ConnectorType == ConnectorTypes.MSSQL:
-            connector_namespace = "mssql"
+            namespace = "mssql"
             connector_name = "MssqlConnector"
+            dialect_name = "MssqlDialect"
         elif self.config.ConnectorType == ConnectorTypes.ORACLE:
-            connector_namespace = "oracle"
+            namespace = "oracle"
             connector_name = "OracleConnector"
+            dialect_name = "OracleDialect"
         elif self.config.ConnectorType == ConnectorTypes.POSTGRESQL:
-            connector_namespace = "postgresql"
+            namespace = "postgresql"
             connector_name = "PostgresqlConnector"
+            dialect_name = "PostgresqlDialect"
         elif self.config.ConnectorType == ConnectorTypes.MYSQL:
-            connector_namespace = "mysql"
+            namespace = "mysql"
             connector_name = "MysqlConnector"
+            dialect_name = "MysqlDialect"
         else:
             raise Exception("Connector type not found")
-        module = importlib.import_module(".".join([sql_connector_base_module, connector_namespace]))
+        module = importlib.import_module(".".join([connector_base_module, namespace]))
         connector_class = getattr(module, connector_name)
         if connector_class is not None:
             self.connector: SqlConnector = connector_class(self.config)
+        module = importlib.import_module(".".join([dialect_base_module, namespace]))
+        dialect_class = getattr(module, dialect_name)
+        if dialect_class is not None:
+            self.dialect: SqlDialect = dialect_class(self.connector)

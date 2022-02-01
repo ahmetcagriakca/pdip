@@ -6,3 +6,5 @@ class ConnectionTypes(Enum):
     File = 2
     Queue = 3
     BigData = 4
+    WebService = 5
+    InMemory = 6

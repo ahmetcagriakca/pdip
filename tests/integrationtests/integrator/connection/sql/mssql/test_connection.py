@@ -1,36 +1,34 @@
 from unittest import TestCase
 
+from sqlalchemy import Column, Table, MetaData
+
 from pdip.integrator.connection.domain.enums import ConnectorTypes
 from pdip.integrator.connection.types.sql.base import SqlProvider
+from pdip.logging.loggers.console import ConsoleLogger
 
 
 class TestMssqlConnection(TestCase):
     def setUp(self):
-        pass
+        self.context = SqlProvider().get_context(
+            connector_type=ConnectorTypes.MSSQL,
+            host='localhost,1433', port=None,
+            user='pdi', password='pdi!123456',
+            database='test_pdi')
 
     def tearDown(self):
         return super().tearDown()
 
     def test_mssql_connection(self):
         try:
-            self.database_context = SqlProvider().get_context(
-                connector_type=ConnectorTypes.MSSQL,
-                host='localhost,1433', port=None,
-                user='pdi', password='pdi!123456',
-                database='test_pdi')
-            self.database_context.connector.connect()
+            self.context.connector.connect()
+            self.context.connector.disconnect()
         except Exception as ex:
             print(ex)
             raise
 
     def test_create_and_drop_table(self):
         try:
-            self.database_context = SqlProvider().get_context(
-                connector_type=ConnectorTypes.MSSQL,
-                host='localhost,1433', port=None,
-                user='pdi', password='pdi!123456',
-                database='test_pdi')
-            self.database_context.execute('''CREATE TABLE test_pdi.test_source (
+            self.context.execute('''CREATE TABLE test_pdi.test_source (
 	Id INT NULL,
 	Name varchar(100) NULL
 )''')
@@ -39,34 +37,78 @@ class TestMssqlConnection(TestCase):
             raise
         finally:
 
-            self.database_context.execute('''DROP TABLE test_pdi.test_source''')
+            self.context.execute('''DROP TABLE test_pdi.test_source''')
 
     def test_data(self):
         try:
-            self.database_context = SqlProvider().get_context(
-                connector_type=ConnectorTypes.MSSQL,
-                host='localhost,1433', port=None,
-                user='pdi', password='pdi!123456',
-                database='test_pdi')
-            self.database_context.execute('''CREATE TABLE test_pdi.test_source (
+            self.context.execute('''CREATE TABLE test_pdi.test_source (
     Id INT NULL,
     Name varchar(100) NULL
 )''')
-            self.database_context.execute('''insert into test_pdi.test_source(Id,Name) values(1,'test')''')
-            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
+            self.context.execute('''insert into test_pdi.test_source(Id,Name) values(1,'test')''')
+            data = self.context.fetch_query('''select * from test_pdi.test_source''')
             assert len(data) == 1
             assert data[0]["Id"] == 1
             assert data[0]["Name"] == 'test'
 
-            self.database_context.execute('''update test_pdi.test_source set Name='Update' where Id=1''')
-            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
+            self.context.execute('''update test_pdi.test_source set Name='Update' where Id=1''')
+            data = self.context.fetch_query('''select * from test_pdi.test_source''')
             assert data[0]["Id"] == 1
             assert data[0]["Name"] == 'Update'
-            self.database_context.execute('''delete from test_pdi.test_source where Id=1''')
-            data = self.database_context.fetch_query('''select * from test_pdi.test_source''')
+            self.context.execute('''delete from test_pdi.test_source where Id=1''')
+            data = self.context.fetch_query('''select * from test_pdi.test_source''')
             assert len(data) == 0
         except Exception as ex:
             print(ex)
             raise
         finally:
-            self.database_context.execute('''DROP TABLE test_pdi.test_source''')
+            self.context.execute('''DROP TABLE test_pdi.test_source''')
+
+    def test_check_schema_and_tables(self):
+        try:
+            schemas = self.context.dialect.get_schemas()
+            for schema in schemas:
+                print("schema: %s" % schema)
+                for table_name in self.context.dialect.get_tables(schema=schema):
+                    print("\tTable: %s" % table_name)
+                    for column in self.context.dialect.get_columns(object_name=table_name, schema=schema):
+                        print("\t\tColumn: %s" % column)
+                for view_name in self.context.dialect.get_views(schema=schema):
+                    print("\tView: %s" % view_name)
+                    for column in self.context.dialect.get_columns(object_name=view_name, schema=schema):
+                        print("\t\tColumn: %s" % column)
+        except Exception as ex:
+            print(ex)
+            raise
+
+    def test_integration(self):
+        try:
+            engine = self.context.connector.get_engine()
+            self.context.execute('''CREATE TABLE test_pdi.test_source (
+                Id INT NULL,
+                Name varchar(100) NULL
+            )''')
+            self.context.execute('''insert into test_pdi.test_source(Id,Name) values(1,'test')''')
+            TABLE_SPEC = [
+                ('id'),
+                ('name')
+            ]
+
+            TABLE_NAME = 'test_source'
+            TABLE_SCHEMA = 'test_pdi'
+            columns = [Column(n) for n in TABLE_SPEC]
+            table = Table(TABLE_NAME, MetaData(), schema=TABLE_SCHEMA, *columns)
+            from sqlalchemy.orm import sessionmaker, Session
+            _SessionFactory = sessionmaker(bind=engine)
+            session = _SessionFactory()
+
+            qu = table.select().order_by(table.c.id).limit(1).offset(0)
+            res = session.execute(qu)
+            result = list(res)
+            session.commit()
+            assert result[0][0] == 1
+        except Exception as ex:
+            ConsoleLogger().exception(ex)
+            raise
+        finally:
+            self.context.execute('''DROP TABLE test_pdi.test_source''')

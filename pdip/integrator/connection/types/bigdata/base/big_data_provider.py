@@ -1,14 +1,14 @@
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.integrator.connection.domain.authentication.basic import BasicAuthentication
-from pdip.integrator.connection.domain.authentication.kerberos import KerberosAuthentication
-from pdip.integrator.connection.domain.authentication.mechanism import MechanismTypes
-from pdip.integrator.connection.domain.bigdata import BigDataConnectionConfiguration
-from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
-from pdip.integrator.connection.domain.server.base import Server
 from .big_data_context import BigDataContext
 from .big_data_policy import BigDataPolicy
+from ....domain.authentication.basic import ConnectionBasicAuthentication
+from ....domain.authentication.kerberos import KerberosAuthentication
+from ....domain.authentication.mechanism import MechanismTypes
+from ....domain.bigdata import BigDataConnectionConfiguration
+from ....domain.enums import ConnectorTypes, ConnectionTypes
+from ....domain.server.base import ConnectionServer
+from ......dependency import IScoped
 
 
 class BigDataProvider(IScoped):
@@ -39,9 +39,9 @@ class BigDataProvider(IScoped):
                 ConnectionType=ConnectionTypes.BigData,
                 ConnectorType=ConnectorTypes.Impala,
                 AuthenticationMechanismType=mechanism_type,
-                Server=Server(Host=host, Port=port),
-                BasicAuthentication=BasicAuthentication(User=user,
-                                                        Password=password),
+                Server=ConnectionServer(Host=host, Port=port),
+                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                  Password=password),
                 KerberosAuthentication=KerberosAuthentication(Principal=user, Password=password),
                 Database=database,
                 Ssl=ssl,

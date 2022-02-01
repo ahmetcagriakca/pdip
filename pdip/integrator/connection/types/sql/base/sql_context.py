@@ -7,6 +7,7 @@ import pandas as pd
 from injector import inject
 
 from .sql_connector import SqlConnector
+from .sql_dialect import SqlDialect
 from .sql_policy import SqlPolicy
 from ....domain.task import DataQueueTask
 from ......dependency import IScoped
@@ -18,6 +19,7 @@ class SqlContext(IScoped):
                  policy: SqlPolicy,
                  retry_count=3):
         self.connector: SqlConnector = policy.connector
+        self.dialect: SqlDialect = policy.dialect
         self.retry_count = retry_count
         self.default_retry = 1
 
@@ -55,49 +57,23 @@ class SqlContext(IScoped):
         return results
 
     @connect
-    def execute(self, query) -> any:
-        self.connector.cursor.execute(query)
-        self.connector.connection.commit()
-        return self.connector.cursor.rowcount
-
-    @connect
-    def execute_many(self, query, data):
-        return self._execute_with_retry(query=query, data=data, retry=self.default_retry)
-
-    def _execute_many_start(self, query, data):
-        return self.connector.execute_many(query=query, data=data)
-
-    def _execute_with_retry(self, query, data, retry):
-        try:
-            return self._execute_many_start(query=query, data=data)
-        except Exception as ex:
-            if retry > self.retry_count:
-                print(f"Db write error on Error:{ex}")
-                raise
-            print(
-                f"Getting error on insert (Operation will be retried. Retry Count:{retry}). Error:{ex}")
-            # retrying connect to db,
-            self.connector.connect()
-            time.sleep(1)
-            return self._execute_with_retry(query=query, data=data, retry=retry + 1)
-
-    @connect
     def get_table_count(self, query):
-        count_query = self.connector.get_table_count_query(query=query)
+        count_query = self.dialect.get_table_count_query(query=query)
         self.connector.cursor.execute(count_query)
         datas = self.connector.cursor.fetchall()
         return datas[0][0]
 
     def get_table_data(self, query):
-        data_query = self.connector.get_table_data_query(query=query)
+        data_query = self.dialect.get_table_data_query(query=query)
         return self.fetch_query(data_query)
 
     def get_table_data_with_paging(self, query, start, end):
-        data_query = self.connector.get_table_data_with_paging_query(query=query,
-                                                                     start=start,
-                                                                     end=end)
+        data_query = self.dialect.get_table_data_with_paging_query(
+            query=query,
+            start=start,
+            end=end
+        )
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
-
         return results
 
     @connect
@@ -127,8 +103,35 @@ class SqlContext(IScoped):
                 else:
                     break
 
+    @connect
+    def execute(self, query) -> any:
+        self.connector.cursor.execute(query)
+        self.connector.connection.commit()
+        return self.connector.cursor.rowcount
+
+    @connect
+    def execute_many(self, query, data):
+        return self._execute_with_retry(query=query, data=data, retry=self.default_retry)
+
+    def _execute_many_start(self, query, data):
+        return self.connector.execute_many(query=query, data=data)
+
+    def _execute_with_retry(self, query, data, retry):
+        try:
+            return self._execute_many_start(query=query, data=data)
+        except Exception as ex:
+            if retry > self.retry_count:
+                print(f"Db write error on Error:{ex}")
+                raise
+            print(
+                f"Getting error on insert (Operation will be retried. Retry Count:{retry}). Error:{ex}")
+            # retrying connect to db,
+            self.connector.connect()
+            time.sleep(1)
+            return self._execute_with_retry(query=query, data=data, retry=retry + 1)
+
     def truncate_table(self, schema, table):
-        truncate_query = self.connector.get_truncate_query(schema=schema, table=table)
+        truncate_query = self.dialect.get_truncate_query(schema=schema, table=table)
         return self.execute(query=truncate_query)
 
     @staticmethod
@@ -142,7 +145,7 @@ class SqlContext(IScoped):
         target_query = query
         for column_row in column_rows:
             index = column_rows.index(column_row)
-            indexer = self.connector.get_target_query_indexer().format(index=index)
+            indexer = self.dialect.get_query_indexer().format(index=index)
             target_query = self.replace_regex(target_query, column_row[0], indexer)
         return target_query
 
