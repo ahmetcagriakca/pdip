@@ -3,7 +3,7 @@ from typing import List
 from injector import inject
 
 from ...domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_STARTED, EVENT_EXECUTION_FINISHED
-from ...initializer.operation import OperationExecutionInitializerFactory
+from ...initializer.execution.operation import OperationExecutionInitializerFactory
 from ...integration.base import IntegrationExecution
 from ...operation.domain import OperationBase, OperationIntegrationBase
 from ...pubsub.base import ChannelQueue

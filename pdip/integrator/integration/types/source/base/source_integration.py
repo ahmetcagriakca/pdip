@@ -2,7 +2,6 @@ from injector import inject
 
 from ...base import IntegrationAdapter
 from pdip.integrator.integration.domain.base import IntegrationBase
-from pdip.integrator.integration.factories import IntegrationExecuteStrategyFactory
 from pdip.integrator.connection.factories import ConnectionAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG

@@ -2,8 +2,8 @@ from injector import inject
 
 from .default_integrator_initializer import DefaultIntegratorInitializer
 from .integrator_initializer import IntegratorInitializer
-from pdip.dependency import IScoped
-from pdip.dependency.provider import ServiceProvider
+from ....dependency import IScoped
+from ....dependency.provider import ServiceProvider
 
 
 class IntegratorInitializerFactory(IScoped):

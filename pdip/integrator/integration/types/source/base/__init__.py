@@ -1,2 +1,2 @@
-from .integration_adapter import IntegrationAdapter
-from .integration_adapter_factory import IntegrationAdapterFactory
+from .integration_execute_strategy import IntegrationExecuteStrategy
+from .integration_execute_strategy_factory import IntegrationExecuteStrategyFactory

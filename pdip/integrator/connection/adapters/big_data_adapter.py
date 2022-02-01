@@ -1,4 +1,3 @@
-from asyncio import Queue
 from typing import List
 
 from injector import inject

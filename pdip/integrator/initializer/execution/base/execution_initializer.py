@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from ..base import Initializer
-from ...operation.domain import OperationBase
+from ...base import Initializer
+from ....operation.domain import OperationBase
 
 
 class ExecutionInitializer(Initializer):

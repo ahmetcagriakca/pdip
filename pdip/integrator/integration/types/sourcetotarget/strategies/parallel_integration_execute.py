@@ -9,19 +9,19 @@ from injector import inject
 from pandas import DataFrame, notnull
 
 from ..base import IntegrationExecuteStrategy
-from ...domain.base import IntegrationBase
-from ....connection.domain.task import DataQueueTask
-from ....connection.factories import ConnectionAdapterFactory
-from ....domain.enums.events import EVENT_LOG
-from ....operation.domain import OperationIntegrationBase
-from ....pubsub.base import ChannelQueue
-from ....pubsub.domain import TaskMessage
-from ....pubsub.publisher import Publisher
-from .....data.decorators import transactionhandler
-from .....dependency import IScoped
-from .....dependency.container import DependencyContainer
-from .....processing import ProcessManager
-from .....processing.factories import ProcessManagerFactory
+from ....domain.base import IntegrationBase
+from .....connection.domain.task import DataQueueTask
+from .....connection.factories import ConnectionAdapterFactory
+from .....domain.enums.events import EVENT_LOG
+from .....operation.domain import OperationIntegrationBase
+from .....pubsub.base import ChannelQueue
+from .....pubsub.domain import TaskMessage
+from .....pubsub.publisher import Publisher
+from ......data.decorators import transactionhandler
+from ......dependency import IScoped
+from ......dependency.container import DependencyContainer
+from ......processing import ProcessManager
+from ......processing.factories import ProcessManagerFactory
 
 
 class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
@@ -227,7 +227,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                                   kwargs={
                                                       'data': operation_integration,
                                                       'message': f"Source data operation finished with error. SubProcessId: {sub_process_id}.",
-                                                      'exception':ex
+                                                      'exception': ex
 
                                                   }))
             # self.logger.info(

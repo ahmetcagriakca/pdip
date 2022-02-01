@@ -2,8 +2,8 @@ from injector import inject
 
 from .default_execution_initializer import DefaultExecutionInitializer
 from .execution_initializer import ExecutionInitializer
-from ....dependency import IScoped
-from ....dependency.provider import ServiceProvider
+from .....dependency import IScoped
+from .....dependency.provider import ServiceProvider
 
 
 class ExecutionInitializerFactory(IScoped):

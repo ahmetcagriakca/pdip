@@ -1,11 +1,10 @@
 from injector import inject
 
-from ..strategies.base import IntegrationExecuteStrategy
-from ..strategies.implementation import LimitOffIntegrationExecute
-from ..strategies.implementation import ParallelIntegrationExecute
-from ..strategies.implementation import SingleProcessIntegrationExecute
-from ....dependency import IScoped
-from ....exceptions import IncompatibleAdapterException
+from pdip.dependency import IScoped
+from pdip.exceptions import IncompatibleAdapterException
+from pdip.integrator.integration.strategies.implementation import LimitOffIntegrationExecute, \
+    ParallelIntegrationExecute, SingleProcessIntegrationExecute
+from .integration_execute_strategy import IntegrationExecuteStrategy
 
 
 class IntegrationExecuteStrategyFactory(IScoped):

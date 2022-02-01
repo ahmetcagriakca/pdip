@@ -1,8 +1,8 @@
 from abc import abstractmethod
 
-from pdip.integrator.initializer.base import Initializer
-from pdip.integrator.operation.domain import OperationBase
-from pdip.integrator.pubsub.base import MessageBroker
+from ..base import Initializer
+from ...operation.domain import OperationBase
+from ...pubsub.base import MessageBroker
 
 
 class IntegratorInitializer(Initializer):

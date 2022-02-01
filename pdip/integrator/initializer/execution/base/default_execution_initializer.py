@@ -1,9 +1,9 @@
 from injector import inject
 
 from .execution_initializer import ExecutionInitializer
-from ...execution.domain import ExecutionOperationBase, ExecutionOperationIntegrationBase
-from ...operation.domain import OperationBase
-from ....dependency import IScoped
+from ....execution.domain import ExecutionOperationBase, ExecutionOperationIntegrationBase
+from ....operation.domain import OperationBase
+from .....dependency import IScoped
 
 
 class DefaultExecutionInitializer(ExecutionInitializer, IScoped):

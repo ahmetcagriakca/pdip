@@ -1,16 +1,16 @@
 from injector import inject
 
-from ...base import IntegrationAdapter
-from pdip.integrator.integration.domain.base import IntegrationBase
-from pdip.integrator.integration.factories import IntegrationExecuteStrategyFactory
+from pdip.dependency import IScoped
 from pdip.integrator.connection.factories import ConnectionAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
+from pdip.integrator.integration.domain.base import IntegrationBase
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
-from pdip.dependency import IScoped
+from .integration_execute_strategy_factory import IntegrationExecuteStrategyFactory
+from ...base import IntegrationAdapter
 
 
 class SourceIntegration(IntegrationAdapter, IScoped):
@@ -34,8 +34,8 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             truncate_affected_row_count = target_adapter.clear_data(integration=operation_integration.Integration)
             publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE,
                                                   kwargs={"data": operation_integration,
-                                                        "row_count": truncate_affected_row_count
-                                                        }))
+                                                          "row_count": truncate_affected_row_count
+                                                          }))
         order = operation_integration.Order
         process_count = operation_integration.ProcessCount
         limit = operation_integration.Limit
@@ -53,8 +53,8 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             channel=channel)
         publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE,
                                               kwargs={"data": operation_integration,
-                                                    "row_count": affected_row_count
-                                                    }))
+                                                      "row_count": affected_row_count
+                                                      }))
         return affected_row_count
 
     def get_start_message(self, integration: IntegrationBase):

@@ -2,12 +2,12 @@ from injector import inject
 
 from pdip.dependency import IScoped
 from pdip.exceptions import IncompatibleAdapterException
-from pdip.integrator.integration.strategies.implementation import LimitOffIntegrationExecute, \
+from pdip.integrator.integration.types.source.strategies import LimitOffIntegrationExecute, \
     ParallelIntegrationExecute, SingleProcessIntegrationExecute
 from .integration_execute_strategy import IntegrationExecuteStrategy
 
 
-class IntegrationExecuteStrategyFactory(IScoped):
+class IntegrationSourceToTargetExecuteStrategyFactory(IScoped):
     @inject
     def __init__(self,
                  limit_off_integration_execute: LimitOffIntegrationExecute,

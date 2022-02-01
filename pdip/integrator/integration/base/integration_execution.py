@@ -2,12 +2,11 @@ from time import time
 
 from injector import inject
 
-from ..adapters.base import IntegrationAdapter
-from ..factories import IntegrationAdapterFactory
+from ..types.base import IntegrationAdapter, IntegrationAdapterFactory
 from ...domain.enums.events import EVENT_EXECUTION_INTEGRATION_FINISHED, \
     EVENT_EXECUTION_INTEGRATION_STARTED, \
     EVENT_EXECUTION_INTEGRATION_INITIALIZED
-from ...initializer.integration import OperationIntegrationExecutionInitializerFactory
+from ...initializer.execution.integration import OperationIntegrationExecutionInitializerFactory
 from ...operation.domain.operation import OperationIntegrationBase
 from ...pubsub.base import ChannelQueue
 from ...pubsub.domain import TaskMessage
