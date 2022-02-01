@@ -1,1 +1,1 @@
-from .sql_source_adapter import SqlSourceAdapter
+from .big_data_source_adapter import BigDataSourceAdapter

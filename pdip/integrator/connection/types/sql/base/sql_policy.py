@@ -14,8 +14,8 @@ class SqlPolicy:
         self.config = config
         self.connector: SqlConnector = None
         self.connector_name = None
-        sql_connector_base_module = "pdip.integrator.connection.types.sql.connectors"
-        sql_dialect_base_module = "pdip.integrator.connection.types.sql.dialects"
+        connector_base_module = "pdip.integrator.connection.types.sql.connectors"
+        dialect_base_module = "pdip.integrator.connection.types.sql.dialects"
         if self.config.ConnectorType == ConnectorTypes.MSSQL:
             namespace = "mssql"
             connector_name = "MssqlConnector"
@@ -34,11 +34,11 @@ class SqlPolicy:
             dialect_name = "MysqlDialect"
         else:
             raise Exception("Connector type not found")
-        module = importlib.import_module(".".join([sql_connector_base_module, namespace]))
+        module = importlib.import_module(".".join([connector_base_module, namespace]))
         connector_class = getattr(module, connector_name)
         if connector_class is not None:
             self.connector: SqlConnector = connector_class(self.config)
-        module = importlib.import_module(".".join([sql_dialect_base_module, namespace]))
+        module = importlib.import_module(".".join([dialect_base_module, namespace]))
         dialect_class = getattr(module, dialect_name)
         if dialect_class is not None:
             self.dialect: SqlDialect = dialect_class(self.connector)

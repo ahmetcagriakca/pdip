@@ -1,1 +1,1 @@
-from .sql_target_adapter import SqlTargetAdapter
+from .big_data_target_adapter import BigDataTargetAdapter

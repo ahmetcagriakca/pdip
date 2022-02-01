@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 
-class SqlDialect:
+class BigDataDialect:
     def __init__(self):
         pass
 

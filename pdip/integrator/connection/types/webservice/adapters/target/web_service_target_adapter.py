@@ -3,32 +3,23 @@ from datetime import datetime
 from typing import List
 
 from injector import inject
-from pdip.exceptions import NotSupportedFeatureException
 
-from pdip.integrator.connection.base import ConnectionSourceAdapter
+from pdip.exceptions import NotSupportedFeatureException
+from pdip.integrator.connection.base import ConnectionTargetAdapter
 from pdip.integrator.connection.types.webservice.base import WebServiceProvider
 from pdip.integrator.integration.domain.base import IntegrationBase
 from pdip.json import date_time_parser
 
 
-class WebServiceSourceAdapter(ConnectionSourceAdapter):
+class WebServiceTargetAdapter(ConnectionTargetAdapter):
     @inject
     def __init__(self,
-                 provider: WebServiceSourceProvider,
+                 provider: WebServiceProvider,
                  ):
         self.provider = provider
 
     def clear_data(self, integration: IntegrationBase) -> int:
         raise NotSupportedFeatureException(f"{self.__class__.__name__} clear_data")
-
-    def get_source_data_count(self, integration: IntegrationBase) -> int:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} get_source_data_count")
-
-    def get_source_data(self, integration: IntegrationBase) -> List[any]:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} get_source_data")
-
-    def get_source_data_with_paging(self, integration: IntegrationBase, start, end) -> List[any]:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} get_source_data_with_paging")
 
     def prepare_insert_row(self, data, columns):
         insert_rows = []

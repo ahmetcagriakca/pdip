@@ -1,1 +1,1 @@
-from .impala_connector import ImpalaConnector
+from .impala_dialect import ImpalaDialect
