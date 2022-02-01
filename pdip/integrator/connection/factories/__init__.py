@@ -1,1 +1,2 @@
-from .connection_adapter_factory import ConnectionAdapterFactory
+from .connection_source_adapter_factory import ConnectionSourceAdapterFactory
+from .connection_target_adapter_factory import ConnectionTargetAdapterFactory

@@ -2,12 +2,12 @@ from injector import inject
 
 from pdip.dependency import IScoped
 from pdip.exceptions import IncompatibleAdapterException
-from pdip.integrator.integration.strategies.implementation import LimitOffIntegrationExecute, \
+from pdip.integrator.integration.types.source.strategies import LimitOffIntegrationExecute, \
     ParallelIntegrationExecute, SingleProcessIntegrationExecute
-from .integration_execute_strategy import IntegrationExecuteStrategy
+from pdip.integrator.integration.types.sourcetotarget.base.integration_execute_strategy import IntegrationExecuteStrategy
 
 
-class IntegrationExecuteStrategyFactory(IScoped):
+class IntegrationSourceToTargetExecuteStrategyFactory(IScoped):
     @inject
     def __init__(self,
                  limit_off_integration_execute: LimitOffIntegrationExecute,
@@ -19,7 +19,6 @@ class IntegrationExecuteStrategyFactory(IScoped):
         self.limit_off_integration_execute = limit_off_integration_execute
 
     def get(self, limit: int, process_count: int) -> IntegrationExecuteStrategy:
-        # only target query run
         if limit is None or limit == 0:
             if isinstance(self.limit_off_integration_execute, IntegrationExecuteStrategy):
                 return self.limit_off_integration_execute

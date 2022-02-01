@@ -4,21 +4,23 @@ from func_timeout import func_set_timeout
 from injector import inject
 
 from pdip.dependency import IScoped
-from pdip.integrator.connection.factories import ConnectionAdapterFactory
+from pdip.integrator.connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_LOG
+from pdip.integrator.integration.types.sourcetotarget.base import IntegrationSourceToTargetExecuteStrategy
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
-from ..base import IntegrationExecuteStrategy
 
 
-class LimitOffIntegrationExecute(IntegrationExecuteStrategy, IScoped):
+class LimitOffIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):
     @inject
     def __init__(self,
-                 connection_adapter_factory: ConnectionAdapterFactory
+                 connection_source_adapter_factory: ConnectionSourceAdapterFactory,
+                 connection_target_adapter_factory: ConnectionTargetAdapterFactory
                  ):
-        self.connection_adapter_factory = connection_adapter_factory
+        self.connection_source_adapter_factory = connection_source_adapter_factory
+        self.connection_target_adapter_factory = connection_target_adapter_factory
 
     @func_set_timeout(3600)
     def execute(
@@ -34,7 +36,7 @@ class LimitOffIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                                       'data': operation_integration,
                                                       'message': f"0 - process got a new task"
                                                   }))
-            source_adapter = self.connection_adapter_factory.get_adapter(
+            source_adapter = self.connection_source_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.SourceConnections.ConnectionType)
             source_data = source_adapter.get_source_data(
                 integration=operation_integration.Integration)
@@ -45,7 +47,7 @@ class LimitOffIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                                       'data': operation_integration,
                                                       'message': f"0 - {data_count} readed from db"
                                                   }))
-            target_adapter = self.connection_adapter_factory.get_adapter(
+            target_adapter = self.connection_target_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
             prepared_data = target_adapter.prepare_data(integration=operation_integration.Integration,
                                                         source_data=source_data)

@@ -3,9 +3,9 @@ from time import time
 from func_timeout import func_set_timeout
 from injector import inject
 
-from ..base import IntegrationExecuteStrategy
-from .....connection.base import ConnectionAdapter
-from .....connection.factories import ConnectionAdapterFactory
+from ..base import IntegrationSourceToTargetExecuteStrategy
+from .....connection.base import ConnectionSourceAdapter, ConnectionTargetAdapter
+from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from .....domain.enums.events import EVENT_LOG
 from .....operation.domain.operation import OperationIntegrationBase
 from .....pubsub.base import ChannelQueue
@@ -14,12 +14,14 @@ from .....pubsub.publisher import Publisher
 from ......dependency import IScoped
 
 
-class SingleProcessIntegrationExecute(IntegrationExecuteStrategy, IScoped):
+class SingleProcessIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):
     @inject
     def __init__(self,
-                 connection_adapter_factory: ConnectionAdapterFactory
+                 connection_source_adapter_factory: ConnectionSourceAdapterFactory,
+                 connection_target_adapter_factory: ConnectionTargetAdapterFactory
                  ):
-        self.connection_adapter_factory = connection_adapter_factory
+        self.connection_source_adapter_factory = connection_source_adapter_factory
+        self.connection_target_adapter_factory = connection_target_adapter_factory
 
     def execute(
             self,
@@ -28,9 +30,9 @@ class SingleProcessIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     ) -> int:
         publisher = Publisher(channel=channel)
         try:
-            source_adapter = self.connection_adapter_factory.get_adapter(
+            source_adapter = self.connection_source_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.SourceConnections.ConnectionType)
-            target_adapter = self.connection_adapter_factory.get_adapter(
+            target_adapter = self.connection_target_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
             integration = operation_integration.Integration
             data_count = source_adapter.get_source_data_count(integration=integration)
@@ -62,8 +64,8 @@ class SingleProcessIntegrationExecute(IntegrationExecuteStrategy, IScoped):
     @func_set_timeout(1800)
     def start_execute_integration_with_paging(self,
                                               operation_integration: OperationIntegrationBase,
-                                              source_adapter: ConnectionAdapter,
-                                              target_adapter: ConnectionAdapter,
+                                              source_adapter: ConnectionSourceAdapter,
+                                              target_adapter: ConnectionTargetAdapter,
                                               task_id: int,
                                               start: int,
                                               end: int,

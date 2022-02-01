@@ -8,10 +8,10 @@ from func_timeout import FunctionTimedOut, func_set_timeout
 from injector import inject
 from pandas import DataFrame, notnull
 
-from ..base import IntegrationExecuteStrategy
+from ..base import IntegrationSourceToTargetExecuteStrategy
 from ....domain.base import IntegrationBase
+from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from .....connection.domain.task import DataQueueTask
-from .....connection.factories import ConnectionAdapterFactory
 from .....domain.enums.events import EVENT_LOG
 from .....operation.domain import OperationIntegrationBase
 from .....pubsub.base import ChannelQueue
@@ -24,15 +24,17 @@ from ......processing import ProcessManager
 from ......processing.factories import ProcessManagerFactory
 
 
-class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
+class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):
     @inject
     def __init__(
             self,
             process_manager_factory: ProcessManagerFactory,
-            connection_adapter_factory: ConnectionAdapterFactory
+            connection_source_adapter_factory: ConnectionSourceAdapterFactory,
+            connection_target_adapter_factory: ConnectionTargetAdapterFactory
     ):
+        self.connection_source_adapter_factory = connection_source_adapter_factory
+        self.connection_target_adapter_factory = connection_target_adapter_factory
         self.process_manager_factory = process_manager_factory
-        self.connection_adapter_factory = connection_adapter_factory
 
     def execute(
             self,
@@ -180,7 +182,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                               }))
         try:
 
-            source_adapter = self.connection_adapter_factory.get_adapter(
+            source_adapter = self.connection_source_adapter_factory.get_adapter(
                 connection_type=operation_integration.Integration.SourceConnections.ConnectionType)
 
             data_count = source_adapter.get_source_data_count(integration=operation_integration.Integration)
@@ -342,7 +344,7 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                                    integration: IntegrationBase,
                                                    source_data: any
                                                    ):
-        target_adapter = self.connection_adapter_factory.get_adapter(
+        target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=integration.TargetConnections.ConnectionType)
         prepared_data = target_adapter.prepare_data(integration=integration, source_data=source_data)
         target_adapter.write_target_data(integration=integration, prepared_data=prepared_data)
@@ -354,11 +356,11 @@ class ParallelIntegrationExecute(IntegrationExecuteStrategy, IScoped):
                                               start,
                                               end
                                               ):
-        source_adapter = self.connection_adapter_factory.get_adapter(
+        source_adapter = self.connection_source_adapter_factory.get_adapter(
             connection_type=integration.SourceConnections.ConnectionType)
         source_data = source_adapter.get_source_data_with_paging(
             integration=integration, start=start, end=end)
-        target_adapter = self.connection_adapter_factory.get_adapter(
+        target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=integration.TargetConnections.ConnectionType)
         prepared_data = target_adapter.prepare_data(integration=integration, source_data=source_data)
         target_adapter.write_target_data(integration=integration, prepared_data=prepared_data)

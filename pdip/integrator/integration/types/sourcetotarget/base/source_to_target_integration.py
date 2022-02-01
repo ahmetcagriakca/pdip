@@ -1,7 +1,7 @@
 from injector import inject
 
 from pdip.dependency import IScoped
-from pdip.integrator.connection.factories import ConnectionAdapterFactory
+from pdip.integrator.connection.base import ConnectionTargetAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
 from pdip.integrator.integration.domain.base import IntegrationBase
@@ -9,17 +9,17 @@ from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
-from .integration_execute_strategy_factory import IntegrationExecuteStrategyFactory
+from pdip.integrator.integration.types.sourcetotarget.factories.integration_execute_strategy_factory import IntegrationSourceToTargetExecuteStrategyFactory
 from ...base import IntegrationAdapter
 
 
-class SourceIntegration(IntegrationAdapter, IScoped):
+class SourceToTargetIntegration(IntegrationAdapter, IScoped):
     @inject
     def __init__(self,
-                 integration_execute_strategy_factory: IntegrationExecuteStrategyFactory,
-                 connection_adapter_factory: ConnectionAdapterFactory
+                 integration_execute_strategy_factory: IntegrationSourceToTargetExecuteStrategyFactory,
+                 connection_target_adapter_factory: ConnectionTargetAdapterFactory
                  ):
-        self.connection_adapter_factory = connection_adapter_factory
+        self.connection_target_adapter_factory = connection_target_adapter_factory
         self.integration_execute_strategy_factory = integration_execute_strategy_factory
 
     def execute(
@@ -28,7 +28,7 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             channel: ChannelQueue
     ) -> int:
         publisher = Publisher(channel=channel)
-        target_adapter = self.connection_adapter_factory.get_adapter(
+        target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
         if operation_integration.Integration.IsTargetTruncate:
             truncate_affected_row_count = target_adapter.clear_data(integration=operation_integration.Integration)

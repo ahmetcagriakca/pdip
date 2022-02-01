@@ -1,23 +1,23 @@
 from injector import inject
 
-from ...base import IntegrationAdapter
-from pdip.integrator.integration.domain.base import IntegrationBase
-from pdip.integrator.connection.factories import ConnectionAdapterFactory
+from pdip.dependency import IScoped
+from pdip.integrator.connection.factories import ConnectionTargetAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET
+from pdip.integrator.integration.domain.base import IntegrationBase
 from pdip.integrator.operation.domain.operation import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
-from pdip.dependency import IScoped
+from ...base import IntegrationAdapter
 
 
 class TargetIntegration(IntegrationAdapter, IScoped):
     @inject
     def __init__(self,
-                 connection_adapter_factory: ConnectionAdapterFactory
+                 connection_target_adapter_factory: ConnectionTargetAdapterFactory
                  ):
-        self.connection_adapter_factory = connection_adapter_factory
+        self.connection_target_adapter_factory = connection_target_adapter_factory
 
     def execute(
             self,
@@ -25,7 +25,7 @@ class TargetIntegration(IntegrationAdapter, IScoped):
             channel: ChannelQueue
     ) -> int:
         publisher = Publisher(channel=channel)
-        target_adapter = self.connection_adapter_factory.get_adapter(
+        target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=operation_integration.Integration.TargetConnections.ConnectionType)
         if operation_integration.Integration.IsTargetTruncate:
             truncate_affected_row_count = target_adapter.clear_data(integration=operation_integration.Integration)
