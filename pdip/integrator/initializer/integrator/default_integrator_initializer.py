@@ -1,15 +1,15 @@
 from injector import inject
 
 from .integrator_initializer import IntegratorInitializer
-from pdip.integrator.initializer.execution import ExecutionInitializerFactory
-from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_FINISHED, \
+from ..execution.base import ExecutionInitializerFactory
+from ...domain.enums.events import EVENT_EXECUTION_INITIALIZED, EVENT_EXECUTION_FINISHED, \
     EVENT_EXECUTION_STARTED, EVENT_EXECUTION_INTEGRATION_INITIALIZED, EVENT_EXECUTION_INTEGRATION_STARTED, \
     EVENT_EXECUTION_INTEGRATION_FINISHED, EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, \
     EVENT_EXECUTION_INTEGRATION_EXECUTE_TARGET, EVENT_LOG, EVENT_EXECUTION_INTEGRATION_EXECUTE_TRUNCATE
-from pdip.integrator.event.base import IntegratorEventManagerFactory
-from pdip.integrator.operation.domain import OperationBase
-from pdip.integrator.pubsub.base import MessageBroker
-from pdip.dependency import IScoped
+from ...event.base import IntegratorEventManagerFactory
+from ...operation.domain import OperationBase
+from ...pubsub.base import MessageBroker
+from ....dependency import IScoped
 
 
 class DefaultIntegratorInitializer(IntegratorInitializer, IScoped):

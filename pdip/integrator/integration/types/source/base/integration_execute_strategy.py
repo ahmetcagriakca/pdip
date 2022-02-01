@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 
 from injector import inject
-
-from ....operation.domain import OperationIntegrationBase
-from ....pubsub.base import ChannelQueue
-from .....dependency import IScoped
+from pdip.dependency import IScoped
+from pdip.integrator.operation.domain import OperationIntegrationBase
+from pdip.integrator.pubsub.base import ChannelQueue
 
 
 class IntegrationExecuteStrategy(ABC, IScoped):

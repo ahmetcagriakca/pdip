@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import List
 
 from injector import inject
-from pandas import DataFrame
 
 from ..base import ConnectionAdapter
 from ..types.webservice.base import WebServiceProvider

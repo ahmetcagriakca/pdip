@@ -1,9 +1,9 @@
 from injector import inject
 
-from ....dependency import IScoped
-from ....dependency.provider import ServiceProvider
-from .default_operation_integration_execution_initializer import     DefaultOperationIntegrationExecutionInitializer
-from .operation_integration_execution_initializer import     OperationIntegrationExecutionInitializer
+from .default_operation_integration_execution_initializer import DefaultOperationIntegrationExecutionInitializer
+from .operation_integration_execution_initializer import OperationIntegrationExecutionInitializer
+from .....dependency import IScoped
+from .....dependency.provider import ServiceProvider
 
 
 class OperationIntegrationExecutionInitializerFactory(IScoped):
