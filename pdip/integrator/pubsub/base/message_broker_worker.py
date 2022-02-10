@@ -1,17 +1,20 @@
 import queue
 import threading
 
+from pdip.logging.loggers.console import ConsoleLogger
 from .channel_queue import ChannelQueue
 from ..domain import TaskMessage
 
 
 class MessageBrokerWorker(threading.Thread):
     def __init__(self,
+                 logger: ConsoleLogger,
                  publish_channel: ChannelQueue,
                  message_channel: ChannelQueue,
                  other_arg,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logger
         self.message_channel = message_channel
         self.publish_channel = publish_channel
         self.other_arg = other_arg

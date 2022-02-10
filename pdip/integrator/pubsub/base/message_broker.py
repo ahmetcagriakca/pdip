@@ -26,9 +26,9 @@ class MessageBroker:
         self.close()
 
     def close(self):
-        if self.worker.is_alive() and not self.worker.stopped():
+        if self.worker is not None and self.worker.is_alive() and not self.worker.stopped():
             self.worker.stop()
-        if self.listener.is_alive() and not self.listener.stopped():
+        if self.listener is not None and self.listener.is_alive() and not self.listener.stopped():
             self.listener.stop()
         if self.manager is not None:
             self.manager.shutdown()
@@ -39,7 +39,8 @@ class MessageBroker:
         self.message_queue = self.manager.Queue()
         self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
         self.message_channel = ChannelQueue(channel_queue=self.message_queue)
-        self.worker: MessageBrokerWorker = MessageBrokerWorker(publish_channel=self.publish_channel,
+        self.worker: MessageBrokerWorker = MessageBrokerWorker(logger=self.logger,
+                                                               publish_channel=self.publish_channel,
                                                                message_channel=self.message_channel,
                                                                other_arg=None)
 
