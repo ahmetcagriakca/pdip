@@ -6,8 +6,11 @@ from ...base import SqlDialect, SqlConnector
 class MssqlDialect(SqlDialect):
     def __init__(self, connector: SqlConnector):
         self.connector = connector
-        self.engine = self.connector.get_engine()
-        self.inspector = inspect(self.engine)
+
+    @property
+    def inspector(self):
+        engine = self.connector.get_engine()
+        return inspect(engine)
 
     def get_query_indexer(self):
         indexer = '?'
@@ -38,10 +41,22 @@ FROM TEMP_INTEGRATION
 WHERE "row_number" > {start} AND "row_number" <= {end}
 '''
 
+    def prepare_select_query(self, schema, table, columns=None):
+        if schema is None or schema == '' or table is None or table == '':
+            raise Exception(f"Source Schema and Table required. {schema}.{table}")
+        if columns is not None and len(columns) > 0:
+            source_column_rows = [column.Name for column in columns]
+            columns_query = ",".join(source_column_rows)
+            query = self.get_table_select_query(selected_rows=columns_query, schema=schema,
+                                                table=table)
+        else:
+            query = self.get_table_select_query(selected_rows='*', schema=schema, table=table)
+        return query
+
     def get_insert_values_query(self, schema, table, values_query):
         return f'insert into "{schema}"."{table}" values({values_query})'
 
-    def get_insert_query(self, schema, table,columns_query, values_query):
+    def get_insert_query(self, schema, table, columns_query, values_query):
         return f'insert into "{schema}"."{table}"({columns_query}) values({values_query})'
 
     def get_schemas(self):

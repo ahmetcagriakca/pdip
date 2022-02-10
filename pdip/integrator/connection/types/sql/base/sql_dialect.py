@@ -38,6 +38,10 @@ class SqlDialect:
         pass
 
     @abstractmethod
+    def prepare_select_query(self, schema, table, columns=None):
+        pass
+
+    @abstractmethod
     def get_schemas(self):
         pass
 

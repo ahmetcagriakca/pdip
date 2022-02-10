@@ -1,15 +1,12 @@
-import json
 import re
 import time
-from queue import Queue
 
-import pandas as pd
 from injector import inject
 
 from .sql_connector import SqlConnector
 from .sql_dialect import SqlDialect
+from .sql_iterator import SqlIterator
 from .sql_policy import SqlPolicy
-from ....domain.task import DataQueueTask
 from ......dependency import IScoped
 
 
@@ -76,32 +73,10 @@ class SqlContext(IScoped):
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
         return results
 
-    @connect
-    def get_unpredicted_data(self, query: str, columns: [], limit: int, process_count: int, data_queue: Queue,
-                             result_queue: Queue):
-        total_data_count = 0
-        transmitted_data_count = 0
-        task_id = 0
-        connection = self.connector.get_connection()
-        for chunk in pd.read_sql(query, con=connection, columns=columns, chunksize=limit):
-            data = json.loads(chunk.to_json(orient='records', date_format="iso"))
-            task_id = task_id + 1
-            data_count = len(chunk)
-            total_data_count = total_data_count + data_count
-            data_types = dict((c, chunk[c].dtype.name) for c in chunk.columns)
-            # dict((c,df[c].dtype.name) for i in df.columns for j in i.items())
-            data_queue_task = DataQueueTask(Id=task_id, Data=data, DataTypes=data_types,
-                                            Start=total_data_count - data_count,
-                                            End=total_data_count, Limit=limit, Message=f'query readed',
-                                            IsFinished=False)
-            data_queue.put(data_queue_task)
-            transmitted_data_count = transmitted_data_count + 1
-            if transmitted_data_count >= process_count:
-                result = result_queue.get()
-                if result:
-                    transmitted_data_count = transmitted_data_count - 1
-                else:
-                    break
+    def get_iterator(self, query, limit):
+        data_query = self.dialect.get_table_data_query(query=query)
+        iterator = SqlIterator(connector=self.connector, query=data_query, limit=limit)
+        return iterator
 
     @connect
     def execute(self, query) -> any:
@@ -146,7 +121,7 @@ class SqlContext(IScoped):
         for column_row in column_rows:
             index = column_rows.index(column_row)
             indexer = self.dialect.get_query_indexer().format(index=index)
-            target_query = self.replace_regex(target_query, column_row[0], indexer)
+            target_query = self.replace_regex(target_query, column_row, indexer)
         return target_query
 
     def prepare_insert_row(self, data, column_rows):

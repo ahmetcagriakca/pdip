@@ -43,7 +43,7 @@ class OracleConnector(SqlConnector):
         if self.config.Sid is not None and self.config.Sid != '':
             connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
         else:
-            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
+            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.ServiceName}'
         return connection_url
 
     def get_engine(self):

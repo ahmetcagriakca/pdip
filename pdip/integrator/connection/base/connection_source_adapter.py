@@ -21,6 +21,14 @@ class ConnectionSourceAdapter:
         pass
 
     @abstractmethod
+    def get_iterator(
+            self,
+            integration: IntegrationBase,
+            limit:int
+    ) -> List[any]:
+        pass
+
+    @abstractmethod
     def get_source_data_with_paging(
             self,
             integration: IntegrationBase,
@@ -28,4 +36,3 @@ class ConnectionSourceAdapter:
             end: int
     ) -> List[any]:
         pass
-

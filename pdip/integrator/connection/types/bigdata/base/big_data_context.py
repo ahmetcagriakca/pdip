@@ -5,6 +5,7 @@ from injector import inject
 
 from .big_data_connector import BigDataConnector
 from .big_data_dialect import BigDataDialect
+from .big_data_iterator import BigDataIterator
 from .big_data_policy import BigDataPolicy
 from ......dependency import IScoped
 
@@ -87,6 +88,11 @@ class BigDataContext(IScoped):
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
 
         return results
+
+    def get_iterator(self, query, limit):
+        data_query = self.dialect.get_table_data_query(query=query)
+        iterator = BigDataIterator(connector=self.connector, query=data_query, limit=limit)
+        return iterator
 
     def truncate_table(self, schema, table):
         truncate_query = self.dialect.get_truncate_query(schema=schema, table=table)
