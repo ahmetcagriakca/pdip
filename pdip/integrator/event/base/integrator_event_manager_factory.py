@@ -18,8 +18,7 @@ class IntegratorEventManagerFactory(IScoped):
         subclasses = IntegratorEventManager.__subclasses__()
         if subclasses is not None and len(subclasses) > 0:
             if len(subclasses) > 1:
-                initializer_classes = [subclass for subclass in subclasses if
-                                       not isinstance(subclass, DefaultIntegratorEventManager)]
+                initializer_classes = [subclass for subclass in subclasses if subclass != DefaultIntegratorEventManager]
                 initializer_class = initializer_classes[0]
             else:
                 initializer_class = subclasses[0]
