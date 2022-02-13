@@ -45,4 +45,3 @@ class InMemoryConnector(IScoped):
     @abstractmethod
     def get_table_data_with_paging_query(self, query, start, end):
         return f"SELECT * FROM ({query}) ordered_query   order by null limit {end - start} offset {start}"
-

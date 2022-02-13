@@ -1,8 +1,5 @@
 from abc import abstractmethod
-import logging
 from datetime import datetime
-
-from injector import inject
 
 from ....utils import Utils
 

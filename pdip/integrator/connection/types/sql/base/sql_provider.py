@@ -31,25 +31,29 @@ class SqlProvider(IScoped):
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=connector_type.ORACLE,
                                                 Server=ConnectionServer(Host=host, Port=port),
-                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                                                  Password=password),
                                                 Sid=sid, ServiceName=service_name)
         elif connector_type == ConnectorTypes.MSSQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MSSQL,
                                                 Server=ConnectionServer(Host=host, Port=port),
-                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                                                  Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.POSTGRESQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.POSTGRESQL,
                                                 Server=ConnectionServer(Host=host, Port=port),
-                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                                                  Password=password),
                                                 Database=database)
         elif connector_type == ConnectorTypes.MYSQL:
             config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
                                                 ConnectorType=ConnectorTypes.MYSQL,
                                                 Server=ConnectionServer(Host=host, Port=port),
-                                                BasicAuthentication=ConnectionBasicAuthentication(User=user, Password=password),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                                                  Password=password),
                                                 Database=database)
         else:
             raise Exception(f"{connector_type.name} connector type not supported")

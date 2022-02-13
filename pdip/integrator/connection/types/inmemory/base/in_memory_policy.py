@@ -2,9 +2,9 @@ import importlib
 
 from injector import inject
 
+from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
 from .in_memory_connector import InMemoryConnector
 from ....domain.enums import ConnectorTypes
-from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
 
 
 class InMemoryPolicy:

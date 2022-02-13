@@ -4,8 +4,8 @@ from .....authentication.basic import ConnectionBasicAuthentication
 from .....authentication.kerberos import KerberosAuthentication
 from .....authentication.mechanism import MechanismTypes
 from .....enums import ConnectionTypes
-from .....server.base import ConnectionServer
 from .....enums import ConnectorTypes
+from .....server.base import ConnectionServer
 
 
 @dataclass

@@ -1,10 +1,10 @@
 from flask import request, Response
 from injector import inject
 
-from ...dependency.provider import ServiceProvider
 from ...configuration.models.api import ApiConfig
 from ...data.repository import RepositoryProvider
 from ...dependency import ISingleton
+from ...dependency.provider import ServiceProvider
 
 
 class RequestHandler(ISingleton):

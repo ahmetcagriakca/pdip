@@ -7,7 +7,7 @@ from .utils import Utils
 
 
 class ModuleFinder:
-    def __init__(self, root_directory: str,initialize:bool=True):
+    def __init__(self, root_directory: str, initialize: bool = True):
         self.root_directory = root_directory
         self.running_directory = os.getcwd()
         self.modules = []

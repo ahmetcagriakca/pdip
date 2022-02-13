@@ -75,12 +75,12 @@ class TestMssqlIntegration(TestCase):
                 limit=limit,
                 process_count=process_count
             )
-            self.pdi\
-                .get(Integrator)\
+            self.pdi \
+                .get(Integrator) \
                 .integrate(operation)
         except Exception as ex:
-            self.pdi\
-                .get(ConsoleLogger)\
+            self.pdi \
+                .get(ConsoleLogger) \
                 .exception(ex)
             raise
         finally:
@@ -117,12 +117,12 @@ class TestMssqlIntegration(TestCase):
                 limit=limit,
                 process_count=process_count
             )
-            self.pdi\
-                .get(Integrator)\
+            self.pdi \
+                .get(Integrator) \
                 .integrate(operation)
         except Exception as ex:
-            self.pdi\
-                .get(ConsoleLogger)\
+            self.pdi \
+                .get(ConsoleLogger) \
                 .exception(ex)
             raise
         finally:
@@ -135,7 +135,6 @@ class TestMssqlIntegration(TestCase):
                                 )
             except:
                 pass
-
 
     def test_integration_parallel(self):
         try:
@@ -160,12 +159,12 @@ class TestMssqlIntegration(TestCase):
                 limit=limit,
                 process_count=process_count
             )
-            self.pdi\
-                .get(Integrator)\
+            self.pdi \
+                .get(Integrator) \
                 .integrate(operation)
         except Exception as ex:
-            self.pdi\
-                .get(ConsoleLogger)\
+            self.pdi \
+                .get(ConsoleLogger) \
                 .exception(ex)
             raise
         finally:

@@ -5,7 +5,6 @@ from time import time
 from pdip.dependency.container import DependencyContainer
 from pdip.logging.loggers.console import ConsoleLogger
 from pdip.processing.models import ProcessTask
-from pdip.utils.utils import Utils
 
 
 class Subprocess:

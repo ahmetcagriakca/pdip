@@ -19,7 +19,8 @@ coverage report -m --omit="*/tests/*,*/site-packages/*"
 coverage html --omit="*/tests/*,*/site-packages/*"
 
 ## run tests for test modules with append
-coverage run --source=pdip run_tests.py
+
+coverage run --source=pdip run_tests.py 
 coverage run -a --source=pdip run_tests.py
 
 # run all tests and generate coverage informations

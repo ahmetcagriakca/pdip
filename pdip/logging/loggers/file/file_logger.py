@@ -1,6 +1,6 @@
 import logging
 import traceback
-from logging import Logger, handlers
+from logging import handlers
 
 from injector import inject
 

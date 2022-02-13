@@ -100,14 +100,14 @@ class ProcessManager:
         Subprocess(
             root_directory=root_directory,
             initialize_container=initialize_container
-            ) \
+        ) \
             .start(
             sub_process_id=sub_process_id,
             process_queue=process_queue,
             process_result_queue=process_result_queue,
             target_method=target_method,
             kwargs=kwargs
-            )
+        )
 
     def __check_processes(self):
         # Read calculation results

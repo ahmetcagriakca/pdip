@@ -8,15 +8,15 @@ services:
       ORACLE_SID: xe
       ORACLE_PWD: password
     ports:
-    - "1521:1521"
-    - "5500:5500"
+      - "1521:1521"
+      - "5500:5500"
     volumes:
-    - "oracle-se2-data:/opt/oracle/oradata"
-    networks: [backing-services]
+      - "oracle-se2-data:/opt/oracle/oradata"
+    networks: [ backing-services ]
     restart: unless-stopped
 
 volumes:
-  oracle-se2-data: {}
+  oracle-se2-data: { }
 
 networks:
   backing-services:

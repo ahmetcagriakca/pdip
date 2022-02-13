@@ -3,7 +3,8 @@ from .big_data_connector import BigDataConnector
 
 class BigDataIterator:
 
-    def __init__(self, connector: BigDataConnector, query, excluded_columns=None, limit: int = 0, start: int = 0) -> None:
+    def __init__(self, connector: BigDataConnector, query, excluded_columns=None, limit: int = 0,
+                 start: int = 0) -> None:
         self.start = start
         self.offset = 0
         if self.start is not None:

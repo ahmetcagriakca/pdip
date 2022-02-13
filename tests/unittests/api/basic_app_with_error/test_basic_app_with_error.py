@@ -1,5 +1,4 @@
 import json
-import sys
 from unittest import TestCase
 
 from pdip.api.app import FlaskAppWrapper

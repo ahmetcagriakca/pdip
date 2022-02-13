@@ -75,7 +75,7 @@ class Controller:
             if excluded_namespace_name in split_namespace:
                 split_namespace.remove(excluded_namespace_name)
         if len(split_namespace) > 1:
-            name = split_namespace[len(split_namespace)-2].title()
+            name = split_namespace[len(split_namespace) - 2].title()
         else:
             name = self.cls.__name__.replace(
                 'Controller', '').replace('Resource', '')

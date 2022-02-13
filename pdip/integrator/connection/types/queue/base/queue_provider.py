@@ -1,10 +1,10 @@
 from injector import inject
 
+from pdip.dependency import IScoped
+from pdip.integrator.connection.domain.enums import ConnectorTypes
 from .queue_connector import QueueConnector
 from .queue_context import QueueContext
 from ..connectors import KafkaConnector
-from pdip.integrator.connection.domain.enums import ConnectorTypes
-from pdip.dependency import IScoped
 
 
 class QueueProvider(IScoped):

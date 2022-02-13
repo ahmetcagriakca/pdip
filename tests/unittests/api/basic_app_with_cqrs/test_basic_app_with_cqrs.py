@@ -1,11 +1,9 @@
 import json
-import sys
 from unittest import TestCase
 
 from pdip.api.app import FlaskAppWrapper
 from pdip.base import Pdi
 from pdip.data.base import DatabaseSessionManager
-from pdip.data.repository import RepositoryProvider
 from tests.unittests.api.basic_app_with_cqrs.domain.base.base import Base
 
 

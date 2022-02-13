@@ -2,7 +2,6 @@ from unittest import TestCase
 
 from pdip.integrator.connection.domain.enums import ConnectorTypes
 from pdip.integrator.connection.types.inmemory.base import InMemoryProvider
-from pdip.integrator.connection.types.sql.base import SqlProvider
 
 
 class TestMssqlConnection(TestCase):

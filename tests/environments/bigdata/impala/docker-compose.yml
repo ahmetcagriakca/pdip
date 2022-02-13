@@ -3,9 +3,9 @@ services:
   postgres:
     image: postgres
     networks:
-    - impala-nw
+      - impala-nw
     ports:
-    - 5432:5432
+      - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
   impala:
@@ -15,26 +15,26 @@ services:
     image: ibisproject/impala
     hostname: localhost
     networks:
-    - impala-nw
+      - impala-nw
     external_links:
-    - postgres
+      - postgres
     environment:
       PGPASSWORD: postgres
     ports:
-    # HDFS
-    - 9020:9020
-    - 50070:50070
-    - 50075:50075
-    - 8020:8020
-    - 8042:8042
-    # Hive
-    - 9083:9083
-    # Impala
-    - 21000:21000
-    - 21050:21050
-    - 25000:25000
-    - 25010:25010
-    - 25020:25020
+      # HDFS
+      - 9020:9020
+      - 50070:50070
+      - 50075:50075
+      - 8020:8020
+      - 8042:8042
+      # Hive
+      - 9083:9083
+      # Impala
+      - 21000:21000
+      - 21050:21050
+      - 25000:25000
+      - 25010:25010
+      - 25020:25020
   kudu-master:
     build:
       context: .
@@ -43,12 +43,12 @@ services:
     networks:
       impala-nw:
         aliases:
-        - kudu
+          - kudu
     cap_add:
-    - SYS_TIME
+      - SYS_TIME
     ports:
-    - 7051:7051
-    - 8051:8051
+      - 7051:7051
+      - 8051:8051
     environment:
       KUDU_MASTER: "true"
   kudu-tserver:
@@ -57,12 +57,12 @@ services:
       dockerfile: Dockerfile
     image: parrotstream/kudu:latest
     networks:
-    - impala-nw
+      - impala-nw
     cap_add:
-    - SYS_TIME
+      - SYS_TIME
     ports:
-    - 7050:7050
-    - 8050:8050
+      - 7050:7050
+      - 8050:8050
     environment:
       KUDU_MASTER: "false"
 

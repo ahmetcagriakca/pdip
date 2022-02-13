@@ -9,8 +9,8 @@ from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from pandas import DataFrame
 
-from ..base import QueueConnector
 from pdip.integrator.connection.domain import DataQueueTask
+from ..base import QueueConnector
 
 kafka_logger = logging.getLogger(name="kafka")
 kafka_logger.setLevel(level=logging.WARNING)

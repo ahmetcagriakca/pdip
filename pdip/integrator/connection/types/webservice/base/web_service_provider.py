@@ -29,7 +29,7 @@ class WebServiceProvider(IScoped):
             host: str, port: int,
             user: str, password: str,
             wsdl: str,
-            ssl:bool=False
+            ssl: bool = False
     ) -> WebServiceContext:
         """
         Creating Context

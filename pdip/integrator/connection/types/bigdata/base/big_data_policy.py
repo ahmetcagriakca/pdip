@@ -2,10 +2,10 @@ import importlib
 
 from injector import inject
 
-from .big_data_dialect import BigDataDialect
 from .big_data_connector import BigDataConnector
-from ....domain.types.bigdata.configuration.base import BigDataConnectionConfiguration
+from .big_data_dialect import BigDataDialect
 from ....domain.enums import ConnectorTypes
+from ....domain.types.bigdata.configuration.base import BigDataConnectionConfiguration
 
 
 class BigDataPolicy:

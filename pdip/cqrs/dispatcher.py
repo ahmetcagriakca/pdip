@@ -8,11 +8,8 @@ from .icommand import ICommand
 from .icommand_handler import ICommandHandler
 from .iquery import IQuery
 from .iquery_handler import IQueryHandler
-from ..data.repository import RepositoryProvider
 from ..dependency import IScoped
 from ..dependency.provider import ServiceProvider
-from ..exceptions import OperationalException
-from ..logging.loggers.sql import SqlLogger
 
 T = TypeVar('T', covariant=True)
 

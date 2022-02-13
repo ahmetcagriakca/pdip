@@ -121,8 +121,8 @@ class SqlContext(IScoped):
             time.sleep(1)
             return self._execute_with_retry(query=query, data=data, retry=retry + 1)
 
-    def create_table(self, schema, table, columns,if_exists=None):
-        query = self.dialect.get_create_table_query(schema=schema, table=table, columns=columns,if_exists=if_exists)
+    def create_table(self, schema, table, columns, if_exists=None):
+        query = self.dialect.get_create_table_query(schema=schema, table=table, columns=columns, if_exists=if_exists)
         return self.execute(query=query)
 
     def drop_table(self, schema, table):

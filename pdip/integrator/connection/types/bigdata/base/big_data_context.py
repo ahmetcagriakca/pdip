@@ -83,8 +83,8 @@ class BigDataContext(IScoped):
 
     def get_table_data_with_paging(self, query, start, end):
         data_query = self.dialect.get_table_data_with_paging_query(query=query,
-                                                                     start=start,
-                                                                     end=end)
+                                                                   start=start,
+                                                                   end=end)
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
 
         return results

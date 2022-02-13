@@ -34,7 +34,7 @@ class BaseConverter(object):
     def FromJSON(self, json_str):
         return json.loads(json_str, object_hook=self.class_mapper)
 
-    def get_annotations(self,obj):
+    def get_annotations(self, obj):
         if hasattr(obj, '__annotations__'):
             annotations = obj.__annotations__
             return annotations

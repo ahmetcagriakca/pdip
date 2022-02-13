@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from injector import inject
+
 from pdip.dependency import IScoped
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue

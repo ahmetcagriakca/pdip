@@ -24,7 +24,7 @@ class ConnectionSourceAdapter:
     def get_iterator(
             self,
             integration: IntegrationBase,
-            limit:int
+            limit: int
     ) -> List[any]:
         pass
 

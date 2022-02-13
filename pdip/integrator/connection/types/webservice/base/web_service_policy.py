@@ -3,8 +3,8 @@ import importlib
 from injector import inject
 
 from .web_service_connector import WebServiceConnector
-from ....domain.types.webservice.configuration.base import WebServiceConnectionConfiguration
 from ....domain.enums import ConnectorTypes
+from ....domain.types.webservice.configuration.base import WebServiceConnectionConfiguration
 
 
 class WebServicePolicy:

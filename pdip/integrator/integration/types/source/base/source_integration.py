@@ -2,7 +2,7 @@ from injector import inject
 
 from pdip.dependency import IScoped
 from pdip.integrator.connection.factories import ConnectionSourceAdapterFactory
-from pdip.integrator.domain.enums.events import EVENT_EXECUTION_INTEGRATION_EXECUTE_SOURCE, EVENT_LOG
+from pdip.integrator.domain.enums.events import EVENT_LOG
 from pdip.integrator.integration.domain.base import IntegrationBase
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue

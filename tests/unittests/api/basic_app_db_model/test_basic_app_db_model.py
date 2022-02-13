@@ -1,11 +1,11 @@
 import json
-import sys
 from unittest import TestCase
 
 from pdip.api.app import FlaskAppWrapper
 from pdip.base import Pdi
 from pdip.data.base import DatabaseSessionManager
 from tests.unittests.api.basic_app_db_model.models.dao.base import Base
+
 
 class TestBasicAppDbModel(TestCase):
     def setUp(self):
@@ -33,4 +33,3 @@ class TestBasicAppDbModel(TestCase):
         response_data = response.get_data(as_text=True)
         json_data = json.loads(response_data)
         assert json_data['Result'] == 'user:TestUser'
-

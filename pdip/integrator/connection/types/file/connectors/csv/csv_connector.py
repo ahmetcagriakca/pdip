@@ -6,8 +6,8 @@ from queue import Queue
 import pandas as pd
 from pandas import DataFrame
 
-from ...base import FileConnector
 from pdip.integrator.connection.domain import DataQueueTask
+from ...base import FileConnector
 
 
 class CsvConnector(FileConnector):

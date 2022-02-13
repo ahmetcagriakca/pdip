@@ -32,7 +32,7 @@ class ServiceProvider:
         self.config_manager: ConfigManager = None
         self.module_finder: ModuleFinder = None
         self.binder: Injector = None
-        
+
         self.logger = ConsoleLogger()
         # self.logger = logging.getLogger('test')
         # process_info = Utils.get_process_info()
