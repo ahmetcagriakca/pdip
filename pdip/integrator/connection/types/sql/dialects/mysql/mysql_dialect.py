@@ -27,7 +27,7 @@ class MysqlDialect(SqlDialect):
         return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
 
     def get_count_query(self, query):
-        return f'SELECT COUNT(*)  {self.mark_to_object("COUNT")} FROM ({query}) as count_table'
+        return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM ({query}) as COUNT_TABLE'
 
     def get_table_select_query(self, schema, table, selected_rows):
         return f'SELECT {selected_rows} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
@@ -79,8 +79,12 @@ limit {end - start} offset {start}
         )
         return query
 
-    def get_create_table_query(self, schema, table, columns):
-        query = f'''CREATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
+    def get_create_table_query(self, schema, table, columns, if_exists=None):
+        if if_exists == 'DoNothing':
+            query = f'''CREATE TABLE IF NOT EXISTS {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
+        else:
+            query = f'''CREATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
+
         column_queries = []
         for column in columns:
             name = f'{self.mark_to_object(column.Name)}'
@@ -92,8 +96,12 @@ limit {end - start} offset {start}
         query += f''')'''
         return query
 
-    def get_drop_table_query(self, schema, table):
-        return f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+    def get_drop_table_query(self, schema, table, if_not_exists=None):
+        if if_not_exists == 'DoNothing':
+            query = f'DROP TABLE IF EXISTS {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+        else:
+            query = f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+        return query
 
     def get_truncate_table_query(self, schema, table):
         return f'TRUNCATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'

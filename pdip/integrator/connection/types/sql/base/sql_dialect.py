@@ -52,11 +52,11 @@ class SqlDialect:
         pass
 
     @abstractmethod
-    def get_create_table_query(self, schema, table, columns):
+    def get_create_table_query(self, schema, table, columns, if_exists=None):
         pass
 
     @abstractmethod
-    def get_drop_table_query(self, schema, table):
+    def get_drop_table_query(self, schema, table, if_not_exists=None):
         pass
 
     @abstractmethod

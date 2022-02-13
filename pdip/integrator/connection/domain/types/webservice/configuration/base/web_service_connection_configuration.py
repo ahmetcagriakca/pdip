@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from pdip.integrator.connection.domain.types.webservice.configuration.soap.soap_configuration import SoapConfiguration
-from pdip.integrator.connection.domain.authentication.basic import ConnectionBasicAuthentication
-from pdip.integrator.connection.domain.enums import ConnectionTypes, ConnectorTypes
-from pdip.integrator.connection.domain.server.base import ConnectionServer
+from ..soap import SoapConfiguration
+from .....authentication.basic import ConnectionBasicAuthentication
+from .....enums import ConnectionTypes, ConnectorTypes
+from .....server.base import ConnectionServer
 
 
 @dataclass

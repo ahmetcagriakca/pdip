@@ -48,10 +48,16 @@ class SqlTargetAdapter(ConnectionTargetAdapter):
                 integration=integration,
                 source_data=source_data
             )
+            source_columns = None
+            if integration.SourceConnections.Columns is not None and len(integration.SourceConnections.Columns) > 0:
+                source_columns = [column.Name for column in integration.SourceConnections.Columns]
+            target_columns = None
+            if integration.TargetConnections.Columns is not None and len(integration.TargetConnections.Columns) > 0:
+                target_columns = [column.Name for column in integration.TargetConnections.Columns]
             prepared_target_query = target_context.get_target_query(
                 query=integration.TargetConnections.Sql.Query,
-                source_columns=[column.Name for column in integration.SourceConnections.Columns],
-                target_columns=[column.Name for column in integration.TargetConnections.Columns],
+                source_columns=source_columns,
+                target_columns=target_columns,
                 schema=integration.TargetConnections.Sql.Schema,
                 table=integration.TargetConnections.Sql.ObjectName,
                 source_column_count=len(prepared_data[0])

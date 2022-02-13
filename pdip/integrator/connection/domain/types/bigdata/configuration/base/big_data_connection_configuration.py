@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from pdip.integrator.connection.domain.authentication.basic import ConnectionBasicAuthentication
-from pdip.integrator.connection.domain.authentication.kerberos import KerberosAuthentication
-from pdip.integrator.connection.domain.authentication.mechanism import MechanismTypes
-from pdip.integrator.connection.domain.enums import ConnectionTypes
-from pdip.integrator.connection.domain.server.base import ConnectionServer
-from pdip.integrator.connection.domain.enums import ConnectorTypes
+from .....authentication.basic import ConnectionBasicAuthentication
+from .....authentication.kerberos import KerberosAuthentication
+from .....authentication.mechanism import MechanismTypes
+from .....enums import ConnectionTypes
+from .....server.base import ConnectionServer
+from .....enums import ConnectorTypes
 
 
 @dataclass

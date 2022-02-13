@@ -1,1 +1,0 @@
-from pdip.integrator.connection.domain.types.bigdata.configuration.base.big_data_connection_configuration import BigDataConnectionConfiguration

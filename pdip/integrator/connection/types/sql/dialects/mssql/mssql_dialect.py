@@ -27,7 +27,7 @@ class MssqlDialect(SqlDialect):
         return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
 
     def get_count_query(self, query):
-        return f'SELECT COUNT(*)  {self.mark_to_object("COUNT")} FROM ({query}) as count_table'
+        return f'SELECT COUNT(*)  {self.mark_to_object("COUNT")} FROM ({query}) as COUNT_QUERY'
 
     def get_table_select_query(self, schema, table, selected_rows):
         return f'SELECT {selected_rows} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
@@ -79,7 +79,8 @@ WHERE "row_number" > {start} AND "row_number" <= {end}
         )
         return query
 
-    def get_create_table_query(self, schema, table, columns):
+    def get_create_table_query(self, schema, table, columns, if_exists=None):
+
         query = f'''CREATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
         column_queries = []
         for column in columns:
@@ -90,10 +91,27 @@ WHERE "row_number" > {start} AND "row_number" <= {end}
             column_queries.append(column_query)
         query += ",\n".join(column_queries)
         query += f''')'''
+        if if_exists == 'DoNothing':
+            query = f'''IF NOT EXISTS (SELECT 0 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = '{schema}' 
+AND TABLE_NAME = '{table}')
+begin
+    {query}
+end'''
         return query
 
-    def get_drop_table_query(self, schema, table):
-        return f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+    def get_drop_table_query(self, schema, table, if_not_exists=None):
+        query = f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+        if if_not_exists == 'DoNothing':
+            query = f'''IF EXISTS (SELECT 0 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = '{schema}' 
+AND TABLE_NAME = '{table}')
+begin
+    {query}
+end'''
+        return query
 
     def get_truncate_table_query(self, schema, table):
         return f'TRUNCATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'

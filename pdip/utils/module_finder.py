@@ -113,6 +113,8 @@ class ModuleFinder:
                                 importlib.import_module(module_to_be_added)
                             except KeyError:
                                 pass
+                        except Exception as ex:
+                            raise
 
         except:
             self.cleanup()

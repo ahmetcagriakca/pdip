@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from pdip.integrator.connection.domain.types.webservice.configuration.base.web_service_connection_configuration import WebServiceConnectionConfiguration
+from ..configuration.base import WebServiceConnectionConfiguration
 
 
 @dataclass

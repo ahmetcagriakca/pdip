@@ -1,7 +1,7 @@
 from zeep import Client
 
 from ...base.web_service_connector import WebServiceConnector
-from pdip.integrator.connection.domain.types.webservice import WebServiceConnectionConfiguration
+from .....domain.types.webservice.configuration.base import WebServiceConnectionConfiguration
 
 
 class SoapConnector(WebServiceConnector):

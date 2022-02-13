@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from ....connection.domain.base import ConnectionColumnBase
-from pdip.integrator.connection.domain.types.bigdata.base import ConnectionBigDataBase
+from ....connection.domain.types.bigdata.base import ConnectionBigDataBase
 from ....connection.domain.enums import ConnectionTypes
-from pdip.integrator.connection.domain.types.sql.base import ConnectionSqlBase
-from pdip.integrator.connection.domain.types.webservice.base import ConnectionWebServiceBase
+from ....connection.domain.types.sql.base import ConnectionSqlBase
+from ....connection.domain.types.webservice.base import ConnectionWebServiceBase
 
 
 @dataclass

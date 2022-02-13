@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from pdip.integrator.connection.domain.types.bigdata.configuration import BigDataConnectionConfiguration
+from ..configuration.base import BigDataConnectionConfiguration
 
 
 @dataclass

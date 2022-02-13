@@ -5,7 +5,7 @@ from .big_data_policy import BigDataPolicy
 from ....domain.authentication.basic import ConnectionBasicAuthentication
 from ....domain.authentication.kerberos import KerberosAuthentication
 from ....domain.authentication.mechanism import MechanismTypes
-from pdip.integrator.connection.domain.types.bigdata.base import BigDataConnectionConfiguration
+from ....domain.types.bigdata.configuration.base import BigDataConnectionConfiguration
 from ....domain.enums import ConnectorTypes, ConnectionTypes
 from ....domain.server.base import ConnectionServer
 from ......dependency import IScoped

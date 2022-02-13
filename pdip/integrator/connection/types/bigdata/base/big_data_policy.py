@@ -4,7 +4,7 @@ from injector import inject
 
 from .big_data_dialect import BigDataDialect
 from .big_data_connector import BigDataConnector
-from pdip.integrator.connection.domain.types.bigdata.base import BigDataConnectionConfiguration
+from ....domain.types.bigdata.configuration.base import BigDataConnectionConfiguration
 from ....domain.enums import ConnectorTypes
 
 

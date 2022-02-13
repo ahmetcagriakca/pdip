@@ -27,7 +27,7 @@ class OracleDialect(SqlDialect):
         return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
 
     def get_count_query(self, query):
-        return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM ({query}) as count_table'
+        return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM ({query})'
 
     def get_table_select_query(self, schema, table, selected_rows):
         return f'SELECT {selected_rows} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
@@ -82,7 +82,7 @@ WHERE "row_number" > {start}
         )
         return query
 
-    def get_create_table_query(self, schema, table, columns):
+    def get_create_table_query(self, schema, table, columns, if_exists=None):
         query = f'''CREATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
         column_queries = []
         for column in columns:
@@ -93,10 +93,46 @@ WHERE "row_number" > {start}
             column_queries.append(column_query)
         query += ",\n".join(column_queries)
         query += f''')'''
+
+        if if_exists == 'DoNothing':
+            query = f'''declare
+v_sql LONG;
+begin
+
+v_sql:='{query}';
+execute immediate v_sql;
+
+EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -955 THEN
+        NULL; -- suppresses ORA-00955 exception
+      ELSE
+         RAISE;
+      END IF;
+END;
+'''
         return query
 
-    def get_drop_table_query(self, schema, table):
-        return f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+    def get_drop_table_query(self, schema, table, if_not_exists=None):
+        query = f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+        if if_not_exists == 'DoNothing':
+            query = f'''declare
+v_sql LONG;
+begin
+
+v_sql:='{query}';
+execute immediate v_sql;
+
+EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -942 THEN
+        NULL; -- suppresses ORA-00942 exception
+      ELSE
+         RAISE;
+      END IF;
+END;
+'''
+        return query
 
     def get_truncate_table_query(self, schema, table):
         return f'TRUNCATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'

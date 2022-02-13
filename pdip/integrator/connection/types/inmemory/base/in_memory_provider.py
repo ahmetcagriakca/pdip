@@ -2,9 +2,8 @@ from injector import inject
 
 from .in_memory_context import InMemoryContext
 from .in_memory_policy import InMemoryPolicy
-from pdip.integrator.connection.domain.types.bigdata import BigDataConnectionConfiguration
 from ....domain.enums import ConnectorTypes, ConnectionTypes
-from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
+from ....domain.types.inmemory import InMemoryConnectionConfiguration
 from ......dependency import IScoped
 
 
@@ -13,12 +12,12 @@ class InMemoryProvider(IScoped):
     def __init__(self):
         pass
 
-    def __initialize_context(self, config: BigDataConnectionConfiguration):
+    def __initialize_context(self, config: InMemoryConnectionConfiguration):
         policy = InMemoryPolicy(config=config)
         context = InMemoryContext(policy=policy)
         return context
 
-    def get_context_by_config(self, config: BigDataConnectionConfiguration) -> InMemoryContext:
+    def get_context_by_config(self, config: InMemoryConnectionConfiguration) -> InMemoryContext:
         return self.__initialize_context(config=config)
 
     def get_context(
