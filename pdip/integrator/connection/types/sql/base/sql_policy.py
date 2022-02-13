@@ -5,7 +5,7 @@ from injector import inject
 from .sql_connector import SqlConnector
 from .sql_dialect import SqlDialect
 from ....domain.enums import ConnectorTypes
-from ....domain.sql import SqlConnectionConfiguration
+from ....domain.types.sql.configuration.base import SqlConnectionConfiguration
 
 
 class SqlPolicy:

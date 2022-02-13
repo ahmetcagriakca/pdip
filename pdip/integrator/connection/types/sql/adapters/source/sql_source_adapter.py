@@ -23,7 +23,7 @@ class SqlSourceAdapter(ConnectionSourceAdapter):
             table = integration.SourceConnections.Sql.ObjectName
             source_columns = integration.SourceConnections.Columns
             query = source_context.dialect.prepare_select_query(schema=schema, table=table, columns=source_columns)
-        data_count = source_context.get_table_count(query=query)
+        data_count = source_context.get_count_for_query(query=query)
         return data_count
 
     def get_source_data(self, integration: IntegrationBase) -> List[any]:
@@ -35,7 +35,7 @@ class SqlSourceAdapter(ConnectionSourceAdapter):
             table = integration.SourceConnections.Sql.ObjectName
             source_columns = integration.SourceConnections.Columns
             query = source_context.dialect.prepare_select_query(schema=schema, table=table, columns=source_columns)
-        data = source_context.get_table_data(query=query)
+        data = source_context.get_data_for_query(query=query)
         return data
 
     def get_iterator(self, integration: IntegrationBase, limit):
@@ -47,7 +47,7 @@ class SqlSourceAdapter(ConnectionSourceAdapter):
             table = integration.SourceConnections.Sql.ObjectName
             source_columns = integration.SourceConnections.Columns
             query = source_context.dialect.prepare_select_query(schema=schema, table=table, columns=source_columns)
-        iterator = source_context.get_iterator(query, limit)
+        iterator = source_context.get_iterator_for_query(query, limit)
         return iterator
 
     def get_source_data_with_paging(self, integration: IntegrationBase, start, end) -> List[any]:

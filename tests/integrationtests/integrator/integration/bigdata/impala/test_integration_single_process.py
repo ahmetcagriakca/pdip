@@ -7,7 +7,7 @@
 # from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
 # from pdip.integrator.connection.domain.server.base import Server
 # from pdip.integrator.integration.domain.base import IntegrationBase, IntegrationConnectionBase
-# from pdip.integrator.integration.domain.base.integration import IntegrationConnectionBigDataBase
+# from pdip.integrator.integration.domain.base.integration import ConnectionBigDataBase
 # from pdip.integrator.operation.base import OperationExecution
 # from pdip.integrator.operation.domain.operation import OperationIntegrationBase, OperationBase
 # from pdip.logging.loggers.console import ConsoleLogger
@@ -56,7 +56,7 @@
 #                     SourceConnections=IntegrationConnectionBase(
 #                         ConnectionName=connection.Name,
 #                         ConnectionType=connection.ConnectionType,
-#                         BigData=IntegrationConnectionBigDataBase(
+#                         BigData=ConnectionBigDataBase(
 #                             Connection=connection,
 #                             Schema='default',
 #                             ObjectName='test_source',
@@ -66,7 +66,7 @@
 #                     TargetConnections=IntegrationConnectionBase(
 #                         ConnectionName=connection.Name,
 #                         ConnectionType=connection.ConnectionType,
-#                         BigData=IntegrationConnectionBigDataBase(
+#                         BigData=ConnectionBigDataBase(
 #                             Connection=connection,
 #                             Schema='default',
 #                             ObjectName='test_target',

@@ -5,8 +5,8 @@ from .web_service_policy import WebServicePolicy
 from ....domain.authentication.basic import ConnectionBasicAuthentication
 from ....domain.enums import ConnectorTypes, ConnectionTypes
 from ....domain.server.base import ConnectionServer
-from ....domain.webservice.base import WebServiceConnectionConfiguration
-from ....domain.webservice.soap.soap_configuration import SoapConfiguration
+from pdip.integrator.connection.domain.types.webservice import WebServiceConnectionConfiguration
+from pdip.integrator.connection.domain.types.webservice import SoapConfiguration
 from ......dependency import IScoped
 
 

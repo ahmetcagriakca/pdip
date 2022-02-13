@@ -4,7 +4,7 @@ from injector import inject
 
 from .in_memory_connector import InMemoryConnector
 from ....domain.enums import ConnectorTypes
-from ....domain.inmemory import InMemoryConnectionConfiguration
+from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
 
 
 class InMemoryPolicy:

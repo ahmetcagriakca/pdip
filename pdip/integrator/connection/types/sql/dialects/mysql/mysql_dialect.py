@@ -12,22 +12,27 @@ class MysqlDialect(SqlDialect):
         engine = self.connector.get_engine()
         return inspect(engine)
 
-    def get_query_indexer(self):
-        indexer = '%s'
-        return indexer
+    @property
+    def indexer(self) -> str:
+        return '%s'
 
-    def get_truncate_query(self, schema, table):
-        count_query = f'TRUNCATE TABLE `{schema}`.`{table}`'
-        return count_query
+    @property
+    def quotation_mark(self) -> str:
+        return '`'
 
-    def get_table_count_query(self, query):
-        count_query = f"SELECT COUNT(*)  as \"COUNT\" FROM ({query})  as count_table"
-        return count_query
+    def mark_to_object(self, o) -> str:
+        return f'{self.quotation_mark}{o}{self.quotation_mark}'
 
-    def get_table_select_query(self, selected_rows, schema, table):
-        return f'SELECT {selected_rows} FROM `{schema}`.`{table}`'
+    def get_table_count_query(self, schema, table):
+        return f'SELECT COUNT(*) {self.mark_to_object("COUNT")} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
 
-    def get_table_data_query(self, query):
+    def get_count_query(self, query):
+        return f'SELECT COUNT(*)  {self.mark_to_object("COUNT")} FROM ({query}) as count_table'
+
+    def get_table_select_query(self, schema, table, selected_rows):
+        return f'SELECT {selected_rows} FROM {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+
+    def get_select_query(self, query):
         return f"SELECT * FROM ({query}) base_query"
 
     def get_table_data_with_paging_query(self, query, start, end):
@@ -54,10 +59,44 @@ limit {end - start} offset {start}
         return query
 
     def get_insert_values_query(self, schema, table, values_query):
-        return f'insert into `{schema}`.`{table}` values({values_query})'
+        return f'insert into {self.mark_to_object(schema)}.{self.mark_to_object(table)} values({values_query})'
 
-    def get_insert_query(self, schema, table,columns_query, values_query):
-        return f'insert into `{schema}`.`{table}`({columns_query}) values({values_query})'
+    def get_insert_query(self, schema, table, columns_query, values_query):
+        return f'insert into {self.mark_to_object(schema)}.{self.mark_to_object(table)}({columns_query}) values({values_query})'
+
+    def prepare_insert_query(self, schema, table, columns=None, source_column_count: int = None):
+        if schema is None or schema == '' or table is None or table == '':
+            raise Exception(f"Schema and table required. {schema}.{table}")
+        indexer_array = []
+        for index in range(source_column_count):
+            column_indexer = self.indexer.format(index=index)
+            indexer_array.append(column_indexer)
+        values_query = ','.join(indexer_array)
+        query = self.get_insert_values_query(
+            values_query=values_query,
+            schema=schema,
+            table=table
+        )
+        return query
+
+    def get_create_table_query(self, schema, table, columns):
+        query = f'''CREATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)} ('''
+        column_queries = []
+        for column in columns:
+            name = f'{self.mark_to_object(column.Name)}'
+            column_type = column.Type
+            nullable = '' if not column.Nullable else "NULL"
+            column_query = " ".join([name, column_type, nullable])
+            column_queries.append(column_query)
+        query += ",\n".join(column_queries)
+        query += f''')'''
+        return query
+
+    def get_drop_table_query(self, schema, table):
+        return f'DROP TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
+
+    def get_truncate_table_query(self, schema, table):
+        return f'TRUNCATE TABLE {self.mark_to_object(schema)}.{self.mark_to_object(table)}'
 
     def get_schemas(self):
         schemas = self.inspector.get_schema_names()

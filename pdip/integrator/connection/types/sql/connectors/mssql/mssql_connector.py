@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
 from ...base import SqlConnector
-from .....domain.sql import SqlConnectionConfiguration
+from .....domain.types.sql.configuration.base import SqlConnectionConfiguration
 
 
 class MssqlConnector(SqlConnector):

@@ -2,9 +2,9 @@ from injector import inject
 
 from .in_memory_context import InMemoryContext
 from .in_memory_policy import InMemoryPolicy
-from ....domain.bigdata import BigDataConnectionConfiguration
+from pdip.integrator.connection.domain.types.bigdata import BigDataConnectionConfiguration
 from ....domain.enums import ConnectorTypes, ConnectionTypes
-from ....domain.inmemory import InMemoryConnectionConfiguration
+from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
 from ......dependency import IScoped
 
 

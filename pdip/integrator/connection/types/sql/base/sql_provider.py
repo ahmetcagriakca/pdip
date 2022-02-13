@@ -5,7 +5,7 @@ from .sql_policy import SqlPolicy
 from ....domain.authentication.basic import ConnectionBasicAuthentication
 from ....domain.enums import ConnectorTypes, ConnectionTypes
 from ....domain.server.base import ConnectionServer
-from ....domain.sql import SqlConnectionConfiguration
+from ....domain.types.sql.configuration.base import SqlConnectionConfiguration
 from ......dependency import IScoped
 
 

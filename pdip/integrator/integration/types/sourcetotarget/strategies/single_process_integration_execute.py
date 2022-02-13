@@ -50,11 +50,8 @@ class SingleProcessIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, 
                                                           'data': operation_integration,
                                                           'message': f"0 - data :{task_id}-{start}-{end} readed from db"
                                                       }))
-
-                prepared_data = target_adapter.prepare_data(integration=operation_integration.Integration,
-                                                            source_data=results)
                 target_adapter.write_target_data(integration=operation_integration.Integration,
-                                                 prepared_data=prepared_data)
+                                                 source_data=results)
                 publisher.publish(message=TaskMessage(event=EVENT_LOG,
                                                       kwargs={
                                                           'data': operation_integration,

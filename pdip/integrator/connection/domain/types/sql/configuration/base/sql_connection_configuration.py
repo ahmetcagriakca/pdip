@@ -1,14 +1,11 @@
+from dataclasses import dataclass
 from typing import Optional
 
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-
-from ..authentication.basic import ConnectionBasicAuthentication
-from ..enums import ConnectionTypes, ConnectorTypes
-from ..server.base import ConnectionServer
+from pdip.integrator.connection.domain.authentication.basic import ConnectionBasicAuthentication
+from pdip.integrator.connection.domain.enums import ConnectionTypes, ConnectorTypes
+from pdip.integrator.connection.domain.server.base import ConnectionServer
 
 
-@dataclass_json
 @dataclass
 class SqlConnectionConfiguration:
     Name: str = None

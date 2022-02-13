@@ -3,7 +3,7 @@ import importlib
 from injector import inject
 
 from .web_service_connector import WebServiceConnector
-from ....domain.webservice.base import WebServiceConnectionConfiguration
+from pdip.integrator.connection.domain.types.webservice import WebServiceConnectionConfiguration
 from ....domain.enums import ConnectorTypes
 
 

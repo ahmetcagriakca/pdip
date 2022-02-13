@@ -5,10 +5,10 @@ from pdip.integrator.base import Integrator
 from pdip.integrator.connection.domain.authentication.basic import ConnectionBasicAuthentication
 from pdip.integrator.connection.domain.enums import ConnectorTypes, ConnectionTypes
 from pdip.integrator.connection.domain.server.base import ConnectionServer
-from pdip.integrator.connection.domain.sql import SqlConnectionConfiguration
+from pdip.integrator.connection.domain.types.sql.configuration.base import SqlConnectionConfiguration
 from pdip.integrator.connection.types.sql.base import SqlProvider
-from pdip.integrator.integration.domain.base import IntegrationBase, IntegrationConnectionBase, \
-    IntegrationConnectionSqlBase
+from pdip.integrator.integration.domain.base import IntegrationBase, IntegrationConnectionBase
+from pdip.integrator.connection.domain.types.sql.base.sql import ConnectionSqlBase
 from pdip.integrator.operation.domain.operation import OperationIntegrationBase, OperationBase
 from pdip.logging.loggers.console import ConsoleLogger
 from tests.integrationtests.integrator.integration.sql.utils import TestSqlUtils
@@ -77,7 +77,7 @@ END;
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
-                                Sql=IntegrationConnectionSqlBase(
+                                Sql=ConnectionSqlBase(
                                     Connection=connection,
                                     Query=query
                                 )
@@ -93,7 +93,7 @@ END;
                             SourceConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
-                                Sql=IntegrationConnectionSqlBase(
+                                Sql=ConnectionSqlBase(
                                     Connection=connection,
                                     Schema='TEST_PDI',
                                     ObjectName='TEST_SOURCE'
@@ -102,7 +102,7 @@ END;
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
-                                Sql=IntegrationConnectionSqlBase(
+                                Sql=ConnectionSqlBase(
                                     Connection=connection,
                                     Schema='TEST_PDI',
                                     ObjectName='TEST_TARGET'
@@ -119,7 +119,7 @@ END;
                             TargetConnections=IntegrationConnectionBase(
                                 ConnectionName=connection.Name,
                                 ConnectionType=connection.ConnectionType,
-                                Sql=IntegrationConnectionSqlBase(
+                                Sql=ConnectionSqlBase(
                                     Connection=connection,
                                     Query='DROP TABLE test_pdi.test_target'
                                 )

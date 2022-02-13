@@ -10,6 +10,17 @@ from .sql_policy import SqlPolicy
 from ......dependency import IScoped
 
 
+def connect(func):
+    def inner(*args, **kwargs):
+        try:
+            args[0].connector.connect()
+            return func(*args, **kwargs)
+        finally:
+            args[0].connector.disconnect()
+
+    return inner
+
+
 class SqlContext(IScoped):
     @inject
     def __init__(self,
@@ -19,16 +30,6 @@ class SqlContext(IScoped):
         self.dialect: SqlDialect = policy.dialect
         self.retry_count = retry_count
         self.default_retry = 1
-
-    def connect(func):
-        def inner(*args, **kwargs):
-            try:
-                args[0].connector.connect()
-                return func(*args, **kwargs)
-            finally:
-                args[0].connector.disconnect()
-
-        return inner
 
     @connect
     def get_query_columns(self, query, excluded_columns=None):
@@ -50,18 +51,28 @@ class SqlContext(IScoped):
         results = []
         for row in self.connector.cursor.fetchall():
             results.append(dict(zip(columns, row)))
-        # results =  self.connector.cursor.fetchall()
         return results
 
     @connect
-    def get_table_count(self, query):
-        count_query = self.dialect.get_table_count_query(query=query)
+    def get_table_count(self, schema, table):
+        count_query = self.dialect.get_table_count_query(schema=schema, table=table)
         self.connector.cursor.execute(count_query)
         datas = self.connector.cursor.fetchall()
         return datas[0][0]
 
-    def get_table_data(self, query):
-        data_query = self.dialect.get_table_data_query(query=query)
+    @connect
+    def get_count_for_query(self, query):
+        count_query = self.dialect.get_count_query(query=query)
+        self.connector.cursor.execute(count_query)
+        datas = self.connector.cursor.fetchall()
+        return datas[0][0]
+
+    def get_table_data(self, schema, table, columns=None):
+        data_query = self.dialect.prepare_select_query(schema=schema, table=table, columns=columns)
+        return self.fetch_query(data_query)
+
+    def get_data_for_query(self, query):
+        data_query = self.dialect.get_select_query(query=query)
         return self.fetch_query(data_query)
 
     def get_table_data_with_paging(self, query, start, end):
@@ -73,8 +84,13 @@ class SqlContext(IScoped):
         results = self.fetch_query(data_query, excluded_columns=['row_number'])
         return results
 
-    def get_iterator(self, query, limit):
-        data_query = self.dialect.get_table_data_query(query=query)
+    def get_iterator_for_query(self, query, limit):
+        data_query = self.dialect.get_select_query(query=query)
+        iterator = SqlIterator(connector=self.connector, query=data_query, limit=limit)
+        return iterator
+
+    def get_iterator(self, schema, table, columns=None, limit=0):
+        data_query = self.dialect.prepare_select_query(schema=schema, table=table, columns=columns)
         iterator = SqlIterator(connector=self.connector, query=data_query, limit=limit)
         return iterator
 
@@ -105,9 +121,17 @@ class SqlContext(IScoped):
             time.sleep(1)
             return self._execute_with_retry(query=query, data=data, retry=retry + 1)
 
+    def create_table(self, schema, table, columns):
+        query = self.dialect.get_create_table_query(schema=schema, table=table, columns=columns)
+        return self.execute(query=query)
+
+    def drop_table(self, schema, table):
+        query = self.dialect.get_drop_table_query(schema=schema, table=table)
+        return self.execute(query=query)
+
     def truncate_table(self, schema, table):
-        truncate_query = self.dialect.get_truncate_query(schema=schema, table=table)
-        return self.execute(query=truncate_query)
+        query = self.dialect.get_truncate_table_query(schema=schema, table=table)
+        return self.execute(query=query)
 
     @staticmethod
     def replace_regex(text, field, indexer):
@@ -120,16 +144,65 @@ class SqlContext(IScoped):
         target_query = query
         for column_row in column_rows:
             index = column_rows.index(column_row)
-            indexer = self.dialect.get_query_indexer().format(index=index)
+            indexer = self.dialect.indexer().format(index=index)
             target_query = self.replace_regex(target_query, column_row, indexer)
         return target_query
 
-    def prepare_insert_row(self, data, column_rows):
+    def prepare_insert_row(self, data, columns):
         insert_rows = []
         for extracted_data in data:
             row = []
-            for column_row in column_rows:
-                prepared_data = extracted_data[column_rows.index(column_row)]
+            for column_row in columns:
+                prepared_data = extracted_data[column_row]
                 row.append(prepared_data)
             insert_rows.append(tuple(row))
         return insert_rows
+
+    def _get_values_query(self, source_column_count):
+        indexer_array = []
+        for index in range(source_column_count):
+            column_indexer = self.dialect.indexer.format(index=index)
+            indexer_array.append(column_indexer)
+        values_query = ','.join(indexer_array)
+        return values_query
+
+    def get_target_query(self, query, source_columns, target_columns, schema, table, source_column_count):
+        if query is not None:
+            if source_columns is not None and len(source_columns) > 0:
+                column_rows = source_columns
+                query = self.prepare_target_query(
+                    column_rows=column_rows,
+                    query=query
+                )
+            else:
+                if schema is None or schema == '' or table is None or table == '':
+                    raise Exception(f"Schema and table required. {schema}.{table}")
+                values_query = self._get_values_query(source_column_count)
+                query = self.dialect.get_insert_values_query(
+                    values_query=values_query,
+                    schema=schema,
+                    table=table
+                )
+        else:
+            if source_columns is not None and len(source_columns) > 0:
+                if schema is None or schema == '' or table is None or table == '':
+                    raise Exception(f"Schema and table required. {schema}.{table}")
+                target_column_rows = [self.dialect.mark_to_object(column) for column in target_columns]
+                columns_query = ','.join(target_column_rows)
+                values_query = self._get_values_query(source_column_count)
+                query = self.dialect.get_insert_query(
+                    columns_query=columns_query,
+                    values_query=values_query,
+                    schema=schema,
+                    table=table
+                )
+            else:
+                if schema is None or schema == '' or table is None or table == '':
+                    raise Exception(f"Schema and table required. {schema}.{table}")
+                values_query = self._get_values_query(source_column_count)
+                query = self.dialect.get_insert_values_query(
+                    values_query=values_query,
+                    schema=schema,
+                    table=table
+                )
+        return query

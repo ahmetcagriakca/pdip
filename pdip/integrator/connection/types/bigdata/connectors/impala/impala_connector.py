@@ -2,7 +2,7 @@ import pyodbc
 
 from ...base.big_data_connector import BigDataConnector
 from .....domain.authentication.mechanism import MechanismTypes
-from .....domain.bigdata import BigDataConnectionConfiguration
+from pdip.integrator.connection.domain.types.bigdata.base import BigDataConnectionConfiguration
 
 
 class ImpalaConnector(BigDataConnector):

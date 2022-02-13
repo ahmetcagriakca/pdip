@@ -2,7 +2,7 @@ import cx_Oracle
 from sqlalchemy import create_engine
 
 from ...base import SqlConnector
-from .....domain.sql import SqlConnectionConfiguration
+from .....domain.types.sql.configuration.base import SqlConnectionConfiguration
 
 
 class OracleConnector(SqlConnector):

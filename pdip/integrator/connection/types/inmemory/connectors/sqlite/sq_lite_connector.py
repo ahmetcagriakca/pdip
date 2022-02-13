@@ -2,7 +2,7 @@ import os
 import sqlite3
 
 from ...base import InMemoryConnector
-from .....domain.inmemory import InMemoryConnectionConfiguration
+from pdip.integrator.connection.domain.types.inmemory import InMemoryConnectionConfiguration
 
 
 class SqLiteConnector(InMemoryConnector):
