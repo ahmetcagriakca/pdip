@@ -8,7 +8,7 @@ from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
 from pdip.logging.loggers.console import ConsoleLogger
-from pdip.utils import ModuleFinder, Utils
+from pdip.utils import ModuleFinder
 
 if __name__ == "__main__":
     class TestRunner:
@@ -34,7 +34,8 @@ if __name__ == "__main__":
             module_finder.find_all_modules(folder=folder)
             test_modules = []
             for module in module_finder.modules:
-                if module["module_name"].startswith('test_') and module["module_address"].startswith('tests'):
+                if module["module_name"].startswith('test_') and module["module_address"].startswith(
+                        'tests') and 'temp.' not in module["module_address"]:
                     test_modules.append(module)
             return test_modules
 
@@ -113,6 +114,7 @@ if __name__ == "__main__":
             self.logger.debug(total_string)
             self.logger.debug("-" * len(header_string))
             return total
+
 
     TestRunner('unittests').run()
     #TestRunner('integrationtests').run()

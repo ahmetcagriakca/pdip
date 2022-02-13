@@ -38,7 +38,7 @@ class SqlTargetAdapter(ConnectionTargetAdapter):
             )
         return prepared_data
 
-    def write_target_data(self, integration: IntegrationBase, source_data: List[any]) -> int:
+    def write_data(self, integration: IntegrationBase, source_data: List[any]) -> int:
         if source_data is not None and len(source_data) > 0:
             target_context = self.provider.get_context_by_config(
                 config=integration.TargetConnections.Sql.Connection

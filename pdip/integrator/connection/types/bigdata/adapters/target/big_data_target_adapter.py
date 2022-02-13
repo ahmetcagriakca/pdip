@@ -73,7 +73,7 @@ class BigDataTargetAdapter(ConnectionTargetAdapter):
                                                                             table=table)
         return prepared_target_query
 
-    def write_target_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
+    def write_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
         if prepared_data is not None and len(prepared_data) > 0:
             target_context = self.provider.get_context_by_config(
                 config=integration.TargetConnections.BigData.Connection)

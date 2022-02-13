@@ -50,7 +50,7 @@ class WebServiceTargetAdapter(ConnectionTargetAdapter):
     def prepare_target_query(self, integration: IntegrationBase, source_column_count: int) -> str:
         raise NotSupportedFeatureException(f"{self.__class__.__name__} prepare_target_query")
 
-    def write_target_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
+    def write_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
         if prepared_data is not None and len(prepared_data) > 0:
             target_context = self.provider.get_context_by_config(
                 config=integration.TargetConnections.WebService.Connection)

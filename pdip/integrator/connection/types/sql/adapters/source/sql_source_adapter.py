@@ -17,13 +17,17 @@ class SqlSourceAdapter(ConnectionSourceAdapter):
     def get_source_data_count(self, integration: IntegrationBase) -> int:
         source_context = self.provider.get_context_by_config(
             config=integration.SourceConnections.Sql.Connection)
-        query = integration.SourceConnections.Sql.Query
         if integration.SourceConnections.Sql.Query is None or integration.SourceConnections.Sql.Query == '':
             schema = integration.SourceConnections.Sql.Schema
             table = integration.SourceConnections.Sql.ObjectName
             source_columns = integration.SourceConnections.Columns
             query = source_context.dialect.prepare_select_query(schema=schema, table=table, columns=source_columns)
-        data_count = source_context.get_count_for_query(query=query)
+            data_count = source_context.get_count_for_query(query=query)
+        else:
+            data_count = source_context.get_table_count(
+                schema=integration.SourceConnections.Sql.Schema,
+                table=integration.SourceConnections.Sql.ObjectName
+            )
         return data_count
 
     def get_source_data(self, integration: IntegrationBase) -> List[any]:
@@ -60,7 +64,7 @@ class SqlSourceAdapter(ConnectionSourceAdapter):
             source_columns = integration.SourceConnections.Columns
             query = source_context.dialect.prepare_select_query(schema=schema, table=table, columns=source_columns)
 
-        data = source_context.get_table_data_with_paging(
+        data = source_context.get_data_with_paging(
             query=query,
             start=start,
             end=end

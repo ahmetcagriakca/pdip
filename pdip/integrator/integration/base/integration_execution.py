@@ -34,14 +34,25 @@ class IntegrationExecution(IScoped):
             operation_integration = initializer.initialize(operation_integration)
             initialize_message = f'integration initialized.'
             publisher.publish(
-                message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_INITIALIZED,
-                                    kwargs={'data': operation_integration,
-                                            'message': initialize_message}))
+                message=TaskMessage(
+                    event=EVENT_EXECUTION_INTEGRATION_INITIALIZED,
+                    kwargs={
+                        'data': operation_integration,
+                        'message': initialize_message
+                    }
+                )
+            )
 
             start_message = integration_adapter.get_start_message(integration=operation_integration.Integration)
-            publisher.publish(message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_STARTED,
-                                                  kwargs={'data': operation_integration,
-                                                          'message': start_message}))
+            publisher.publish(
+                message=TaskMessage(
+                    event=EVENT_EXECUTION_INTEGRATION_STARTED,
+                    kwargs={
+                        'data': operation_integration,
+                        'message': start_message
+                    }
+                )
+            )
             data_count = integration_adapter.execute(
                 operation_integration=operation_integration,
                 channel=channel)
@@ -51,16 +62,26 @@ class IntegrationExecution(IScoped):
 
             end_time = time()
             publisher.publish(
-                message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_FINISHED,
-                                    kwargs={'data': operation_integration,
-                                            'message': f'{finish_message} time:{end_time - start_time}',
-                                            'data_count': data_count}))
+                message=TaskMessage(
+                    event=EVENT_EXECUTION_INTEGRATION_FINISHED,
+                    kwargs={
+                        'data': operation_integration,
+                        'message': f'{finish_message} time:{end_time - start_time}',
+                        'data_count': data_count
+                    }
+                )
+            )
         except Exception as ex:
             error_message = integration_adapter.get_error_message(integration=operation_integration.Integration)
             publisher.publish(
-                message=TaskMessage(event=EVENT_EXECUTION_INTEGRATION_FINISHED,
-                                    kwargs={'data': operation_integration,
-                                            'message': error_message,
-                                            'data_count': 0,
-                                            'exception': ex}))
+                message=TaskMessage(
+                    event=EVENT_EXECUTION_INTEGRATION_FINISHED,
+                    kwargs={
+                        'data': operation_integration,
+                        'message': error_message,
+                        'data_count': 0,
+                        'exception': ex
+                    }
+                )
+            )
             raise

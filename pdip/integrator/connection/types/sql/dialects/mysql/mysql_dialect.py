@@ -35,7 +35,7 @@ class MysqlDialect(SqlDialect):
     def get_select_query(self, query):
         return f"SELECT * FROM ({query}) base_query"
 
-    def get_table_data_with_paging_query(self, query, start, end):
+    def get_paging_query(self, query, start, end):
         return f'''
 SELECT * 
 FROM (
@@ -50,7 +50,7 @@ limit {end - start} offset {start}
         if schema is None or schema == '' or table is None or table == '':
             raise Exception(f"Source Schema and Table required. {schema}.{table}")
         if columns is not None and len(columns) > 0:
-            source_column_rows = [column.Name for column in columns]
+            source_column_rows = [self.mark_to_object(column.Name) for column in columns]
             columns_query = ",".join(source_column_rows)
             query = self.get_table_select_query(selected_rows=columns_query, schema=schema,
                                                 table=table)

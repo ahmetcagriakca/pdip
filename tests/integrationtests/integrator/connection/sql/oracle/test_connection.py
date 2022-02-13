@@ -104,10 +104,11 @@ class TestOracleConnection(TestCase):
                     print("\tTable: %s" % table_name)
                     for column in self.context.dialect.get_columns(object_name=table_name, schema=schema):
                         print("\t\tColumn: %s" % column)
-                for view_name in self.context.dialect.get_views(schema=schema):
-                    print("\tView: %s" % view_name)
-                    for column in self.context.dialect.get_columns(object_name=view_name, schema=schema):
-                        print("\t\tColumn: %s" % column)
+                # Oracle has too many view
+                # for view_name in self.context.dialect.get_views(schema=schema):
+                #     print("\tView: %s" % view_name)
+                #     for column in self.context.dialect.get_columns(object_name=view_name, schema=schema):
+                #         print("\t\tColumn: %s" % column)
         except Exception as ex:
             print(ex)
             raise

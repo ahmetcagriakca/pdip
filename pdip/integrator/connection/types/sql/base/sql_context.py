@@ -75,8 +75,8 @@ class SqlContext(IScoped):
         data_query = self.dialect.get_select_query(query=query)
         return self.fetch_query(data_query)
 
-    def get_table_data_with_paging(self, query, start, end):
-        data_query = self.dialect.get_table_data_with_paging_query(
+    def get_data_with_paging(self, query, start, end):
+        data_query = self.dialect.get_paging_query(
             query=query,
             start=start,
             end=end

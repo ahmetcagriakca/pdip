@@ -12,7 +12,7 @@ class ConnectionTargetAdapter:
         pass
 
     @abstractmethod
-    def write_target_data(
+    def write_data(
             self,
             integration: IntegrationBase,
             source_data: List[any]

@@ -36,7 +36,7 @@ class SqlDialect:
         pass
 
     @abstractmethod
-    def get_table_data_with_paging_query(self, query, start, end):
+    def get_paging_query(self, query, start, end):
         pass
 
     @abstractmethod

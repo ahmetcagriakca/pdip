@@ -8,20 +8,20 @@ from func_timeout import FunctionTimedOut, func_set_timeout
 from injector import inject
 from pandas import DataFrame, notnull
 
-from .integration_execute_strategy import IntegrationSourceToTargetExecuteStrategy
-from ....domain.base import IntegrationBase
-from .....connection.domain.task import DataQueueTask
-from .....connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
-from .....domain.enums.events import EVENT_LOG
-from .....operation.domain import OperationIntegrationBase
-from .....pubsub.base import ChannelQueue
-from .....pubsub.domain import TaskMessage
-from .....pubsub.publisher import Publisher
-from ......data.decorators import transactionhandler
-from ......dependency import IScoped
-from ......dependency.container import DependencyContainer
-from ......processing import ProcessManager
-from ......processing.factories import ProcessManagerFactory
+from ...base import IntegrationSourceToTargetExecuteStrategy
+from ......domain.base import IntegrationBase
+from .......connection.domain.task import DataQueueTask
+from .......connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
+from .......domain.enums.events import EVENT_LOG
+from .......operation.domain import OperationIntegrationBase
+from .......pubsub.base import ChannelQueue
+from .......pubsub.domain import TaskMessage
+from .......pubsub.publisher import Publisher
+from ........data.decorators import transactionhandler
+from ........dependency import IScoped
+from ........dependency.container import DependencyContainer
+from ........processing import ProcessManager
+from ........processing.factories import ProcessManagerFactory
 
 
 class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):
@@ -140,7 +140,8 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
         source_data_process_manager.start_processes(
             process_count=1,
             target_method=self.start_source_data_process,
-            kwargs=source_data_kwargs)
+            kwargs=source_data_kwargs
+        )
 
     def start_execute_data_subprocess(
             self,
@@ -415,7 +416,7 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
         target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=integration.TargetConnections.ConnectionType
         )
-        target_adapter.write_target_data(
+        target_adapter.write_data(
             integration=integration,
             source_data=source_data
         )
@@ -438,7 +439,7 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
             start=start,
             end=end
         )
-        target_adapter.write_target_data(
+        target_adapter.write_data(
             integration=integration,
             source_data=source_data
         )

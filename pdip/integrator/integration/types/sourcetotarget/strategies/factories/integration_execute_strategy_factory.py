@@ -1,9 +1,10 @@
 from injector import inject
 
-from pdip.dependency import IScoped
-from pdip.exceptions import IncompatibleAdapterException
-from pdip.integrator.integration.types.sourcetotarget.strategies import IntegrationSourceToTargetExecuteStrategy, \
-    ParallelIntegrationExecute, SingleProcessIntegrationExecute
+from ..base import IntegrationSourceToTargetExecuteStrategy
+from ..parallelnew.base import ParallelIntegrationExecute
+from ..singleprocess.base import SingleProcessIntegrationExecute
+from .......dependency import IScoped
+from .......exceptions import IncompatibleAdapterException
 
 
 class IntegrationSourceToTargetExecuteStrategyFactory(IScoped):
