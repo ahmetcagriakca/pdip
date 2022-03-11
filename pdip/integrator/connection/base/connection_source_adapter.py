@@ -14,13 +14,6 @@ class ConnectionSourceAdapter:
         pass
 
     @abstractmethod
-    def get_source_data(
-            self,
-            integration: IntegrationBase
-    ) -> List[any]:
-        pass
-
-    @abstractmethod
     def get_iterator(
             self,
             integration: IntegrationBase,

@@ -29,8 +29,6 @@ setup(
         'injector',
         'jsonpickle',
         'PyYAML',
-        'Fernet',
-        'cryptography',
         'SQLAlchemy',
         'Flask',
         'Flask_Cors',

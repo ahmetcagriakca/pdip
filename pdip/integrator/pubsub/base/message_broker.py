@@ -39,14 +39,19 @@ class MessageBroker:
         self.message_queue = self.manager.Queue()
         self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)
         self.message_channel = ChannelQueue(channel_queue=self.message_queue)
-        self.worker: MessageBrokerWorker = MessageBrokerWorker(logger=self.logger,
-                                                               publish_channel=self.publish_channel,
-                                                               message_channel=self.message_channel,
-                                                               other_arg=None)
+        self.worker: MessageBrokerWorker = MessageBrokerWorker(
+            logger=self.logger,
+            publish_channel=self.publish_channel,
+            message_channel=self.message_channel,
+        )
 
     def start(self):
         self.worker.start()
-        self.listener = EventListener(channel=self.message_channel, subscribers=self.subscribers, logger=self.logger)
+        self.listener = EventListener(
+            channel=self.message_channel,
+            subscribers=self.subscribers,
+            logger=self.logger
+        )
         self.listener.start()
 
     def join(self):

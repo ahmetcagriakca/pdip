@@ -11,13 +11,11 @@ class MessageBrokerWorker(threading.Thread):
                  logger: ConsoleLogger,
                  publish_channel: ChannelQueue,
                  message_channel: ChannelQueue,
-                 other_arg,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = logger
         self.message_channel = message_channel
         self.publish_channel = publish_channel
-        self.other_arg = other_arg
         self._stop_event = threading.Event()
 
     def stop(self):
