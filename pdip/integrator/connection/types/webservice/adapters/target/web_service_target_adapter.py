@@ -19,7 +19,7 @@ class WebServiceTargetAdapter(ConnectionTargetAdapter):
         self.provider = provider
 
     def clear_data(self, integration: IntegrationBase) -> int:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} clear_data")
+        raise NotSupportedFeatureException(f"{self.__class__.__name__} {self.clear_data.__name__}")
 
     def prepare_insert_row(self, data, columns):
         insert_rows = []
@@ -48,7 +48,7 @@ class WebServiceTargetAdapter(ConnectionTargetAdapter):
         return source_data
 
     def prepare_target_query(self, integration: IntegrationBase, source_column_count: int) -> str:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} prepare_target_query")
+        raise NotSupportedFeatureException(f"{self.__class__.__name__} {self.prepare_target_query.__name__}")
 
     def write_data(self, integration: IntegrationBase, prepared_data: List[any]) -> int:
         if prepared_data is not None and len(prepared_data) > 0:
@@ -71,4 +71,4 @@ class WebServiceTargetAdapter(ConnectionTargetAdapter):
             return 0
 
     def do_target_operation(self, integration: IntegrationBase) -> int:
-        raise NotSupportedFeatureException(f"{self.__class__.__name__} do_target_operation")
+        raise NotSupportedFeatureException(f"{self.__class__.__name__} {self.do_target_operation.__name__}")

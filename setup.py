@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.5.8')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.5.9')
 version = env_version.replace('v', '')
 setup(
     name='pdip',

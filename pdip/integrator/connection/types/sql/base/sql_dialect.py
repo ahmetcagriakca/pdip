@@ -44,6 +44,10 @@ class SqlDialect:
         pass
 
     @abstractmethod
+    def generate_insert_query(self, schema, table, columns_query, values_query):
+        pass
+
+    @abstractmethod
     def get_insert_query(self, schema, table, columns_query, values_query):
         pass
 
@@ -86,3 +90,4 @@ class SqlDialect:
     @abstractmethod
     def get_columns(self, schema, table):
         pass
+

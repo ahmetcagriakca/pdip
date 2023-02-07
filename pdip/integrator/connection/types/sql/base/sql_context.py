@@ -144,7 +144,7 @@ class SqlContext(IScoped):
         target_query = query
         for column_row in column_rows:
             index = column_rows.index(column_row)
-            indexer = self.dialect.indexer().format(index=index)
+            indexer = self.dialect.indexer.format(index=index)
             target_query = self.replace_regex(target_query, column_row, indexer)
         return target_query
 
@@ -205,4 +205,23 @@ class SqlContext(IScoped):
                     schema=schema,
                     table=table
                 )
+        return query
+
+    def get_insert_values(self, columns):
+        insert_row_values = ''
+        for column in columns:
+            insert_row_values += f'{"" if column == columns[0] else ", "}:{column.Name}'
+        return insert_row_values
+
+    def get_insert_columns(self, columns):
+        insert_row_columns = ''
+        for column in columns:
+            insert_row_columns += f'{"" if column == columns[0] else ", "}{self.dialect.mark_to_object(column.Name)}'
+        return insert_row_columns
+
+    def generate_insert_query(self, schema, table, source_columns, target_columns):
+        insert_values = self.get_insert_values(source_columns)
+        insert_columns = self.get_insert_columns(target_columns)
+        query = self.dialect.get_insert_query(schema=schema, table=table, columns_query=insert_columns,
+                                              values_query=insert_values)
         return query

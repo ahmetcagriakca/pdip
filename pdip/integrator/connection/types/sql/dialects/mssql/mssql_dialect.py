@@ -58,6 +58,7 @@ WHERE "row_number" > {start} AND "row_number" <= {end}
             query = self.get_table_select_query(selected_rows='*', schema=schema, table=table)
         return query
 
+
     def get_insert_values_query(self, schema, table, values_query):
         return f'insert into {self.mark_to_object(schema)}.{self.mark_to_object(table)} values({values_query})'
 

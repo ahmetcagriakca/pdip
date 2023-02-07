@@ -5,32 +5,66 @@ class BigDataDialect:
     def __init__(self):
         pass
 
+    @property
     @abstractmethod
-    def get_query_indexer(self):
+    def indexer(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def quotation_mark(self) -> str:
         pass
 
     @abstractmethod
-    def get_truncate_query(self, schema, table):
+    def mark_to_object(self, o) -> str:
         pass
 
     @abstractmethod
-    def get_table_count_query(self, query):
+    def get_table_count_query(self, schema, table):
         pass
 
     @abstractmethod
-    def get_table_select_query(self, selected_rows, schema, table):
+    def get_count_query(self, query):
         pass
 
     @abstractmethod
-    def get_table_data_query(self, query):
+    def get_select_query(self, query):
         pass
 
     @abstractmethod
-    def get_table_data_with_paging_query(self, query, start, end):
+    def get_table_select_query(self, schema, table, selected_rows):
         pass
 
     @abstractmethod
-    def get_insert_query(self, schema, table, values_query):
+    def get_paging_query(self, query, start, end):
+        pass
+
+    @abstractmethod
+    def prepare_select_query(self, schema, table, columns=None):
+        pass
+
+    @abstractmethod
+    def generate_insert_query(self, schema, table, columns_query, values_query):
+        pass
+
+    @abstractmethod
+    def get_insert_query(self, schema, table, columns_query, values_query):
+        pass
+
+    @abstractmethod
+    def get_insert_values_query(self, schema, table, values_query):
+        pass
+
+    @abstractmethod
+    def get_create_table_query(self, schema, table, columns, if_exists=None):
+        pass
+
+    @abstractmethod
+    def get_drop_table_query(self, schema, table, if_not_exists=None):
+        pass
+
+    @abstractmethod
+    def get_truncate_table_query(self, schema, table):
         pass
 
     @abstractmethod
