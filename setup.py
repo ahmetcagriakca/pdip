@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.2')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.3')
 version = env_version.replace('v', '')
 setup(
     name='pdip',
@@ -24,7 +24,7 @@ setup(
     zip_safe=False,
     keywords=['PDI', 'API', 'ETL', 'PROCESS', 'MULTIPROCESS', 'IO', 'CQRS', 'MSSQL', 'ORACLE', 'POSTGRES', 'MYSQL',
               'CSV'],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     install_requires=[
         'injector',
         'jsonpickle',
@@ -44,7 +44,6 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.9',
