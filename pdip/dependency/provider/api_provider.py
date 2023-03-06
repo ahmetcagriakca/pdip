@@ -69,7 +69,7 @@ class ApiProvider:
         if self.application_config is not None and self.application_config.name is not None:
             application_name = self.application_config.name
         if self.api_config is not None:
-            self.app = Flask(__name__)
+            self.app = Flask(application_name)
             with self.app.app_context():
                 base_url = '/'
                 if self.api_config.base_url is not None:

@@ -17,7 +17,7 @@ class TestPostgresqlConnection(TestCase):
         self.connection = SqlConnectionConfiguration(
             Name='TestConnection',
             ConnectionType=ConnectionTypes.Sql,
-            ConnectorType=ConnectorTypes.MSSQL,
+            ConnectorType=ConnectorTypes.POSTGRESQL,
             Server=ConnectionServer(
                 Host='localhost',
                 Port='5434'
