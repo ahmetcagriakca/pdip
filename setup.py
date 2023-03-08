@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.3')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.4')
 version = env_version.replace('v', '')
 setup(
     name='pdip',
@@ -26,18 +26,26 @@ setup(
               'CSV'],
     python_requires='>=3.8',
     install_requires=[
-        'injector',
-        'jsonpickle',
-        'PyYAML',
-        'SQLAlchemy',
-        'Flask',
-        'Flask_Cors',
-        'Flask-Injector',
-        'flask-restx',
-        'Werkzeug',
-        'dataclasses',
-        'requests',
-        'pandas'
+        "PyYAML",
+        "injector",
+        "jsonpickle",
+        "Fernet",
+        "cryptography",
+        "SQLAlchemy",
+        "rpyc",
+        "Flask",
+        "Flask_Cors",
+        "Flask-Ext",
+        "Flask-Injector",
+        "flask-restx",
+        "Werkzeug",
+        "dataclasses",
+        "dataclasses-json",
+        "requests",
+        "kafka-python",
+        "pandas",
+        "coverage",
+        "func-timeout"
     ],
     classifiers=[
         'Intended Audience :: Developers',
@@ -45,7 +53,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
