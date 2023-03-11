@@ -1,7 +1,12 @@
 import json
+import uuid
 from datetime import datetime
 
+from sqlalchemy import Row
+
 from .date_time_encoder import DateTimeEncoder
+from .mutliple_json_encoders import MultipleJsonEncoders
+from .uuid_encoder import UUIDEncoder
 from ..utils import TypeChecker
 
 
@@ -28,8 +33,23 @@ class BaseConverter(object):
         self.register_subclasses(annotations)
         return cls
 
+    def check_uuid(self, obj):
+        if isinstance(obj, Row):
+            for i, o in enumerate(obj):
+                if isinstance(o, uuid.UUID):
+                    obj[i] = str(o)
+        return obj
+
     def ToJSON(self, obj):
-        return json.dumps(dict(obj), cls=DateTimeEncoder, indent=4)
+        obj_dict = None
+        if isinstance(obj, dict):
+            obj_dict = obj
+        elif isinstance(obj, Row):
+            obj_dict = obj._asdict()
+        else:
+            obj_dict = dict(obj)
+        encoder = MultipleJsonEncoders(DateTimeEncoder, UUIDEncoder)
+        return json.dumps(obj_dict, cls=encoder, indent=4)
 
     def FromJSON(self, json_str):
         return json.loads(json_str, object_hook=self.class_mapper)
