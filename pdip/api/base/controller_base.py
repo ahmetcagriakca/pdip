@@ -69,7 +69,7 @@ class Controller:
         path_of_root = os.path.join(self.application_config.root_directory, '')
         module_name = self.cls.__module__
         module_path = sys.modules[module_name].__file__
-        namespace_folder = module_path.replace(path_of_root, '')
+        namespace_folder = module_path.lower().replace(path_of_root.lower(), '')
         split_namespace = Utils.path_split(namespace_folder)
         for excluded_namespace_name in excluded_namespace_names:
             if excluded_namespace_name in split_namespace:

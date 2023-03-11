@@ -1,6 +1,6 @@
 import json
 
-from . import DateTimeEncoder
+from pdip.json import DateTimeEncoder, BaseConverter
 
 
 class JsonConvert(object):

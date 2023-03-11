@@ -5,7 +5,6 @@ import sys
 
 from .utils import Utils
 
-
 class ModuleFinder:
     def __init__(self, root_directory: str, initialize: bool = True):
         self.root_directory = root_directory
@@ -50,7 +49,7 @@ class ModuleFinder:
             if last_parent_module_address is not None:
                 module_last_parent_address = last_parent_module_address
         elif (self.running_directory != self.root_directory):
-            module_base_address = self.root_directory.replace(self.running_directory, '')[
+            module_base_address = self.root_directory.lower().replace(self.running_directory.lower(), '')[
                                   1:].replace('\\', '.').replace('/', '.')
 
         for folder in folders:

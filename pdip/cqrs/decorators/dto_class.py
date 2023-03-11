@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from .cls_to_dict import cls_to_dict
-from ...json.json_convert import JsonConvert
+from pdip.json.base.json_convert import JsonConvert
 
 
 def dtoclass(_cls=None):

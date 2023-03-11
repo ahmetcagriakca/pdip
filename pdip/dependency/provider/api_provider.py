@@ -93,8 +93,8 @@ class ApiProvider:
 
     def find_resources(self):
         for resource in ResourceBase.__subclasses__():
-            if resource.__module__ in sys.modules and sys.modules[resource.__module__].__file__.startswith(
-                    self.application_config.root_directory):
+            if resource.__module__ in sys.modules and sys.modules[resource.__module__].__file__.lower().startswith(
+                    self.application_config.root_directory.lower()):
                 namespace = None
                 namespace_name = None
                 route = None
