@@ -12,17 +12,17 @@ class Entity(EntityBase):
     Id = Column(
         GUID(),
         primary_key=True,
-        default=str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4())
     )
 
     @declared_attr
     def CreateUserId(cls):
         return Column(GUID(), index=False, unique=False, nullable=False,
-                      default=uuid.UUID("00000000-0000-0000-0000-000000000000"))
+                      default=lambda: uuid.UUID("00000000-0000-0000-0000-000000000000"))
 
     @declared_attr
     def CreateUserTime(cls):
-        return Column(DateTime, index=False, unique=False, nullable=False, default=datetime.now)
+        return Column(DateTime, index=False, unique=False, nullable=False, default=lambda: datetime.now)
 
     @declared_attr
     def UpdateUserId(cls):

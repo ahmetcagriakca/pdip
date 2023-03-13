@@ -3,7 +3,7 @@ import sys
 from os import path
 from traceback import format_exc
 from unittest import TestCase
-from unittest.loader import defaultTestLoader, makeSuite
+from unittest.loader import defaultTestLoader, makeSuite, TestLoader
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
@@ -17,6 +17,7 @@ if __name__ == "__main__":
                 path.join(path.dirname(path.abspath(__file__))))
             self.logger = ConsoleLogger()
             self.test_folder = test_folder
+            self.test_loader = TestLoader()
 
         def run(self):
             all_test_modules = self.find_test_modules()
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 
         def run_all_tests(self, test_modules):
             results = []
+
             for t in test_modules:
                 suite = TestSuite()
                 try:
@@ -57,7 +59,7 @@ if __name__ == "__main__":
                             module = c
                     if module is not None:
                         # suitefn = getattr(module, 'suite')
-                        suite.addTest(makeSuite(module))
+                        suite.addTest(self.test_loader.loadTestsFromTestCase(module))
                 except (ImportError, AttributeError) as ex:
                     # else, just load all the test cases from the module.
                     trace = format_exc()
