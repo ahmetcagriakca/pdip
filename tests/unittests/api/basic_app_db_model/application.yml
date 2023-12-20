@@ -1,0 +1,12 @@
+APPLICATION:
+  NAME: APP
+
+API:
+  IS_DEBUG: True
+
+DATABASE:
+  TYPE: SQLITE
+  HOST: 'test.db'
+  EXECUTION_OPTIONS:
+    schema_translate_map:
+      Common:

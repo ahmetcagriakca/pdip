@@ -1,0 +1,5 @@
+APPLICATION:
+  NAME: APP
+
+API:
+  IS_DEBUG: True
