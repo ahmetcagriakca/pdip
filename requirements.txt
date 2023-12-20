@@ -1,6 +1,6 @@
 PyYAML==6.0
 injector==0.20.1
-jsonpickle==3.0.1
+jsonpickle==3.0.2
 Fernet==1.0.1
 cryptography==39.0.2
 SQLAlchemy==2.0.4
