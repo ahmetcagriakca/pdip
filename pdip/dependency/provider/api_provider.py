@@ -40,8 +40,6 @@ class ApiProvider:
 
     def initialize(self):
         self.initialize_flask()
-        FlaskInjector(app=self.app, modules=[
-                                                self.api_configure] + self.modules, injector=self.injector)
 
     def api_configure(self, binder: Binder):
         self.binder = binder
@@ -71,24 +69,27 @@ class ApiProvider:
         if self.application_config is not None and self.application_config.name is not None:
             application_name = self.application_config.name
         if self.api_config is not None:
-            self.app = Flask(application_name)
-            base_url = '/'
-            if self.api_config.base_url is not None:
-                base_url = self.api_config.base_url
-            doc_url = '/documentation'
-            if self.api_config.doc_url is not None:
-                doc_url = self.api_config.doc_url
+            self.app = Flask(__name__)
+            with self.app.app_context():
+                base_url = '/'
+                if self.api_config.base_url is not None:
+                    base_url = self.api_config.base_url
+                doc_url = '/documentation'
+                if self.api_config.doc_url is not None:
+                    doc_url = self.api_config.doc_url
 
-            @self.app.route(base_url)
-            def home_redirect():
-                return redirect(doc_url, code=302, Response=None)
+                @self.app.route(base_url)
+                def home_redirect():
+                    return redirect(doc_url, code=302, Response=None)
 
-            self.api = Api(self.app,
-                           title=f'{application_name}',
-                           version=self.api_config.version,
-                           doc=doc_url,
-                           base_url=base_url)
-        self.find_resources()
+                self.api = Api(self.app,
+                               title=f'{application_name}',
+                               version=self.api_config.version,
+                               doc=doc_url,
+                               base_url=base_url)
+                self.find_resources()
+                FlaskInjector(app=self.app, modules=[
+                                                        self.api_configure] + self.modules, injector=self.injector)
 
     def find_resources(self):
         for resource in ResourceBase.__subclasses__():

@@ -33,8 +33,9 @@ class TestUtils(TestCase):
         assert replaced == 'test_config'
 
     def test_get_config_name(self):
-        replaced = Utils.get_config_name(class_name='TestConfig')
-        assert replaced == 'TEST'
+        replaced_name,result = Utils.get_config_name(class_name='TestConfig')
+        assert replaced_name == 'Test'
+        assert result == 'test'
 
     def test_TypeChecker_is_class(self):
         result = TypeChecker().is_class(int)

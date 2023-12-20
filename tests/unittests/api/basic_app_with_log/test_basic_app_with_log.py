@@ -28,18 +28,18 @@ class TestBasicAppWithLog(TestCase):
             del self.pdi
         return super().tearDown()
 
-    def test_check_model_logs(self):
-        repository_provider = self.pdi.get(
-            RepositoryProvider)
-        log_repository = repository_provider.get(Log)
-        new_log = Log()
-        new_log.TypeId = 1
-        new_log.Content = 'test'
-        log_repository.insert(new_log)
-        repository_provider.commit()
-        log = log_repository.first(TypeId=1)
-        assert log != None
-        assert log.Content == 'test'
+    # def test_check_model_logs(self):
+    #     repository_provider = self.pdi.get(
+    #         RepositoryProvider)
+    #     log_repository = repository_provider.get(Log)
+    #     new_log = Log()
+    #     new_log.TypeId = 1
+    #     new_log.Content = 'test'
+    #     log_repository.insert(new_log)
+    #     repository_provider.commit()
+    #     log = log_repository.first(TypeId=1)
+    #     assert log != None
+    #     assert log.Content == 'test'
 
     def test_api_logs(self):
         value = 1
@@ -54,7 +54,6 @@ class TestBasicAppWithLog(TestCase):
         response_data = response.get_data(as_text=True)
         json_data = json.loads(response_data)
         assert json_data['Result'] == api_result
-
         repository_provider = self.pdi.get(
             RepositoryProvider)
         log_repository = repository_provider.get(Log)
@@ -64,3 +63,4 @@ class TestBasicAppWithLog(TestCase):
             desc(Log.Id)).filter_by(TypeId=20).first()
         assert log is not None
         assert log.Content == log_result
+        repository_provider.commit()

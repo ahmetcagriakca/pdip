@@ -44,7 +44,7 @@ class SqlLogger(IScoped, ILogger):
                                                          database_session_manager=None)
                 log_repository = repository_provider.get(logger_class)
                 log = logger_class(TypeId=level, Content=message[0:4000], LogDatetime=log_datetime,
-                                   JobId=job_id, Comments=comment)
+                                   JobId=job_id)
                 log_repository.insert(log)
                 repository_provider.commit()
             except Exception as ex:

@@ -24,8 +24,14 @@ class Utils:
         replaced_name = Utils.replace_last(source_string=class_name, replace_what=replace_what,
                                            replace_with=replace_with)
         snaked_case = Utils.to_snake_case(replaced_name)
-        result = snaked_case.upper()
-        return result
+        result = snaked_case
+        return replaced_name,result
+
+    @staticmethod
+    def get_property_name(property_name):
+        snaked_case = Utils.to_snake_case(property_name)
+        result = snaked_case
+        return property_name,result
 
     @staticmethod
     def path_split(path):

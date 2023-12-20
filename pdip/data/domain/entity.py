@@ -1,41 +1,41 @@
+import uuid
 from datetime import datetime
 
-from sqlalchemy import Integer, DateTime, Column, String
+from sqlalchemy import DateTime, Column
 from sqlalchemy.ext.declarative import declared_attr
 
 from .entity_base import EntityBase
+from .types import GUID
 
 
 class Entity(EntityBase):
     Id = Column(
-        Integer,
-        primary_key=True
+        GUID(),
+        primary_key=True,
+        default=str(uuid.uuid4())
     )
 
     @declared_attr
-    def CreatedByUserId(cls):
-        return Column(Integer, index=False, unique=False, nullable=False, default=0)
+    def CreateUserId(cls):
+        return Column(GUID(), index=False, unique=False, nullable=False,
+                      default=uuid.UUID("00000000-0000-0000-0000-000000000000"))
 
     @declared_attr
-    def CreationDate(cls):
+    def CreateUserTime(cls):
         return Column(DateTime, index=False, unique=False, nullable=False, default=datetime.now)
 
     @declared_attr
-    def LastUpdatedUserId(cls):
-        return Column(Integer, index=False, unique=False, nullable=True)
+    def UpdateUserId(cls):
+        return Column(GUID(), index=False, unique=False, nullable=True)
 
     @declared_attr
-    def LastUpdatedDate(cls):
+    def UpdateUserTime(cls):
         return Column(DateTime, index=False, unique=False, nullable=True)
 
     @declared_attr
-    def IsDeleted(cls):
-        return Column(Integer, index=False, unique=False, nullable=False, default=0)
+    def TenantId(cls):
+        return Column(GUID(), index=False, unique=False, nullable=False)
 
     @declared_attr
-    def Comments(cls):
-        return Column(String(1000), index=False, unique=False, nullable=True)
-
-    # @declared_attr
-    # def RowVersion(cls):
-    #     return Column(TIMESTAMP(), default=text('DEFAULT'))
+    def GcRecId(cls):
+        return Column(GUID(), index=False, unique=False, nullable=True)

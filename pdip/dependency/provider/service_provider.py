@@ -102,10 +102,11 @@ class ServiceProvider:
         )
         self.binder.bind(
             interface=ConfigManager,
-            to=self.config_manager
+            to=self.config_manager,
+            scope=singleton
         )
 
-        for config in self.config_manager.get_all():
+        for config in self.config_manager.get_all_type_configs():
             self.binder.bind(
                 interface=config.get("type"),
                 to=config.get("instance"),

@@ -10,7 +10,7 @@ class TestBasicApp(TestCase):
         try:
             self.pdi = Pdi()
             self.client = self.pdi.get(FlaskAppWrapper).test_client()
-        except:
+        except  Exception as ex:
             self.tearDown()
             raise
 
