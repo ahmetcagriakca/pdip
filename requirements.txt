@@ -1,4 +1,4 @@
-PyYAML==6.0
+PyYAML==6.0.1
 injector==0.20.1
 jsonpickle==3.0.1
 Fernet==1.0.1
