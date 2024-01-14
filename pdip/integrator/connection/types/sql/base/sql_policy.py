@@ -32,6 +32,10 @@ class SqlPolicy:
             namespace = "mysql"
             connector_name = "MysqlConnector"
             dialect_name = "MysqlDialect"
+        elif self.config.ConnectorType == ConnectorTypes.CLICKHOUSE:
+            namespace = "clickhouse"
+            connector_name = "ClickHouseConnector"
+            dialect_name = "ClickHouseDialect"
         else:
             raise Exception("Connector type not found")
         module = importlib.import_module(".".join([connector_base_module, namespace]))

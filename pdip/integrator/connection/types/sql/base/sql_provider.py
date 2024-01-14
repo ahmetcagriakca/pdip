@@ -55,6 +55,13 @@ class SqlProvider(IScoped):
                                                 BasicAuthentication=ConnectionBasicAuthentication(User=user,
                                                                                                   Password=password),
                                                 Database=database)
+        elif connector_type == ConnectorTypes.CLICKHOUSE:
+            config = SqlConnectionConfiguration(ConnectionType=ConnectionTypes.Sql,
+                                                ConnectorType=ConnectorTypes.CLICKHOUSE,
+                                                Server=ConnectionServer(Host=host, Port=port),
+                                                BasicAuthentication=ConnectionBasicAuthentication(User=user,
+                                                                                                  Password=password),
+                                                Database=database)
         else:
             raise Exception(f"{connector_type.name} connector type not supported")
 
