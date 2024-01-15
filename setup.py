@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.5.9')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.5.15')
 version = env_version.replace('v', '')
 setup(
     name='pdip',
@@ -26,19 +26,42 @@ setup(
               'CSV'],
     python_requires='>=3.6, <3.10',
     install_requires=[
-        'injector',
-        'jsonpickle',
-        'PyYAML',
-        'SQLAlchemy',
-        'Flask',
-        'Flask_Cors',
-        'Flask-Injector',
-        'flask-restx',
-        'Werkzeug',
-        'dataclasses',
-        'requests',
-        'pandas'
+        "dataclasses",
+        "injector",
+        "PyYAML",
+        "SQLAlchemy"
     ],
+    extras_require={
+        "api": [
+            "Flask==1.1.4",
+            "Flask_Cors==3.0.10",
+            "Flask-Ext==0.1",
+            "Flask-Injector==0.12.3",
+            "flask-restx==0.5.1",
+            "markupsafe==2.0.1",
+            "Werkzeug==1.0.1"
+        ],
+        "cryptography": [
+            "cryptography==3.3.2",
+            "Fernet==1.0.1"
+        ],
+        "integrator": [
+            "cx_Oracle==8.2.1",
+            "dataclasses-json==0.5.6",
+            "func-timeout==4.3.5",
+            "kafka-python==2.0.2",
+            "mysql-connector-python==8.0.26",
+            "pandas==1.1.5",
+            "psycopg2-binary==2.8.6",
+            "pyodbc==4.0.30"
+        ],
+        "preferred": [
+            "dataclasses==0.6",
+            "injector==0.18.4",
+            "PyYAML==5.4",
+            "SQLAlchemy==1.4.19"
+        ]
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',

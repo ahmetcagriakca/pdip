@@ -1,3 +1,4 @@
+import importlib
 import os
 from multiprocessing.process import current_process
 from typing import TypeVar, Type
@@ -9,7 +10,6 @@ from ...configuration.models.api import ApiConfig
 from ...configuration.models.application import ApplicationConfig
 from ...configuration.models.database import DatabaseConfig
 from ...dependency import ISingleton, IScoped
-from ...dependency.provider.api_provider import ApiProvider
 from ...logging.loggers.console.console_logger import ConsoleLogger
 from ...utils import ModuleFinder
 from ...utils import Utils
@@ -27,7 +27,7 @@ class ServiceProvider:
                  excluded_modules: [] = None):
         self.root_directory = root_directory
         self.excluded_modules = excluded_modules
-        self.api_provider: ApiProvider = None
+        self.api_provider = None
         self.injector = Injector()
         self.config_manager: ConfigManager = None
         self.module_finder: ModuleFinder = None
@@ -131,8 +131,7 @@ class ServiceProvider:
         return f"{current_process().name} ({os.getpid()},{os.getppid()})"
 
     def process_info(self):
-        application_config: ApplicationConfig = self.config_manager.get(
-            ApplicationConfig)
+        application_config: ApplicationConfig = self.config_manager.get(ApplicationConfig)
         if application_config is not None:
             hostname = f'-{application_config.hostname}' if (
                     application_config.hostname is not None and application_config.hostname != '') else ''
@@ -141,12 +140,22 @@ class ServiceProvider:
     def initialize_injection(self, initialize_flask):
         if self.is_flask_api() and initialize_flask:
 
-            application_config: ApplicationConfig = self.config_manager.get(
-                ApplicationConfig)
+            application_config: ApplicationConfig = self.config_manager.get(ApplicationConfig)
             api_config: ApiConfig = self.config_manager.get(ApiConfig)
-            self.api_provider = ApiProvider(modules=self.modules, application_config=application_config,
-                                            api_config=api_config, injector=self.injector)
-            self.api_provider.initialize()
+
+            api_namespace = "pdip.dependency.provider.api"
+            api_provider_name = "ApiProvider"
+
+            module = importlib.import_module(api_namespace)
+            api_provider_class = getattr(module, api_provider_name)
+            if api_provider_class is not None:
+                self.api_provider = api_provider_class(
+                    modules=self.modules,
+                    application_config=application_config,
+                    api_config=api_config,
+                    injector=self.injector
+                )
+                self.api_provider.initialize()
         else:
             for module in self.modules:
                 self.injector.binder.install(module)
