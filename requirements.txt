@@ -2,7 +2,7 @@ PyYAML==6.0.1
 injector==0.21.0
 jsonpickle==3.0.2
 Fernet==1.0.1
-cryptography==41.0.7
+cryptography==42.0.2
 SQLAlchemy==2.0.23
 rpyc==5.3.1
 Flask==2.2.3
