@@ -17,7 +17,7 @@ class ClickHouseConnector(SqlConnector):
             if self.config.Driver is None or self.config.Driver == '':
                 self.config.Driver = self.find_driver_name()
             app_name = os.getenv('CLICKHOUSE_APP_NAME', 'pdi')
-            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;APP=%s' % (
+            self.connection_string = 'DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;APP=%s;timeout=360' % (
                 self.config.Driver, self.config.Server.Host, self.config.Database,
                 self.config.BasicAuthentication.User, self.config.BasicAuthentication.Password, app_name)
         self.connection = None
