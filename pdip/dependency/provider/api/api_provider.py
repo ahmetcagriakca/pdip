@@ -8,10 +8,10 @@ from injector import Injector, Binder, singleton
 from werkzeug.utils import redirect
 
 from pdip.logging.loggers.console.console_logger import ConsoleLogger
-from ...api.base import ResourceBase
-from ...api.base.controller_base import Controller
-from ...configuration.models.api import ApiConfig
-from ...configuration.models.application import ApplicationConfig
+from ....api.base import ResourceBase
+from ....api.base.controller_base import Controller
+from ....configuration.models.api import ApiConfig
+from ....configuration.models.application import ApplicationConfig
 
 T = TypeVar('T')
 
@@ -40,6 +40,7 @@ class ApiProvider:
 
     def initialize(self):
         self.initialize_flask()
+        FlaskInjector(app=self.app, modules=[self.api_configure] + self.modules, injector=self.injector)
 
     def api_configure(self, binder: Binder):
         self.binder = binder

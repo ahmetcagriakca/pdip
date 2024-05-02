@@ -11,4 +11,5 @@ class ConnectorTypes(Enum):
     MYSQL = 7
     Impala = 8
     Soap = 9
-    SqLite = 10
+    CLICKHOUSE = 10
+    SqLite = 11

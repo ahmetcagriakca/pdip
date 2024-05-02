@@ -26,27 +26,42 @@ setup(
               'CSV'],
     python_requires='>=3.8',
     install_requires=[
-        "PyYAML",
-        "injector",
-        "jsonpickle",
-        "Fernet",
-        "cryptography",
-        "SQLAlchemy",
-        "rpyc",
-        "Flask",
-        "Flask_Cors",
-        "Flask-Ext",
-        "Flask-Injector",
-        "flask-restx",
-        "Werkzeug",
         "dataclasses",
-        "dataclasses-json",
-        "requests",
-        "kafka-python",
-        "pandas",
-        "coverage",
-        "func-timeout"
+        "injector",
+        "PyYAML",
+        "SQLAlchemy"
     ],
+    extras_require={
+        "api": [
+            "Flask==2.2.3",
+            "Flask_Cors==3.0.10",
+            "Flask-Ext==0.1",
+            "Flask-Injector==0.14.0",
+            "flask-restx==1.1.0",
+            "markupsafe==2.1.5",
+            "Werkzeug==2.2.3"
+        ],
+        "cryptography": [
+            "cryptography==41.0.7",
+            "Fernet==1.0.1"
+        ],
+        "integrator": [
+            "cx_Oracle==8.2.1",
+            "dataclasses-json==0.5.6",
+            "func-timeout==4.3.5",
+            "kafka-python==2.0.2",
+            "mysql-connector-python==8.0.26",
+            "pandas==2.1.4",
+            "psycopg2-binary==2.8.6",
+            "pyodbc==4.0.30"
+        ],
+        "preferred": [
+            "dataclasses==0.6",
+            "injector==0.21.0",
+            "PyYAML==6.0.1",
+            "SQLAlchemy==2.0.23"
+        ]
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
