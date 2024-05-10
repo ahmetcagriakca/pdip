@@ -9,6 +9,8 @@ from .types import GUID
 
 
 class Entity(EntityBase):
+    __allow_unmapped__ = True
+    
     Id = Column(
         GUID(),
         primary_key=True,

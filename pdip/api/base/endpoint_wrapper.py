@@ -1,7 +1,7 @@
 import json
 import typing
 from datetime import datetime
-
+import uuid
 from flask import request
 from flask_restx import Api, fields, inputs
 from flask_restx.reqparse import RequestParser, Argument
@@ -38,6 +38,8 @@ class EndpointWrapper:
     def date_converter(o):
         if isinstance(o, datetime):
             return o.isoformat()
+        if isinstance(o, uuid.UUID):
+            return str(o)
 
     @staticmethod
     def get_response(result=None, message=None):

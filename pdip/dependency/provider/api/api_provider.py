@@ -8,10 +8,10 @@ from injector import Injector, Binder, singleton
 from werkzeug.utils import redirect
 
 from pdip.logging.loggers.console.console_logger import ConsoleLogger
-from ...api.base import ResourceBase
-from ...api.base.controller_base import Controller
-from ...configuration.models.api import ApiConfig
-from ...configuration.models.application import ApplicationConfig
+from ....api.base import ResourceBase
+from ....api.base.controller_base import Controller
+from ....configuration.models.api import ApiConfig
+from ....configuration.models.application import ApplicationConfig
 
 T = TypeVar('T')
 

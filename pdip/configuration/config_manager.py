@@ -1,3 +1,4 @@
+import glob
 import os
 from typing import List, Type, TypeVar
 
@@ -50,6 +51,10 @@ class ConfigManager:
             config_name = f'{config_name_split[0]}.{environment}.{config_name_split[1]}'
         config_path = os.path.join(root_directory, config_name)
         configs: List[dict] = []
+        if not os.path.exists(config_path):
+            config_files = glob.glob(os.path.join(root_directory, "application.*.yml"))
+            if len(config_files) > 0:
+                config_path = config_files[0]
         if os.path.exists(config_path):
             with open(config_path, 'r') as yml_file:
                 loaded_configs = yaml.load(yml_file, Loader=yaml.FullLoader)
