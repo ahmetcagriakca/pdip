@@ -40,7 +40,6 @@ class ApiProvider:
 
     def initialize(self):
         self.initialize_flask()
-        FlaskInjector(app=self.app, modules=[self.api_configure] + self.modules, injector=self.injector)
 
     def api_configure(self, binder: Binder):
         self.binder = binder

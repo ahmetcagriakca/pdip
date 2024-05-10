@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.6')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.6.9')
 version = env_version.replace('v', '')
 setup(
     name='pdip',
@@ -33,33 +33,33 @@ setup(
     ],
     extras_require={
         "api": [
-            "Flask==2.2.3",
-            "Flask_Cors==3.0.10",
+            "Flask==3.0.3",
+            "Flask_Cors==4.0.0",
             "Flask-Ext==0.1",
-            "Flask-Injector==0.14.0",
-            "flask-restx==1.1.0",
+            "Flask-Injector==0.15.0",
+            "flask-restx==1.3.0",
             "markupsafe==2.1.5",
-            "Werkzeug==2.2.3"
+            "Werkzeug==3.0.2"
         ],
         "cryptography": [
-            "cryptography==41.0.7",
+            "cryptography==42.0.5",
             "Fernet==1.0.1"
         ],
         "integrator": [
-            "cx_Oracle==8.2.1",
+            "cx_Oracle==8.3.0",
             "dataclasses-json==0.5.6",
             "func-timeout==4.3.5",
             "kafka-python==2.0.2",
-            "mysql-connector-python==8.0.26",
-            "pandas==2.1.4",
-            "psycopg2-binary==2.8.6",
-            "pyodbc==4.0.30"
+            "mysql-connector-python==8.4.0",
+            "pandas==2.2.2",
+            "psycopg2-binary==2.9.9",
+            "pyodbc==5.1.0"
         ],
         "preferred": [
             "dataclasses==0.6",
             "injector==0.21.0",
             "PyYAML==6.0.1",
-            "SQLAlchemy==2.0.23"
+            "SQLAlchemy==2.0.29"
         ]
     },
     classifiers=[
