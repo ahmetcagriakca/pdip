@@ -34,7 +34,7 @@ setup(
     extras_require={
         "api": [
             "Flask==3.0.3",
-            "Flask_Cors==4.0.0",
+            "Flask_Cors==4.0.1",
             "Flask-Ext==0.1",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.0",
