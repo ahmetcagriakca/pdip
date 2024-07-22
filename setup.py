@@ -42,7 +42,7 @@ setup(
             "Werkzeug==3.0.2"
         ],
         "cryptography": [
-            "cryptography==42.0.5",
+            "cryptography==43.0.0",
             "Fernet==1.0.1"
         ],
         "integrator": [
