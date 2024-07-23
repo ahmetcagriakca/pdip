@@ -47,7 +47,7 @@ setup(
         ],
         "integrator": [
             "cx_Oracle==8.3.0",
-            "dataclasses-json==0.5.6",
+            "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
             "kafka-python==2.0.2",
             "mysql-connector-python==8.4.0",
