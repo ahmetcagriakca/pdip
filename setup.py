@@ -39,7 +39,7 @@ setup(
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.0",
             "markupsafe==2.1.5",
-            "Werkzeug==3.0.2"
+            "Werkzeug==3.0.3"
         ],
         "cryptography": [
             "cryptography==43.0.0",
