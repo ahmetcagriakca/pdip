@@ -50,7 +50,7 @@ setup(
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
             "kafka-python==2.0.2",
-            "mysql-connector-python==8.4.0",
+            "mysql-connector-python==9.0.0",
             "pandas==2.2.2",
             "psycopg2-binary==2.9.9",
             "pyodbc==5.1.0"
