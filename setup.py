@@ -57,7 +57,7 @@ setup(
         ],
         "preferred": [
             "dataclasses==0.6",
-            "injector==0.21.0",
+            "injector==0.22.0",
             "PyYAML==6.0.1",
             "SQLAlchemy==2.0.31"
         ]
