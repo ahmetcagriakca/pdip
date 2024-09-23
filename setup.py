@@ -59,7 +59,7 @@ setup(
             "dataclasses==0.6",
             "injector==0.21.0",
             "PyYAML==6.0.1",
-            "SQLAlchemy==2.0.31"
+            "SQLAlchemy==2.0.35"
         ]
     },
     classifiers=[
