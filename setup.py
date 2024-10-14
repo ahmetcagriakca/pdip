@@ -51,7 +51,7 @@ setup(
             "func-timeout==4.3.5",
             "kafka-python==2.0.2",
             "mysql-connector-python==8.4.0",
-            "pandas==2.2.2",
+            "pandas==2.2.3",
             "psycopg2-binary==2.9.9",
             "pyodbc==5.1.0"
         ],
