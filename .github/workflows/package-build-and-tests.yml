@@ -40,36 +40,42 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82,E711,E712,E722 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with unittest and coverage
-        # Every matrix cell runs the suite under ``coverage`` and
-        # emits ``coverage.xml``. The ``fail_under`` floor runs only
-        # on the canonical cell (3.11 ubuntu) because coverage is a
-        # single scalar, not a per-Python-version property. See
-        # ADR-0023 §5. ``--fail-under=0`` overrides ``.coveragerc``
-        # so this shared step never fails on a non-canonical cell.
-        # ``shell: bash`` makes the step work identically on Windows
-        # (git-bash is always present on the runner) and lets the
-        # ``tee`` / ``PIPESTATUS`` pattern below capture exit codes
-        # into an uploadable log for remote debugging.
+      - name: Test with unittest and coverage (diagnostics enabled)
         shell: bash
         run: |
-          set -o pipefail
-          python --version 2>&1 | tee -a coverage-run.log
+          python -c "import sys; print('python', sys.version)" 2>&1 | tee coverage-run.log
           coverage --version 2>&1 | tee -a coverage-run.log
-          coverage run run_tests.py 2>&1 | tee -a coverage-run.log
-          echo "=== coverage run exit=$? ===" | tee -a coverage-run.log
-          coverage report -m --fail-under=0 2>&1 | tee -a coverage-run.log
+          coverage run run_tests.py > run_tests.stdout 2> run_tests.stderr
+          run_exit=$?
+          tail -n 40 run_tests.stdout >> coverage-run.log
+          tail -n 80 run_tests.stderr >> coverage-run.log
+          echo "=== coverage run exit=$run_exit ===" | tee -a coverage-run.log
+          coverage report -m --fail-under=0 2>> coverage-run.log | tee -a coverage-run.log
           echo "=== coverage report exit=$? ===" | tee -a coverage-run.log
-          coverage xml 2>&1 | tee -a coverage-run.log
+          # --debug=trace writes very verbose internals; save it to a
+          # sidecar file so the main log stays readable.
+          COVERAGE_DEBUG=trace coverage xml --debug=trace \
+              > coverage-xml.stdout 2> coverage-xml.stderr
           xml_exit=$?
           echo "=== coverage xml exit=$xml_exit ===" | tee -a coverage-run.log
-          # Surface a coverage xml failure only on the canonical cell;
-          # on non-canonical cells we still want the log artefact.
+          echo "--- last 200 lines of coverage xml stderr ---" >> coverage-run.log
+          tail -n 200 coverage-xml.stderr >> coverage-run.log
+          # Surface a coverage xml failure only on the canonical cell.
           if [ "$xml_exit" -ne 0 ] \
               && [ "${{ matrix.python }}" = "3.11" ] \
               && [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cat coverage-run.log
             exit "$xml_exit"
           fi
+          # Also dump the log to the step summary so it shows up in
+          # the check-run output without downloading artefacts.
+          {
+            echo "### coverage diagnostics (${{ matrix.python }} ${{ matrix.os }})"
+            echo ""
+            echo '```'
+            cat coverage-run.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce coverage floor (ADR-0023)
         # Single canonical cell. Applies the absolute
