@@ -51,7 +51,10 @@ for the public API surface described in
 
 - **Python 3.14 is now a blocking CI job** across Linux, macOS, and
   Windows. The `continue-on-error: true` escape hatch from ADR-0019
-  is dropped now that the suite is green on 3.14.
+  is dropped now that the suite is green on 3.14. Two pinned
+  dependencies lacked 3.14 wheels and were bumped to the smallest
+  patch release that does: `coverage` 7.6.10 → 7.6.12 and
+  `PyYAML` 6.0.2 → 6.0.3.
 - `requirements.txt` slimmed: `pandas`, `kafka-python`, and
   `func-timeout` moved out of the core install and now live only in
   the `integrator` extra where they belong (they are only imported by
