@@ -10,6 +10,9 @@ disagree, the ADR is the source of truth and the policy must be updated.
 
 - All architectural changes require an ADR. See the
   [governance README](../README.md) for what counts as architectural.
+- Everything committed to the repository is written in English: code,
+  comments, docs, commit messages, and GitHub titles / descriptions /
+  review comments ([ADR-0016](../adr/0016-english-only-content.md)).
 - Pull requests that introduce a new service inherit from `ISingleton`
   or `IScoped` as required by [ADR-0002](../adr/0002-custom-di-scopes.md);
   do not hand-bind services to the injector.

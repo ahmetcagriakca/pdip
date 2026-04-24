@@ -9,6 +9,7 @@ we work with the community.
 
 - [What should I know before I get started?](#what-should-i-know-before-i-get-started)
     * [Code of Conduct](#code-of-conduct)
+    * [Governance and Architecture Decisions](#governance-and-architecture-decisions)
 
 - [How Can I Contribute?](#how-can-i-contribute)
     * [Reporting Bugs](#reporting-bugs)
@@ -22,6 +23,19 @@ we work with the community.
 This project adheres to the Contributor Covenant [code of conduct](../CODE_OF_CONDUCT.md). By participating, you are
 expected to uphold this code. Please report unacceptable behavior
 to [ahmetcagriakca@gmail.com](mailto:ahmetcagriakca@gmail.com).
+
+### Governance and Architecture Decisions
+
+The *why* behind PDI's architecture lives in [`docs/governance/`](docs/governance/README.md).
+Before proposing architecturally significant changes, read the relevant
+[Architecture Decision Records](docs/governance/adr/README.md) and the
+[contribution policies](docs/governance/policies/README.md). Some rules worth calling out up front:
+
+- All content committed to this repository — code, documentation, commit messages, issue
+  and PR titles and descriptions, and review comments — is written in English. See
+  [ADR-0016](docs/governance/adr/0016-english-only-content.md) for the rationale.
+- Architectural changes require a new or updated ADR; follow the process in the
+  [governance README](docs/governance/README.md).
 
 ## How Can I Contribute?
 
