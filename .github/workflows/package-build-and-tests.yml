@@ -41,36 +41,28 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with unittest and coverage
-        # Every matrix cell runs the tests under ``coverage`` so the
-        # coverage.xml artefact is always present; the ``fail_under``
-        # gate runs only on the canonical cell in the next step.
-        # ``--fail-under=0`` explicitly overrides the ``fail_under = 100``
-        # in ``.coveragerc`` for the non-canonical cells (the
-        # .coveragerc value keeps the gate active for local ``coverage
-        # report`` invocations without any flags).
-        # Rationale: coverage is a single scalar ("what fraction of
-        # pdip/ is exercised by the suite") and is measured against
-        # one Python version. Different Python versions legitimately
+        # Every matrix cell runs the tests under ``coverage`` and
+        # emits ``coverage.xml`` as an artefact. The ``fail_under``
+        # gate runs only on the canonical cell in the next step:
+        # coverage is a single scalar ("what fraction of pdip/ is
+        # exercised by the suite") and is measured against one
+        # Python version. Different Python versions legitimately
         # skip different tests (e.g. ``@skipIf(sys.version_info >= (3,14))``
-        # for ``typing.Union``-representation tests), so enforcing the
-        # same 100 % floor on every matrix cell would either be gamed
-        # with pragmas or force artificial coverage of unreachable
-        # branches. See ADR-0023 §2 and ADR-0027 for the split.
+        # for ``typing.Union``-representation tests), so enforcing
+        # the same 100 % floor on every matrix cell would either be
+        # gamed with pragmas or force artificial coverage of
+        # unreachable branches. See ADR-0023 §2 and ADR-0027 for the
+        # split. ``--fail-under=0`` explicitly overrides the
+        # ``fail_under = 100`` in ``.coveragerc`` so the report step
+        # itself never fails; the canonical floor step applies it.
+        # No ``coverage html`` on CI — the HTML report is a local-dev
+        # convenience, and generating it has historically surfaced
+        # version-specific import failures on Python 3.14 that CI
+        # does not need to care about.
         run: |
-          set -x
-          python --version
-          coverage --version
-          coverage run run_tests.py 2>&1 | tee coverage-run.log
-          run_exit=${PIPESTATUS[0]}
-          echo "=== coverage run exit=$run_exit ===" | tee -a coverage-run.log
-          coverage report -m --fail-under=0 2>&1 | tee -a coverage-run.log
-          rep_exit=${PIPESTATUS[0]}
-          echo "=== coverage report exit=$rep_exit ===" | tee -a coverage-run.log
-          coverage xml 2>&1 | tee -a coverage-run.log || true
-          coverage html 2>&1 | tee -a coverage-run.log || true
-          # surface the actual failure
-          test "$run_exit" -eq 0
-          test "$rep_exit" -eq 0
+          coverage run run_tests.py
+          coverage report -m --fail-under=0
+          coverage xml
 
       - name: Enforce coverage floor (ADR-0023)
         # Single canonical cell, same as diff-cover. fail_under=100
@@ -103,9 +95,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}-py${{ matrix.python }}
-          path: |
-            coverage.xml
-            htmlcov/
-            coverage-run.log
+          path: coverage.xml
           if-no-files-found: warn
           retention-days: 14
