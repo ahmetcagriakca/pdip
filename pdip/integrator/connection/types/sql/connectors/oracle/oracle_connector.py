@@ -1,4 +1,4 @@
-import cx_Oracle
+import oracledb
 from sqlalchemy import create_engine
 
 from ...base import SqlConnector
@@ -6,6 +6,14 @@ from .....domain.types.sql.configuration.base import SqlConnectionConfiguration
 
 
 class OracleConnector(SqlConnector):
+    """Oracle DB-API / SQLAlchemy adapter backed by ``python-oracledb``.
+
+    ``python-oracledb`` is the successor to ``cx_Oracle`` (see ADR-0021).
+    The DB-API surface is drop-in compatible; the main differences we
+    benefit from are the **thin mode** default (no Oracle Instant
+    Client requirement) and wheels for current Python versions.
+    """
+
     def __init__(self, config: SqlConnectionConfiguration):
         self.config = config
         self._tns = None
@@ -15,15 +23,14 @@ class OracleConnector(SqlConnector):
 
     def connect(self):
         if self.config.Sid is not None and self.config.Sid != '':
-            self._tns = cx_Oracle.makedsn(self.config.Server.Host, self.config.Server.Port,
-                                          service_name=self.config.Sid)
+            self._tns = oracledb.makedsn(self.config.Server.Host, self.config.Server.Port,
+                                         service_name=self.config.Sid)
         else:
-            self._tns = cx_Oracle.makedsn(self.config.Server.Host, self.config.Server.Port,
-                                          service_name=self.config.ServiceName)
-        self.connection = cx_Oracle.connect(self.config.BasicAuthentication.User,
-                                            self.config.BasicAuthentication.Password, self._tns,
-                                            encoding="UTF-8",
-                                            nencoding="UTF-8")
+            self._tns = oracledb.makedsn(self.config.Server.Host, self.config.Server.Port,
+                                         service_name=self.config.ServiceName)
+        self.connection = oracledb.connect(user=self.config.BasicAuthentication.User,
+                                           password=self.config.BasicAuthentication.Password,
+                                           dsn=self._tns)
         self.cursor = self.connection.cursor()
 
     def disconnect(self):
@@ -41,9 +48,9 @@ class OracleConnector(SqlConnector):
 
     def get_engine_connection_url(self):
         if self.config.Sid is not None and self.config.Sid != '':
-            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
+            connection_url = f'oracle+oracledb://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
         else:
-            connection_url = f'oracle+cx_oracle://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.ServiceName}'
+            connection_url = f'oracle+oracledb://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.ServiceName}'
         return connection_url
 
     def get_engine(self):

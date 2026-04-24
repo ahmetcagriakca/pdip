@@ -43,7 +43,7 @@ setup(
             "cryptography==43.0.1"
         ],
         "integrator": [
-            "cx_Oracle==8.3.0",
+            "oracledb>=2,<3",
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
             "kafka-python==2.0.2",
