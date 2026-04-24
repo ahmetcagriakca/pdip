@@ -9,9 +9,11 @@ source = pdip
 branch = False
 
 [report]
-# Floor ratcheted from 20 to 30 per ADR-0023 — see the ratchet policy
-# in that ADR for the rules governing this number.
-fail_under = 30
+# Floor ratcheted 30 -> 95 per ADR-0023 after the coverage-to-95 push
+# (PRs #72, #73, #74, #75, #76 + the earlier #67-#71 and #66). Measured
+# coverage at the time of this ratchet was 95 % across 508 unit tests.
+# Ratchet rounds down to the nearest 5.
+fail_under = 95
 show_missing = True
 skip_empty = True
 skip_covered = False

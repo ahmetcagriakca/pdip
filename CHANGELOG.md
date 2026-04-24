@@ -13,6 +13,18 @@ for the public API surface described in
 
 ## [Unreleased]
 
+### Changed
+
+- **Coverage floor ratcheted 30 → 95 %** per ADR-0023. Measured
+  coverage at the time of the ratchet was **95 %** across **508**
+  unit tests, lifted by the `.coveragerc` path correction (#71,
+  47 → 68 %) plus nine parallel test-writing PRs (#67, #68, #69,
+  #70, #72/#76, #73, #74, #75) that covered 33 previously untested
+  or partially tested modules. 3 tests skipped on Python 3.14+
+  where `typing.Union`'s representation changed (see the respective
+  PR bodies); the `TypeChecker` stale-code bug is flagged for a
+  separate PR.
+
 ### Added
 
 - **ADR-0026 — Test quality rules.** Every test asserts a concrete
