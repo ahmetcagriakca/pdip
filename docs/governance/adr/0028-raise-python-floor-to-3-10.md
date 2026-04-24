@@ -139,8 +139,12 @@ matrix; dropping 3.10 next would be its own decision.
   alongside this ADR.
 - Keep the canonical-cell scoping for `coverage xml` from PR #84
   in place; revisit once a future coverage.py release surfaces
-  a reproducible fix for the 3.14 XML reporter failure. Track
-  this as a separate follow-up issue.
+  a reproducible fix for the 3.14 XML reporter failure. Draft of
+  the upstream bug report lives at
+  [`docs/governance/upstream-coverage-py-3.14-xml-issue.md`](../upstream-coverage-py-3.14-xml-issue.md)
+  — file it at <https://github.com/nedbat/coveragepy/issues> when
+  3.14 reaches final, then link the resulting issue number here
+  as the deprecation trigger for the workaround.
 
 ## References
 
