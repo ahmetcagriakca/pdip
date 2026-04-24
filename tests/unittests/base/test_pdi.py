@@ -83,3 +83,32 @@ class PdiAutoDiscoversRootDirectory(TestCase):
             self.assertTrue(os.path.isdir(pdi.root_directory))
         finally:
             pdi.cleanup()
+
+
+class PdiSetSecretKeyDelegatesToConfigManager(TestCase):
+    def setUp(self):
+        DependencyContainer.cleanup()
+        self._tmp = tempfile.mkdtemp(prefix="pdip-test-")
+        self.pdi = Pdi(root_directory=self._tmp)
+
+    def tearDown(self):
+        self.pdi.cleanup()
+        try:
+            os.rmdir(self._tmp)
+        except OSError:
+            pass
+
+    def test_set_secret_key_forwards_to_application_config(self):
+        # Arrange — patch the config manager's ``set`` to observe the call.
+        with patch.object(
+            DependencyContainer.Instance.config_manager, "set"
+        ) as set_mock:
+            # Act
+            self.pdi.set_secret_key("s3cret")
+
+        # Assert — the call goes through for ``ApplicationConfig``'s
+        # ``secret_key`` attribute.
+        self.assertEqual(set_mock.call_count, 1)
+        args, _ = set_mock.call_args
+        self.assertEqual(args[1], "secret_key")
+        self.assertEqual(args[2], "s3cret")

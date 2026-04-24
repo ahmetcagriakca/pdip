@@ -44,7 +44,7 @@ class FlaskAppWrapper(ISingleton):
         self.app.after_request(self.request_handler.after_request)
 
     def run(self):
-        self.app.run(debug=self.api_config.is_debug, host='0.0.0.0', port=self.api_config.port)
+        self.app.run(debug=self.api_config.is_debug, host='0.0.0.0', port=self.api_config.port)  # pragma: no cover — starts a blocking Flask dev server; exercised only in ``pdip`` main()
 
     def test_client(self):
         return self.app.test_client()

@@ -72,6 +72,44 @@ class _Nested:
         self.leaf = leaf
 
 
+class _AnnotatedLeaf:
+    """A class-level-annotated class whose ``get_annotations`` returns
+    a non-empty dict — used to drive the recursive ``register_subclasses``
+    call inside the generic-list branch."""
+
+    value: int = 0
+
+    def __init__(self, value: int = 0):
+        self.value = value
+
+
+class _ListOfAnnotatedLeaf:
+    items: List[_AnnotatedLeaf]
+
+    def __init__(self, items=None):
+        self.items = items or []
+
+
+class _AnnotatedWrapper:
+    """Plain class whose nested class has class-level annotations —
+    exercises the recursive call in the non-generic class branch."""
+
+    inner: _AnnotatedLeaf
+
+    def __init__(self, inner=None):
+        self.inner = inner or _AnnotatedLeaf()
+
+
+class _HasUnknownTypeAnnotation:
+    # Annotating a field with a non-class, non-generic value (e.g. an
+    # integer literal) falls through every branch and lands on the
+    # final ``print('Type not know', value)``.
+    value: 42  # type: ignore[valid-type]
+
+    def __init__(self, value=None):
+        self.value = value
+
+
 class RequestConverterRegistersClasses(TestCase):
     def test_register_stores_frozenset_of_attr_names(self):
         rc = RequestConverter()
@@ -120,6 +158,38 @@ class RequestConverterRegistersClasses(TestCase):
         # register — the non-generic class branch.
         self.assertIs(rc.mappings[frozenset({"leaf"})], _Nested)
         self.assertIs(rc.mappings[frozenset({"value"})], _Leaf)
+
+    def test_register_recurses_into_annotated_class_inside_generic_list(self):
+        # Exercises the ``if nested_annotations is not None: register_subclasses(...)``
+        # recursion inside the generic-list branch: the element class
+        # has class-level annotations that must be walked.
+        rc = RequestConverter(_ListOfAnnotatedLeaf)
+
+        self.assertIs(
+            rc.mappings[frozenset({"items"})], _ListOfAnnotatedLeaf
+        )
+        self.assertIs(
+            rc.mappings[frozenset({"value"})], _AnnotatedLeaf
+        )
+
+    def test_register_recurses_into_annotated_nested_non_generic_class(self):
+        # Exercises the recursive ``register_subclasses`` call inside
+        # the plain-class (non-generic) branch.
+        rc = RequestConverter(_AnnotatedWrapper)
+
+        self.assertIs(
+            rc.mappings[frozenset({"inner"})], _AnnotatedWrapper
+        )
+        self.assertIs(
+            rc.mappings[frozenset({"value"})], _AnnotatedLeaf
+        )
+
+    def test_register_falls_through_to_unknown_type_branch(self):
+        # A non-class, non-generic annotation value reaches the final
+        # ``print('Type not know', value)`` branch without crashing.
+        rc = RequestConverter(_HasUnknownTypeAnnotation)
+
+        self.assertIn(frozenset({"value"}), rc.mappings)
 
 
 class RequestConverterMapsJsonPayloads(TestCase):

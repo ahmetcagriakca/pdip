@@ -8,6 +8,7 @@ branch behaviour so regressions land here, not in downstream DTO flows.
 
 import json
 import uuid
+from datetime import datetime
 from typing import List
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -262,3 +263,40 @@ class BaseConverterRegisterSubclassesCoversBranches(TestCase):
 
         # Assert
         self.assertEqual(converter.mappings, before)
+
+    def test_datetime_primitive_annotation_is_skipped(self):
+        # Arrange — a class annotated with ``datetime`` hits the
+        # ``elif value == datetime: pass`` branch.
+        class _HasDatetime:
+            timestamp: datetime = None
+
+            def __init__(self, timestamp=None):
+                self.timestamp = timestamp
+
+        converter = BaseConverter()
+
+        # Act
+        converter.register(_HasDatetime)
+
+        # Assert — only the outer class registers; datetime is a
+        # primitive branch that does not recurse.
+        self.assertEqual(len(converter.mappings), 1)
+        self.assertIn(_HasDatetime, converter.mappings.values())
+
+    def test_unknown_annotation_falls_through_to_print_branch(self):
+        # Arrange — a non-class, non-generic annotation (an integer
+        # literal) triggers the final ``print('Type not know', value)``
+        # branch.
+        class _HasUnknown:
+            value: 42  # type: ignore[valid-type]
+
+            def __init__(self, value=None):
+                self.value = value
+
+        converter = BaseConverter()
+
+        # Act
+        converter.register(_HasUnknown)
+
+        # Assert
+        self.assertIn(frozenset({"value"}), converter.mappings)

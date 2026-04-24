@@ -10,7 +10,7 @@ Same subclass-discovery pattern as the initializer factories:
 from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
 
 from unittest import TestCase  # noqa: E402
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 from pdip.integrator.event.base.default_integrator_event_manager import (  # noqa: E402
     DefaultIntegratorEventManager,
@@ -30,10 +30,18 @@ class IntegratorEventManagerFactoryChoosesSubclass(TestCase):
         provider.get.return_value = sentinel
 
         factory = IntegratorEventManagerFactory(service_provider=provider)
-        result = factory.get()
+        # Pin the subclass list to the default entry so the
+        # ``len(subclasses) == 1`` branch runs — other tests in this
+        # process may register ad-hoc subclasses that linger.
+        with patch.object(
+            IntegratorEventManager,
+            "__subclasses__",
+            return_value=[DefaultIntegratorEventManager],
+        ):
+            result = factory.get()
 
         self.assertIs(result, sentinel)
-        provider.get.assert_called_once()
+        provider.get.assert_called_once_with(DefaultIntegratorEventManager)
 
     def test_prefers_custom_subclass_over_default(self):
         class _Custom(IntegratorEventManager):
