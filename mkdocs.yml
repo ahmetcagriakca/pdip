@@ -71,3 +71,7 @@ nav:
           - ADR-0017 Python support policy: governance/adr/0017-python-support-policy.md
           - ADR-0018 Testing strategy: governance/adr/0018-testing-strategy.md
           - ADR-0019 Python 3.14 adoption: governance/adr/0019-python-314-adoption.md
+          - ADR-0020 Raise Python floor to 3.9: governance/adr/0020-raise-python-floor-to-3-9.md
+          - ADR-0021 cx_Oracle to python-oracledb: governance/adr/0021-cx-oracle-to-python-oracledb.md
+          - ADR-0022 kafka-python replacement: governance/adr/0022-kafka-python-replacement.md
+          - ADR-0023 Coverage floor policy: governance/adr/0023-coverage-floor-policy.md

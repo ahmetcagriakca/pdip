@@ -1,0 +1,40 @@
+# Coverage configuration for pdip.
+#
+# See ADR-0023 (docs/governance/adr/0023-coverage-floor-policy.md) for
+# the policy behind the exclusions and the floor. Keep this file and
+# the ADR in sync; the ADR is the source of truth for intent.
+
+[run]
+source = pdip
+branch = False
+
+[report]
+fail_under = 20
+show_missing = True
+skip_empty = True
+skip_covered = False
+
+# Integration adapters require external services (databases, Kafka,
+# Impala, SOAP endpoints, real files) and are exercised by
+# tests/integrationtests/, not by CI. Keep them out of the unit-test
+# coverage score so the number is not diluted by code that unit tests
+# cannot reach.
+omit =
+    */tests/*
+    */site-packages/*
+    pdip/integrator/connection/sql/*
+    pdip/integrator/connection/bigdata/*
+    pdip/integrator/connection/webservice/*
+    pdip/integrator/connection/file/*
+
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml

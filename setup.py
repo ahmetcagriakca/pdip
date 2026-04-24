@@ -24,7 +24,7 @@ setup(
     zip_safe=False,
     keywords=['PDI', 'API', 'ETL', 'PROCESS', 'MULTIPROCESS', 'IO', 'CQRS', 'MSSQL', 'ORACLE', 'POSTGRES', 'MYSQL',
               'CSV'],
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     install_requires=[
         "injector",
         "PyYAML",
@@ -63,7 +63,6 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',

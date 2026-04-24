@@ -27,6 +27,10 @@ shapes how the framework is built and used. See the parent
 | [0017](./0017-python-support-policy.md) | Python support matrix is set by `python_requires`, not by dependency drift | Accepted | packaging, compatibility |
 | [0018](./0018-testing-strategy.md) | Testing strategy — pyramid, coverage, and CI gating | Accepted | testing, ci, quality |
 | [0019](./0019-python-314-adoption.md) | Python 3.14 adoption plan | Accepted | packaging, compatibility, python |
+| [0020](./0020-raise-python-floor-to-3-9.md) | Raise `python_requires` floor from 3.8 to 3.9 | Accepted | packaging, compatibility, python |
+| [0021](./0021-cx-oracle-to-python-oracledb.md) | Migrate the Oracle adapter from `cx_Oracle` to `python-oracledb` | Accepted | dependencies, oracle, integrator |
+| [0022](./0022-kafka-python-replacement.md) | Replace `kafka-python` with `confluent-kafka` for the Kafka adapter | Accepted | dependencies, kafka, integrator |
+| [0023](./0023-coverage-floor-policy.md) | Coverage floor policy | Accepted | testing, ci, quality |
 
 ## Status legend
 

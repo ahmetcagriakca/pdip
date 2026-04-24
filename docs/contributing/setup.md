@@ -8,8 +8,9 @@ context.
 
 ## Prerequisites
 
-- **Python 3.9+** (CI runs 3.9, 3.10, 3.11; the package declares
-  `python_requires >= 3.8`).
+- **Python 3.9+** (both the CI matrix floor and the package's
+  `python_requires` declaration; see
+  [ADR-0020](../governance/adr/0020-raise-python-floor-to-3-9.md)).
 - `git`.
 - A C toolchain if you plan to install the `[integrator]` extra from
   source: `cx_Oracle`, `pyodbc`, `psycopg2`, and `mysql-connector` can

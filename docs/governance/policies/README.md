@@ -61,6 +61,20 @@ disagree, the ADR is the source of truth and the policy must be updated.
   ([ADR-0017](../adr/0017-python-support-policy.md)). Either pin the
   last supporting version, or raise `python_requires` deliberately in
   a dedicated ADR.
+- The current supported floor is **Python 3.9**
+  ([ADR-0020](../adr/0020-raise-python-floor-to-3-9.md)). Raising it
+  further requires another ADR and a **minor** version bump.
+
+## Testing
+
+- Coverage floor is enforced by `.coveragerc`'s
+  `fail_under=20` ([ADR-0023](../adr/0023-coverage-floor-policy.md)).
+  New tests should hold or improve coverage; the floor is ratcheted
+  up by separate maintenance PRs, not edited on feature PRs.
+- Integration adapters under
+  `pdip/integrator/connection/{sql,bigdata,webservice,file}/` are
+  excluded from the unit-coverage score because they need external
+  services to run.
 
 ## Review expectations
 

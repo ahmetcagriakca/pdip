@@ -58,19 +58,15 @@ class Repository(Generic[T]):
 
     def delete_by_id(self, id: int):
         entity = self.get_by_id(id)
-        entity.GcRecId = uuid.uuid4()
-        entity.UpdateUserTime = datetime.now()
-        if self.database_session_manager.engine.dialect.name == 'postgresql':
-            entity.UpdateUserId = uuid.UUID("00000000-0000-0000-0000-000000000000")
-        else:
-            entity.UpdateUserId = str(uuid.UUID("00000000-0000-0000-0000-000000000000"))
+        self.delete(entity)
 
     def delete(self, entity: T):
-        entity.GcRecId = uuid.uuid4()
         entity.UpdateUserTime = datetime.now()
         if self.database_session_manager.engine.dialect.name == 'postgresql':
+            entity.GcRecId = uuid.uuid4()
             entity.UpdateUserId = uuid.UUID("00000000-0000-0000-0000-000000000000")
         else:
+            entity.GcRecId = str(uuid.uuid4())
             entity.UpdateUserId = str(uuid.UUID("00000000-0000-0000-0000-000000000000"))
 
     def commit(self):

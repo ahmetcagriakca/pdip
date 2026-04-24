@@ -15,7 +15,7 @@ for the public API surface described in
 
 ### Added
 
-- Governance methodology under `docs/governance/` with 19 Architecture
+- Governance methodology under `docs/governance/` with 23 Architecture
   Decision Records documenting existing pdip decisions.
 - ADR-0017 — Python support matrix is owned by `python_requires` and
   cannot be quietly narrowed by a dependency upgrade.
@@ -25,6 +25,17 @@ for the public API surface described in
 - ADR-0019 — Python 3.14 adoption plan: staged, CI-gated matrix
   expansion with 3.14 as a non-blocking job until the ecosystem
   catches up.
+- ADR-0020 — Raise `python_requires` floor from 3.8 to 3.9.
+- ADR-0021 — Migrate the Oracle adapter from `cx_Oracle` to
+  `python-oracledb`.
+- ADR-0022 — Replace `kafka-python` with `confluent-kafka` for the
+  Kafka adapter.
+- ADR-0023 — Coverage floor policy (`.coveragerc` with
+  `fail_under=20` starting point and a ratchet plan).
+- `.coveragerc` at the repo root, shared between local runs and CI.
+- 17 new unit tests across Repository (9), ConfigManager env
+  override (2), and `@dtoclass` decorator (6). Suite total goes
+  from 48 to 65.
 - `CHANGELOG.md` in Keep-a-Changelog format.
 - Expanded `README.md` with installation matrix, quickstart, CQRS /
   REST / ETL examples, project layout, and governance links.
@@ -60,6 +71,13 @@ for the public API surface described in
 
 ### Fixed
 
+- `pdip.data.repository.Repository.delete` / `delete_by_id` used
+  `uuid.uuid4()` directly, producing a UUID object rather than the
+  dialect-aware string the rest of the repository uses. On SQLite
+  and other dialects without native UUID binding this raised
+  `ProgrammingError: type 'UUID' is not supported`. The delete
+  helpers now branch on dialect the same way `insert` and `update`
+  do. Surfaced by the new `tests/unittests/data/test_repository.py`.
 - `run_tests.py` now exits non-zero when any test errors or fails.
   Previously the guard was commented out and CI always reported
   green regardless of the result. See ADR-0018.
@@ -76,8 +94,14 @@ for the public API surface described in
 
 ### Removed
 
+- **Python 3.8 support.** `python_requires` raised from `>=3.8` to
+  `>=3.9`, `Programming Language :: Python :: 3.8` classifier
+  dropped. Rationale in ADR-0020: Python 3.8 reached end-of-life on
+  2024-10-07, was never in the CI matrix, and was blocking
+  `mysql-connector-python` 9.x. **Breaking** — consumers on 3.8 must
+  upgrade their runtime or stay on pdip `0.6.x`.
 - `dataclasses==0.6` — Python 3.6 backport; no-op on the supported
-  matrix (`python_requires >= 3.8`).
+  matrix (`python_requires >= 3.9`).
 - `Fernet==1.0.1` — third-party wrapper. pdip imports `Fernet` from
   the `cryptography` package (`cryptography.fernet.Fernet`), which
   was already the intended path.
