@@ -49,6 +49,24 @@ for the public API surface described in
 
 ### Changed
 
+- **Kafka adapter migrated from `kafka-python` to
+  [`confluent-kafka`](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/)**
+  per ADR-0022. `setup.py`'s `integrator` extra replaces
+  `kafka-python==2.0.2` with `confluent-kafka>=2.4,<3`.
+  `KafkaConnector` now uses `confluent_kafka.Producer`, `Consumer`,
+  `AdminClient`, and `NewTopic`. Caller-facing config keeps the
+  kafka-python underscored names (`bootstrap_servers`, `client_id`,
+  `sasl_mechanism`, `sasl_plain_username`, `sasl_plain_password`,
+  `security_protocol`, `auto_offset_reset`, `enable_auto_commit`,
+  `group_id`, etc.); a small translation layer maps them to the
+  dotted keys `confluent-kafka` expects. Consumer iteration switches
+  from the kafka-python iterator to a `poll()` loop that decodes
+  each message's JSON payload. `write_data` now calls
+  `producer.flush()` after enqueueing so messages do not sit in the
+  native buffer. Eleven unit tests under
+  `tests/unittests/integrator/connection/queue/kafka/` stub
+  `confluent_kafka` and `pandas` to exercise the new shape without
+  librdkafka or a real broker.
 - **Oracle adapter migrated from `cx_Oracle` to
   [`python-oracledb`](https://python-oracledb.readthedocs.io/)** per
   ADR-0021. `setup.py`'s `integrator` extra replaces

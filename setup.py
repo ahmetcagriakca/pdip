@@ -44,9 +44,9 @@ setup(
         ],
         "integrator": [
             "oracledb>=2,<3",
+            "confluent-kafka>=2.4,<3",
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
-            "kafka-python==2.0.2",
             "mysql-connector-python==8.4.0",
             "pandas==2.2.3",
             "psycopg2-binary==2.9.9",
