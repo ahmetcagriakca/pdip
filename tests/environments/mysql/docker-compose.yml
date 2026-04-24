@@ -1,25 +1,28 @@
-version: "3.9"
+# MySQL 8.4 LTS (Innovation track closes at 9.x; 8.4 is the long-term
+# support pin until April 2032 per https://www.mysql.com/support/supportedplatforms/database.html).
+# Previously pinned 5.7; that version reached end-of-life on 2023-10-01
+# and stopped receiving security updates, which is a no-go for a
+# reproducible integration-test fixture.
+#
+# 8.x uses ``caching_sha2_password`` by default — the pinned
+# ``mysql-connector-python>=9.1`` (setup.py) handles this natively, and
+# ``oracledb`` / ``pyodbc`` are out of scope for this fixture.
 
 services:
   mysql-db:
-    image: mysql:5.7
+    image: mysql:8.4  # pinned LTS
     restart: always
     environment:
       MYSQL_DATABASE: 'test_pdi'
-      # So you don't have to use root, but you can if you like
       MYSQL_USER: 'pdi'
-      # You can use whatever password you like
       MYSQL_PASSWORD: 'pdi!123456'
-      # Password for root access
       MYSQL_ROOT_PASSWORD: 'pdi!123456'
     ports:
-      # <Port exposed> : < MySQL Port running inside container>
       - '3306:3306'
     expose:
-      # Opens port 3306 on the container
       - '3306'
     volumes:
       - my-db:/var/lib/mysql
-# Names our volume
+
 volumes:
   my-db:
