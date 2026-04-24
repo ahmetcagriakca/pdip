@@ -43,12 +43,11 @@ class TypeCheckerIsGenericMatchesParameterisedTypes(TestCase):
 
     @unittest.skipIf(
         sys.version_info >= (3, 14),
-        "typing.Union is no longer a typing._GenericAlias nor a "
-        "typing._SpecialForm on Python 3.14+, so the TypeChecker's "
-        "current implementation returns False. Fixing the TypeChecker "
-        "is a separate concern (tracked as a bug in PR #72); the test "
-        "pins the pre-3.14 behaviour on Python versions where the "
-        "code worked.",
+        "typing.Union's representation changed in 3.14 — it is now a "
+        "plain Union type rather than a typing._GenericAlias subclass, "
+        "so TypeChecker.is_generic returns False. The 3.14-aware "
+        "handling is a separate enhancement; this test pins pre-3.14 "
+        "behaviour on Python versions where the current helper works.",
     )
     def test_special_form_union_is_generic(self):
         self.assertTrue(TypeChecker().is_generic(typing.Union))
@@ -88,11 +87,13 @@ class TypeCheckerIsBaseGenericMatchesOpenGenerics(TestCase):
     def test_plain_class_is_not_base_generic(self):
         self.assertFalse(TypeChecker().is_base_generic(int))
 
-    def test_parameterised_alias_crashes_on_missing_typing_private(self):
-        # ``_is_base_generic`` references ``typing._Protocol`` which
-        # was removed in Python 3.9. Passing any ``_GenericAlias``
-        # therefore raises ``AttributeError``. This test pins the
-        # current broken behaviour so whoever fixes the source also
-        # updates the test.
-        with self.assertRaises(AttributeError):
-            TypeChecker().is_base_generic(typing.List[int])
+    def test_parameterised_alias_does_not_crash(self):
+        # Pre-fix, ``_is_base_generic`` referenced ``typing._Protocol``
+        # which was removed in Python 3.9, making this call raise
+        # ``AttributeError``. The fix guards both ``_Protocol`` and
+        # ``_VariadicGenericAlias`` lookups with ``getattr``, so the
+        # helper returns a plain bool without crashing.
+        self.assertIs(
+            TypeChecker().is_base_generic(typing.List[int]),
+            False,
+        )
