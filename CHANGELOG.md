@@ -118,8 +118,13 @@ for the public API surface described in
 - Bumped `injector` 0.21.0 → 0.22.0. Changelog for 0.22 adds PEP 593
   `Annotated` support and drops Python 3.7 (not in our supported
   window, so no effect).
-- `mysql-connector-python` stays pinned at `8.4.0`. Dependabot's 9.1.0
-  bump (PR #37) drops Python 3.8 support, which ADR-0017 forbids.
+- `mysql-connector-python` pin moves from `==8.4.0` to `>=9.1,<10`.
+  Unblocked by ADR-0020 (Python floor raised to 3.9). mysql-connector
+  9.x drops Python 3.8 support but our supported matrix no longer
+  includes 3.8. Four unit tests under
+  `tests/unittests/integrator/connection/sql/mysql/` mock
+  `mysql.connector` and pin down the connect / disconnect / URL
+  contract, proving the call shape survives the 8.x → 9.x bump.
 - CI matrix widened from `3.9/3.10/3.11` to `3.9/3.10/3.11/3.12/3.13`
   blocking, plus `3.14` non-blocking (`continue-on-error: true`). See
   ADR-0019 for the staging plan.
