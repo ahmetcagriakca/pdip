@@ -49,7 +49,7 @@ setup(
             "func-timeout==4.3.5",
             "mysql-connector-python>=9.1,<10",
             "pandas==2.2.3",
-            "psycopg2-binary==2.9.9",
+            "psycopg2-binary==2.9.12",
             "pyodbc==5.1.0"
         ],
         "preferred": [
