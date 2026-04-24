@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        python: [ '3.9', '3.10', '3.11', '3.12', '3.13', '3.14' ]
+        python: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,10 +56,11 @@ jobs:
         #   the same 100 % floor on every cell would either be gamed
         #   with pragmas or force artificial coverage of unreachable
         #   branches. See ADR-0023 §5.
-        # - ``coverage xml`` generation has historically failed on
-        #   Python 3.14 pre-releases; it only exists here to feed
-        #   ``diff-cover``, which itself only runs on the canonical
-        #   cell — no reason to run it elsewhere.
+        # - ``coverage xml`` generation still fails on the Python
+        #   3.14 cells even with coverage 7.13.5 (see PR #87 CI
+        #   evidence). Scoping XML output to the canonical cell
+        #   keeps the matrix green; the canonical cell is the only
+        #   place ``diff-cover`` would read it anyway.
         # - ``--fail-under=0`` on the report step explicitly
         #   overrides the ``fail_under = 100`` in ``.coveragerc`` so
         #   this shared step never fails on a matrix cell that is
@@ -97,8 +98,8 @@ jobs:
 
       - name: Upload coverage artifact
         # Only the canonical cell produces coverage.xml (see above);
-        # uploading the same artefact from every cell would collide
-        # on name anyway.
+        # other cells skip XML generation because 3.14 still fails
+        # the reporter even with coverage 7.13.5.
         if: >
           always()
           && matrix.python == '3.11'
