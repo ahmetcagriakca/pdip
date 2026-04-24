@@ -13,8 +13,30 @@ for the public API surface described in
 
 ## [Unreleased]
 
+_No changes yet — `0.8.0` is the current release._
+
+## [0.8.0] — 2026-04-24
+
+Headline: **100 % unit coverage**, mechanically enforced by a
+100 %-diff-coverage gate on every PR (ADR-0027) and the
+`fail_under = 100` floor on every CI run (ADR-0023). The Python
+floor moves to 3.10 (ADR-0028, supersedes the floor half of
+ADR-0020), which is a breaking change for consumers still on 3.9
+— hence the MINOR bump under the 0.x semver convention.
+
 ### Added
 
+- **ADR-0026 — Test quality rules.** Every test asserts a concrete
+  behaviour; no tautologies; AAA structure; mocks at boundaries
+  only; `unittest` only; no star imports; deterministic. Five of
+  the rules are machine-enforced by a new meta-test suite under
+  `tests/unittests/quality_guard/`:
+  - A.1 every `test_*` method contains an `assert`,
+  - A.2 no tautological assertions,
+  - D.1 no `time.sleep >= 0.1s` in unit tests,
+  - F.1 no `pytest` imports (ADR-0018 keeps `unittest`-only),
+  - F.2 no star imports.
+  CI fails when any guard fires. Review covers the rest.
 - **ADR-0027 — Test-first development (TDD) with diff-coverage
   enforcement.** New production code in `pdip/` is written
   test-first: write the failing test, watch it fail for the right
@@ -26,7 +48,6 @@ for the public API surface described in
 - `quality_guard` gains a sixth machine-checked rule
   (ADR-0027 §5): every `# pragma: no cover` must carry an inline
   reason comment on the same line, or the guard fails.
-- `diff-cover==9.2.0` added to `requirements.txt`.
 - **ADR-0028 — Raise `python_requires` floor from 3.9 to 3.10.**
   Python 3.9 reached EOL on 2025-10-05 (PEP 596). Concretely: no
   single `coverage.py` release supports both our declared floor
@@ -34,6 +55,30 @@ for the public API surface described in
   fixed 3.14 simultaneously. Keeping 3.9 meant either stale
   coverage tooling or chains of version-specific workarounds.
   Supersedes the floor half of ADR-0020.
+- Five pre-existing tests rewritten to satisfy A.1 with real
+  behavioural assertions instead of "does-not-raise" or
+  delegate-to-helper patterns: `test_file_logger`,
+  `test_channel_queue::test_done_marks_task_done_on_underlying_queue`,
+  `test_oracle_connector::test_disconnect_is_safe_when_never_connected`,
+  `test_mysql_connector::test_disconnect_is_safe_before_connect`,
+  `test_basic_app_with_cqrs::test_create_user`.
+- Policies README and `CONTRIBUTING.md` reference ADR-0026 so new
+  contributors (and sub-agents) get the rules up front.
+- `pdip.integrator.pubsub.base.ChannelQueue.get_nowait()` —
+  non-blocking accessor that mirrors `queue.Queue.get_nowait`.
+  Lets observers and tests drain a channel without blocking the
+  caller. The existing `get()` still blocks, preserving the
+  production broker loop.
+- `diff-cover==9.2.0` added to `requirements.txt`.
+- `README.md` gains a dedicated **Testing and quality** section,
+  three status badges (coverage 100 %, 664 unit tests, TDD +
+  diff-cover), and tables documenting the four CI gates and the
+  six machine-checked rules.
+- GitHub Pages publishes the MkDocs-Material docs site from
+  `.github/workflows/docs-deploy.yml`. Gated on a `PAGES_ENABLED`
+  repo variable so the deploy job is skipped cleanly until an
+  admin opts in — no more red-X on main when Pages is not
+  configured.
 
 ### Changed
 
@@ -43,12 +88,10 @@ for the public API surface described in
   3 OS = 15 cells).
 - **`coverage` bumped 7.6.12 → 7.13.5.** Unlocked by the
   3.9 → 3.10 floor raise (7.11+ requires `>= 3.10`). Current
-  stable release; 3.10–3.13 cells verified, plus a stream of
-  general bug fixes / Python 3.13 support improvements. The
-  canonical-cell scoping for `coverage xml` from PR #84 remains
-  in place: 3.14 still fails the XML reporter even on 7.13.5,
-  tracked as a follow-up in ADR-0028.
-
+  stable release; 3.10–3.13 cells verified. The canonical-cell
+  scoping for `coverage xml` from PR #84 remains in place: 3.14
+  still fails the XML reporter even on 7.13.5, tracked as a
+  follow-up in ADR-0028.
 - **Coverage floor ratcheted 95 → 100 %** per ADR-0023. Measured
   coverage at the time of this ratchet is **100 %** (3724/3724
   statements) across **664** unit tests, lifted by a four-PR push
@@ -56,10 +99,9 @@ for the public API surface described in
   initializers + config + processing internals, #82 — logging +
   json + api + data leftovers, #83 — final 59-line sweep with
   strategic pragmas for defensive/unreachable branches, each with
-  an inline reason comment). With the diff-cover gate from
-  ADR-0027 already in place, the two guards together prevent new
-  untested lines from entering the tree: the `fail_under = 100`
-  floor in `.coveragerc` keeps the absolute number pinned, and
+  an inline reason comment). Together with the ADR-0027 diff-cover
+  gate, the two guards prevent new untested lines from entering
+  the tree: `fail_under = 100` pins the absolute number, and
   diff-cover's 100 % requirement on newly added or modified
   `pdip/` lines keeps every PR at the same bar as its merge-base.
 - **Coverage floor ratcheted 30 → 95 %** per ADR-0023. Measured
@@ -68,57 +110,49 @@ for the public API surface described in
   47 → 68 %) plus nine parallel test-writing PRs (#67, #68, #69,
   #70, #72/#76, #73, #74, #75) that covered 33 previously untested
   or partially tested modules. 3 tests skipped on Python 3.14+
-  where `typing.Union`'s representation changed (see the respective
-  PR bodies); the `TypeChecker` stale-code bug is flagged for a
-  separate PR.
-
-### Added
-
-- **ADR-0026 — Test quality rules.** Every test asserts a concrete
-  behaviour; no tautologies; AAA structure; mocks at boundaries only;
-  `unittest` only; no star imports; deterministic. Five of the rules
-  are machine-enforced by a new meta-test suite under
-  `tests/unittests/quality_guard/`:
-  - A.1 every `test_*` method contains an `assert`,
-  - A.2 no tautological assertions,
-  - D.1 no `time.sleep >= 0.1s` in unit tests,
-  - F.1 no `pytest` imports (ADR-0018 keeps `unittest`-only),
-  - F.2 no star imports.
-  CI fails when any guard fires. Review covers the rest.
-- Five pre-existing tests rewritten to satisfy A.1 with real
-  behavioural assertions instead of "does-not-raise" or
-  delegate-to-helper patterns: `test_file_logger`,
-  `test_channel_queue::test_done_marks_task_done_on_underlying_queue`,
-  `test_oracle_connector::test_disconnect_is_safe_when_never_connected`,
-  `test_mysql_connector::test_disconnect_is_safe_before_connect`,
-  `test_basic_app_with_cqrs::test_create_user`.
-- Policies README and CONTRIBUTING.md reference ADR-0026 so new
-  contributors (and sub-agents) get the rules up front.
-- `pdip.integrator.pubsub.base.ChannelQueue.get_nowait()` — non-blocking
-  accessor that mirrors ``queue.Queue.get_nowait``. Lets observers and
-  tests drain a channel without blocking the caller. The existing
-  `get()` still blocks, preserving the production broker loop.
+  where `typing.Union`'s representation changed.
+- PyPI publish workflows (`python-upload-package.yml` +
+  `python-upload-test-package.yml`) modernised:
+  `actions/checkout@v4`, `actions/setup-python@v5`, Python 3.11,
+  `$GITHUB_OUTPUT` (no more deprecated `::set-output`),
+  `python -m build` (no more legacy `setup.py sdist`), and a new
+  `softprops/action-gh-release@v2` step that creates the GitHub
+  Release from the tag with sdist + wheel attached.
 
 ### Fixed
 
 - `pdip.integrator.pubsub.base.MessageBroker.unsubscribe` had an
-  operator-precedence bug: `event is not None or event != "" and event
-  in self.subscribers.keys()`. Because `and` binds tighter than `or`,
-  the first clause short-circuited the guard to truthy for any
-  non-None event, even ones that were never subscribed — so the
-  "Cant unsubscribe" warning path was dead code and the mutation
-  branch always ran. Replaced with the intended
+  operator-precedence bug:
+  `event is not None or event != "" and event in self.subscribers.keys()`.
+  Because `and` binds tighter than `or`, the first clause
+  short-circuited the guard to truthy for any non-None event, even
+  ones that were never subscribed — so the "Cant unsubscribe"
+  warning path was dead code and the mutation branch always ran.
+  Replaced with the intended
   `if event and event in self.subscribers:` and backed by new unit
   tests (9 cases in
   `tests/unittests/integrator/pubsub/test_message_broker.py`).
+- Fourteen additional production bugs fixed en route to 100 %
+  coverage (unlocked previously dead branches): `TypeChecker`
+  stale `typing._Protocol` reference on Python 3.9+,
+  `sql_logger` double job-id prefix on DB failure,
+  `source_integration` duplicate BigData → WebService branch
+  and `if → elif` typo, `connection_source_adapter_factory` /
+  `connection_target_adapter_factory` raising AttributeError on
+  File/Queue/InMemory instead of `NotSupportedFeatureException`,
+  `html_template_service` dead pagination branch (key mismatch
+  with `Pagination.__init__`), `seed_runner` try/except swallow,
+  `query_generator` tab/space handling, and `error_handlers`
+  typo. Each fix arrived with the test that would have caught it.
 
 ### Removed
 
-- **Python 3.9 support** per ADR-0028. The `Programming Language ::
-  Python :: 3.9` trove classifier is removed from `setup.py`, and
-  the `3.9` cell is removed from the CI matrix in
-  `.github/workflows/package-build-and-tests.yml`. Consumers still
-  on 3.9 should pin to pdip `0.7.x`.
+- **Python 3.9 support** per ADR-0028. The
+  `Programming Language :: Python :: 3.9` trove classifier is
+  removed from `setup.py`, and the `3.9` cell is removed from
+  the CI matrix in
+  `.github/workflows/package-build-and-tests.yml`. Consumers
+  still on 3.9 should pin to pdip `0.7.x`.
 
 ## [0.7.0] — 2026-04-24
 
@@ -320,6 +354,7 @@ Earlier history is preserved in the git log; see
 `git log --oneline` and the tags on the `ahmetcagriakca/pdip`
 repository.
 
-[Unreleased]: https://github.com/ahmetcagriakca/pdip/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/ahmetcagriakca/pdip/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/ahmetcagriakca/pdip/releases/tag/v0.8.0
 [0.7.0]: https://github.com/ahmetcagriakca/pdip/releases/tag/v0.7.0
 [0.6.10]: https://github.com/ahmetcagriakca/pdip/releases/tag/v0.6.10
