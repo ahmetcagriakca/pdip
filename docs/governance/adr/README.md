@@ -31,6 +31,8 @@ shapes how the framework is built and used. See the parent
 | [0021](./0021-cx-oracle-to-python-oracledb.md) | Migrate the Oracle adapter from `cx_Oracle` to `python-oracledb` | Accepted | dependencies, oracle, integrator |
 | [0022](./0022-kafka-python-replacement.md) | Replace `kafka-python` with `confluent-kafka` for the Kafka adapter | Accepted | dependencies, kafka, integrator |
 | [0023](./0023-coverage-floor-policy.md) | Coverage floor policy | Accepted | testing, ci, quality |
+| [0024](./0024-release-process.md) | Release process — semver, CHANGELOG, and PyPI publish | Accepted | release, packaging, process |
+| [0025](./0025-dependabot-auto-merge-policy.md) | Dependabot auto-merge policy | Accepted | dependencies, ci, automation |
 
 ## Status legend
 

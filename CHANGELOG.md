@@ -15,7 +15,7 @@ for the public API surface described in
 
 ### Added
 
-- Governance methodology under `docs/governance/` with 23 Architecture
+- Governance methodology under `docs/governance/` with 25 Architecture
   Decision Records documenting existing pdip decisions.
 - ADR-0017 — Python support matrix is owned by `python_requires` and
   cannot be quietly narrowed by a dependency upgrade.
@@ -32,6 +32,13 @@ for the public API surface described in
   Kafka adapter.
 - ADR-0023 — Coverage floor policy (`.coveragerc` with
   `fail_under=20` starting point and a ratchet plan).
+- ADR-0024 — Release process: semver mapping, CHANGELOG discipline,
+  tag-based PyPI publish.
+- ADR-0025 — Dependabot auto-merge policy: patch-level pinned-package
+  bumps auto-merge on green CI; minor / major / integrator-extra
+  bumps still need human review.
+- `.github/workflows/docs-deploy.yml` builds the mkdocs-material site
+  on every PR and publishes it to GitHub Pages on push to `main`.
 - `.coveragerc` at the repo root, shared between local runs and CI.
 - 17 new unit tests across Repository (9), ConfigManager env
   override (2), and `@dtoclass` decorator (6). Suite total goes
@@ -118,6 +125,8 @@ for the public API surface described in
 - Bumped `injector` 0.21.0 → 0.22.0. Changelog for 0.22 adds PEP 593
   `Annotated` support and drops Python 3.7 (not in our supported
   window, so no effect).
+- Coverage floor ratcheted from 20 to **30** per ADR-0023 (suite now
+  measures ~30 % with the new connector tests).
 - `mysql-connector-python` pin moves from `==8.4.0` to `>=9.1,<10`.
   Unblocked by ADR-0020 (Python floor raised to 3.9). mysql-connector
   9.x drops Python 3.8 support but our supported matrix no longer
