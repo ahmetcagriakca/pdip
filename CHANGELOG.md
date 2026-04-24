@@ -30,6 +30,19 @@ for the public API surface described in
 
 ### Changed
 
+- **Coverage floor ratcheted 95 → 100 %** per ADR-0023. Measured
+  coverage at the time of this ratchet is **100 %** (3724/3724
+  statements) across **664** unit tests, lifted by a four-PR push
+  (#80 — 14 bug fixes that unlocked dead code, #81 — integrator
+  initializers + config + processing internals, #82 — logging +
+  json + api + data leftovers, #83 — final 59-line sweep with
+  strategic pragmas for defensive/unreachable branches, each with
+  an inline reason comment). With the diff-cover gate from
+  ADR-0027 already in place, the two guards together prevent new
+  untested lines from entering the tree: the `fail_under = 100`
+  floor in `.coveragerc` keeps the absolute number pinned, and
+  diff-cover's 100 % requirement on newly added or modified
+  `pdip/` lines keeps every PR at the same bar as its merge-base.
 - **Coverage floor ratcheted 30 → 95 %** per ADR-0023. Measured
   coverage at the time of the ratchet was **95 %** across **508**
   unit tests, lifted by the `.coveragerc` path correction (#71,

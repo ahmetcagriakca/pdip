@@ -43,7 +43,7 @@ jobs:
       - name: Test with unittest and coverage
         run: |
           coverage run run_tests.py
-          coverage report -m --fail-under=95
+          coverage report -m --fail-under=100
           coverage xml
           coverage html
 
