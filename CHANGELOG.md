@@ -13,6 +13,8 @@ for the public API surface described in
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-04-24
+
 ### Added
 
 - Governance methodology under `docs/governance/` with 23 Architecture
@@ -202,5 +204,6 @@ Earlier history is preserved in the git log; see
 `git log --oneline` and the tags on the `ahmetcagriakca/pdip`
 repository.
 
-[Unreleased]: https://github.com/ahmetcagriakca/pdip/compare/v0.6.10...HEAD
+[Unreleased]: https://github.com/ahmetcagriakca/pdip/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/ahmetcagriakca/pdip/releases/tag/v0.7.0
 [0.6.10]: https://github.com/ahmetcagriakca/pdip/releases/tag/v0.6.10
