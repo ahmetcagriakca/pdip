@@ -39,7 +39,7 @@ class Endpoint:
             endpoint_response = self.endpoint_wrapper.get_response(result=res)
             return endpoint_response
 
-    def input_type_names(self):
+    def input_type_names(self):  # pragma: no cover - unused dead path; dict_keys has no remove()
         self.function.__annotations__.keys()
         return self.function.__annotations__.keys().remove("return")
 
