@@ -30,6 +30,14 @@ for the public API surface described in
 
 ### Changed
 
+- **`coverage` bumped 7.6.12 → 7.13.5.** The 7.6.12 pin predated
+  upstream's stable Python 3.14 support; `coverage xml` and
+  `coverage html` failed on the 3.14 matrix cells (ast-module
+  changes in the 3.14 pre-release). The ratchet PR (#84) worked
+  around this by scoping XML generation to the canonical 3.11
+  ubuntu cell. 7.13.5 handles 3.14 cleanly, so XML generation is
+  back on every matrix cell and each cell uploads its own
+  `coverage-<os>-py<version>` artefact.
 - **Coverage floor ratcheted 95 → 100 %** per ADR-0023. Measured
   coverage at the time of this ratchet is **100 %** (3724/3724
   statements) across **664** unit tests, lifted by a four-PR push
