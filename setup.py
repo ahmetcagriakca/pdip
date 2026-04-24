@@ -26,7 +26,6 @@ setup(
               'CSV'],
     python_requires='>=3.8',
     install_requires=[
-        "dataclasses",
         "injector",
         "PyYAML",
         "SQLAlchemy"
@@ -35,15 +34,13 @@ setup(
         "api": [
             "Flask==3.0.3",
             "Flask_Cors==5.0.0",
-            "Flask-Ext==0.1",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.0",
             "markupsafe==2.1.5",
             "Werkzeug==3.0.6"
         ],
         "cryptography": [
-            "cryptography==43.0.1",
-            "Fernet==1.0.1"
+            "cryptography==43.0.1"
         ],
         "integrator": [
             "cx_Oracle==8.3.0",
@@ -56,8 +53,7 @@ setup(
             "pyodbc==5.1.0"
         ],
         "preferred": [
-            "dataclasses==0.6",
-            "injector==0.21.0",
+            "injector==0.22.0",
             "PyYAML==6.0.2",
             "SQLAlchemy==2.0.35"
         ]

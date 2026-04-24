@@ -55,6 +55,12 @@ disagree, the ADR is the source of truth and the policy must be updated.
   feature set ([ADR-0014](../adr/0014-optional-extras-packaging.md)).
   Imports that depend on an extra must be guarded so that the core
   package remains importable without it.
+- Do not accept a dependency upgrade whose release notes drop a Python
+  version inside our supported window — the supported matrix is owned
+  by pdip, not by a dependency
+  ([ADR-0017](../adr/0017-python-support-policy.md)). Either pin the
+  last supporting version, or raise `python_requires` deliberately in
+  a dedicated ADR.
 
 ## Review expectations
 
