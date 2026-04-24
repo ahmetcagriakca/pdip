@@ -1,0 +1,61 @@
+# Pre-commit hooks for pdip. Install with ``pre-commit install`` after
+# ``pip install -r requirements.txt``.
+#
+# The hooks mirror the ADR-0026 / ADR-0027 §5 machine-checked rules
+# and the same flake8 selection as CI so a green pre-commit implies
+# that the corresponding CI steps will stay green. Everything here
+# is fast (< 2 s total) — the full suite and diff-cover remain on
+# CI where they belong.
+
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        # Markdown uses two trailing spaces for a hard line break;
+        # leave those alone so we don't fight with rendered output.
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        # Matches the blocking flake8 invocation in
+        # .github/workflows/package-build-and-tests.yml so a green
+        # pre-commit implies a green CI lint step.
+        args:
+          - --count
+          - --select=E9,F63,F7,F82,E711,E712,E722
+          - --show-source
+          - --statistics
+
+  - repo: local
+    hooks:
+      - id: quality-guard
+        name: ADR-0026 / ADR-0027 §5 quality rules
+        # Runs the six machine-enforced rules from
+        # tests/unittests/quality_guard/test_conventions.py:
+        #   A.1 every test_* method has an assertion,
+        #   A.2 no tautological assertions,
+        #   D.1 no time.sleep >= 0.1 in unit tests,
+        #   F.1 no pytest imports (unittest-only per ADR-0018),
+        #   F.2 no star imports in tests/,
+        #   ADR-0027 §5 every ``# pragma: no cover`` carries an
+        #     inline reason comment on the same line.
+        # The suite runs in ~300 ms locally — well within budget
+        # for pre-commit.
+        entry: python -m unittest tests.unittests.quality_guard.test_conventions
+        language: system
+        pass_filenames: false
+        always_run: true
