@@ -30,11 +30,14 @@ from pdip.integrator.pubsub.base import ChannelQueue  # noqa: E402
 
 
 def _drain(channel):
-    """Pull every message off ``channel`` by reaching through to the
-    underlying ``queue.Queue``; ``ChannelQueue.get`` blocks forever."""
+    """Pull every message off ``channel`` non-blockingly via the
+    public ``ChannelQueue.get_nowait`` API."""
     events = []
-    while not channel.channel_queue.empty():
-        events.append(channel.channel_queue.get_nowait())
+    while True:
+        try:
+            events.append(channel.get_nowait())
+        except queue.Empty:
+            break
     return events
 
 

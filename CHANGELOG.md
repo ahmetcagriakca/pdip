@@ -13,6 +13,26 @@ for the public API surface described in
 
 ## [Unreleased]
 
+### Added
+
+- `pdip.integrator.pubsub.base.ChannelQueue.get_nowait()` — non-blocking
+  accessor that mirrors ``queue.Queue.get_nowait``. Lets observers and
+  tests drain a channel without blocking the caller. The existing
+  `get()` still blocks, preserving the production broker loop.
+
+### Fixed
+
+- `pdip.integrator.pubsub.base.MessageBroker.unsubscribe` had an
+  operator-precedence bug: `event is not None or event != "" and event
+  in self.subscribers.keys()`. Because `and` binds tighter than `or`,
+  the first clause short-circuited the guard to truthy for any
+  non-None event, even ones that were never subscribed — so the
+  "Cant unsubscribe" warning path was dead code and the mutation
+  branch always ran. Replaced with the intended
+  `if event and event in self.subscribers:` and backed by new unit
+  tests (9 cases in
+  `tests/unittests/integrator/pubsub/test_message_broker.py`).
+
 ## [0.7.0] — 2026-04-24
 
 ### Added
