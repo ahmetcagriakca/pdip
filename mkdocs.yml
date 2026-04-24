@@ -1,0 +1,70 @@
+site_name: pdip
+site_description: Python Data Integrator — framework documentation
+site_url: https://ahmetcagriakca.github.io/pdip/
+repo_url: https://github.com/ahmetcagriakca/pdip
+repo_name: ahmetcagriakca/pdip
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - tables
+
+nav:
+  - Home: index.md
+  - Contributing:
+      - Setup: contributing/setup.md
+  - Governance:
+      - Overview: governance/README.md
+      - Policies: governance/policies/README.md
+      - Security audit (2026-04-24): governance/security-audit-2026-04-24.md
+      - Architecture Decision Records:
+          - Index: governance/adr/README.md
+          - Template: governance/adr/template.md
+          - ADR-0001 Dependency injection framework: governance/adr/0001-dependency-injection-framework.md
+          - ADR-0002 Custom DI scopes: governance/adr/0002-custom-di-scopes.md
+          - ADR-0003 CQRS dispatcher: governance/adr/0003-cqrs-dispatcher.md
+          - ADR-0004 Repository over SQLAlchemy: governance/adr/0004-repository-pattern-sqlalchemy.md
+          - ADR-0005 YAML configuration with env overrides: governance/adr/0005-yaml-configuration-with-env-overrides.md
+          - ADR-0006 Pub/Sub message broker: governance/adr/0006-pubsub-message-broker.md
+          - ADR-0007 Multiprocessing for ETL: governance/adr/0007-multiprocessing-for-etl.md
+          - ADR-0008 Convention-based API routing: governance/adr/0008-convention-based-api-routing.md
+          - ADR-0009 Soft delete via GcRecId: governance/adr/0009-soft-delete-gcrecid.md
+          - ADR-0010 Audit columns on base entity: governance/adr/0010-audit-columns-on-base-entity.md
+          - ADR-0011 Multi-tenancy via TenantId: governance/adr/0011-multi-tenancy-via-tenant-id.md
+          - ADR-0012 Connection source/target adapters: governance/adr/0012-connection-source-target-adapters.md
+          - ADR-0013 Dataclass JSON domain models: governance/adr/0013-dataclass-json-domain-models.md
+          - ADR-0014 Optional extras packaging: governance/adr/0014-optional-extras-packaging.md
+          - ADR-0015 Service auto-discovery: governance/adr/0015-service-auto-discovery.md
+          - ADR-0016 English-only content: governance/adr/0016-english-only-content.md

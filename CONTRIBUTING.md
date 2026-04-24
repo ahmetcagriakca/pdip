@@ -90,4 +90,6 @@ to see if the enhancement has already been suggested. If it has, add a
 
 ### Set Up Your Machine
 
-Start [here](https://github.com/ahmetcagriakca/pdip/blob/development/docs/contributing/setup.md).
+See [`docs/contributing/setup.md`](docs/contributing/setup.md) for a
+full walk-through: prerequisites, clone + install, running the tests,
+linting, branching, and troubleshooting.
