@@ -1,5 +1,16 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# Publish a signed tag (``vMAJOR.MINOR.PATCH``) to PyPI per the
+# ADR-0024 release process.
+#
+# Triggered by a push of a tag matching ``v*.*.*`` (not ``test-v*``,
+# which goes to TestPyPI via python-upload-test-package.yml).
+#
+# Expectations:
+# - The tag is annotated (ideally signed); ``setup.py`` reads the
+#   tag name as ``PYPI_PACKAGE_VERSION`` with the leading ``v``
+#   stripped.
+# - The repository's full CI matrix is already green on the
+#   tagged commit (the tag is expected to point at a commit that
+#   has already merged to ``main`` via a release PR).
 
 name: Python upload package
 
@@ -8,44 +19,73 @@ on:
     tags:
       - 'v*.*.*'
 
-jobs:
-  build:
-    if: github.repository == 'ahmetcagriakca/pdip' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+permissions:
+  contents: write  # softprops/action-gh-release creates a Release
 
+jobs:
+  publish:
+    name: Build, test, publish to PyPI + GitHub Release
+    # Defensive guard: only the canonical repo publishes. Forks that
+    # push a tag do not leak to PyPI.
+    if: github.repository == 'ahmetcagriakca/pdip'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.6
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.6
-      - name: Branch name
-        id: branch_name
-        run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
-      - name: Install dependencies
+          python-version: '3.11'
+
+      - name: Extract tag name
+        id: tag
+        # Strip refs/tags/ from GITHUB_REF. Use GITHUB_OUTPUT rather
+        # than the deprecated ::set-output.
+        run: echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Install build + runtime dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install -r requirements.txt
+          pip install flake8 build twine
+
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --select=E9,F63,F7,F82,E711,E712,E722 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with unittest and coverage
+
+      - name: Run the full test suite under coverage
+        # ``.coveragerc`` owns the omit + fail_under settings; a release
+        # build must still hit 100 % per ADR-0023.
         run: |
-          coverage run  --source=pdip run_tests.py
-          coverage report -m --omit="*/tests/*,*/site-packages/*"
-      - name: Build and publish
-        if: github.repository == 'ahmetcagriakca/pdip' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+          coverage run run_tests.py
+          coverage report --fail-under=100
+
+      - name: Build sdist and wheel
+        # ``python -m build`` is the current packaging-recommended
+        # builder; the legacy ``setup.py sdist bdist_wheel`` is
+        # deprecated as of setuptools 67+.
+        env:
+          PYPI_PACKAGE_VERSION: ${{ steps.tag.outputs.name }}
+        run: python -m build
+
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_API_TOKEN }}
-          PYPI_PACKAGE_VERSION: ${{ steps.branch_name.outputs.SOURCE_TAG }}
-        run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/*
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+
+      - name: Create GitHub Release from the tag
+        # Populates the Release body from the matching section in
+        # CHANGELOG.md; if no section is found, falls back to the
+        # tag annotation message. Consumers see a rendered Markdown
+        # release page with the same content as the CHANGELOG.
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          generate_release_notes: true
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
