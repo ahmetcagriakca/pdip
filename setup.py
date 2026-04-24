@@ -32,22 +32,22 @@ setup(
     ],
     extras_require={
         "api": [
-            "Flask==3.0.3",
-            "Flask_Cors==5.0.0",
+            "Flask==3.1.3",
+            "Flask_Cors==6.0.0",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.0",
             "markupsafe==2.1.5",
-            "Werkzeug==3.0.6"
+            "Werkzeug==3.1.6"
         ],
         "cryptography": [
-            "cryptography==43.0.1"
+            "cryptography==46.0.7"
         ],
         "integrator": [
             "oracledb>=2,<3",
             "confluent-kafka>=2.4,<3",
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
-            "mysql-connector-python==8.4.0",
+            "mysql-connector-python==9.1.0",
             "pandas==2.2.3",
             "psycopg2-binary==2.9.9",
             "pyodbc==5.1.0"
