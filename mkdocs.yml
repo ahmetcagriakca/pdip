@@ -80,3 +80,4 @@ nav:
           - ADR-0026 Test quality rules: governance/adr/0026-test-quality-rules.md
           - ADR-0027 TDD with diff-coverage: governance/adr/0027-tdd-with-diff-coverage.md
           - ADR-0028 Raise Python floor to 3.10: governance/adr/0028-raise-python-floor-to-3-10.md
+          - ADR-0029 Integration tests in CI: governance/adr/0029-integration-tests-in-ci.md

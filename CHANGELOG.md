@@ -13,7 +13,56 @@ for the public API surface described in
 
 ## [Unreleased]
 
-_No changes yet — `0.8.0` is the current release._
+### Added
+
+- **ADR-0029 — Integration tests run nightly in CI.** New
+  `.github/workflows/integration-tests.yml` boots the pinned
+  Postgres 16 and MySQL 8.4 images (from
+  `tests/environments/<backend>/docker-compose.yml`) as Actions
+  `services:` containers and runs the matching modules under
+  `tests/integrationtests/integrator/integration/sql/<backend>/`.
+  Triggers: `workflow_dispatch` + daily cron at 04:00 UTC. **Not**
+  on `push` / `pull_request` — the main CI loop stays sub-2-min.
+  MSSQL / Oracle / Kafka jobs arrive as follow-up PRs.
+- New `examples/crud_api/` — runnable minimal CQRS + REST +
+  SQLAlchemy "notes" service; boots via `python examples/crud_api/main.py`.
+  Backed by `tests/unittests/examples/crud_api/test_crud_api_example.py`
+  so CI catches any framework change that regresses the example.
+- `.pre-commit-config.yaml` — runs the 6 ADR-0026/0027 §5 quality
+  rules and the CI-matching blocking flake8 pass locally in
+  ~300 ms before every commit. Registered via
+  `pre-commit install` after `pip install -r requirements.txt`.
+- `tests/environments/README.md` — single table listing every
+  docker-compose fixture, pinned image version, port, credentials,
+  and maintenance status.
+- `docs/governance/upstream-coverage-py-3.14-xml-issue.md` — draft
+  bug report for the `coverage xml` failure on Python 3.14 runners
+  (PR #94), to be filed at `nedbat/coveragepy` once 3.14 reaches
+  final. ADR-0028's Follow-ups bullet links to it as the
+  deprecation trigger for the canonical-cell workaround.
+
+### Changed
+
+- **SHA-pinned every GitHub Action** across all five workflow
+  files — `actions/checkout`, `actions/setup-python`,
+  `actions/upload-artifact`, `actions/deploy-pages`,
+  `actions/upload-pages-artifact`, `dependabot/fetch-metadata`,
+  `softprops/action-gh-release`. Each pin annotated with a
+  trailing `# vN` comment for readability and Dependabot
+  compatibility. Dependabot now tracks the `github-actions`
+  ecosystem alongside `pip`, keeping the pins fresh without
+  ossifying on security updates.
+- **Docker-compose fixtures under `tests/environments/` stabilised
+  to current LTS / stable releases:** MySQL `5.7 → 8.4` (EOL
+  bump), Postgres `latest → 16-alpine` (pin), MSSQL
+  `2017-latest-ubuntu → 2022-latest`, Oracle `daggerok/oracle:se →
+  gvenzl/oracle-xe:21-slim-faststart`, Confluent Kafka +
+  ZooKeeper `latest → 7.7.1`. Removed the deprecated `version: ...`
+  key from every compose file. Hadoop + Impala fixtures kept on
+  legacy pins with explicit `# unmaintained; see header` markers
+  pending their migration.
+
+## [0.8.0] — 2026-04-24
 
 ## [0.8.0] — 2026-04-24
 
