@@ -1,11 +1,16 @@
-# Builds the mkdocs site and publishes it to GitHub Pages on every
-# push to ``main``. The site itself is scaffolded in mkdocs.yml and
-# docs/ (see ADR-0018 / docs/index.md).
+# Builds the mkdocs site on every PR touching docs/mkdocs config,
+# and publishes it to GitHub Pages on push to ``main`` — but only
+# once the repository admin has opted in.
 #
-# GitHub Pages must be enabled for the repository with Source =
-# "GitHub Actions" for the publish step to succeed. Until that is
-# configured, the build step still exercises the site so a broken
-# link or misconfigured nav fails CI rather than production.
+# One-time setup required by the admin before ``deploy`` can
+# succeed:
+#   1. Repo Settings → Pages → Source: ``GitHub Actions``.
+#   2. Repo Settings → Secrets and variables → Actions → Variables
+#      → add a repository variable ``PAGES_ENABLED = true``.
+#
+# Until both are done, ``deploy`` is skipped (not failed) and
+# ``build`` still exercises the site so a broken link or
+# misconfigured nav fails CI before it would reach production.
 
 name: Docs build and deploy
 
@@ -48,7 +53,10 @@ jobs:
         # build log; readers on GitHub see the linked files directly.
         run: mkdocs build --site-dir _site
       - name: Upload site artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: >
+          github.event_name == 'push'
+          && github.ref == 'refs/heads/main'
+          && vars.PAGES_ENABLED == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -57,7 +65,15 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only runs on a push to main AND after the admin has opted in
+    # by setting the repository variable ``PAGES_ENABLED = true``.
+    # Without the gate, the step ``actions/deploy-pages@v4`` fails
+    # hard because the repo's Pages API returns 404. Skipping
+    # cleanly keeps the main branch check-page green.
+    if: >
+      github.event_name == 'push'
+      && github.ref == 'refs/heads/main'
+      && vars.PAGES_ENABLED == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
