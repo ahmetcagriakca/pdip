@@ -31,17 +31,26 @@ The remaining question is *what* number and *how* to enforce it.
 Coverage is measured against `pdip/` (already the `--source=pdip`
 flag in the CI step), with the following excluded:
 
-- Integration adapters that require external services:
-  `pdip/integrator/connection/sql/**`,
-  `pdip/integrator/connection/bigdata/**`,
-  `pdip/integrator/connection/webservice/**`,
-  `pdip/integrator/connection/file/**`.
-  These modules are exercised by `tests/integrationtests/` which
-  CI does not run.
+- Integration adapters that require external services, under
+  `pdip/integrator/connection/types/{sql,bigdata,webservice,file,inmemory,queue}/`.
+  These are exercised by `tests/integrationtests/`, which CI does
+  not run.
+- Parallel execution strategies that depend on a real message
+  broker and live subprocesses, under
+  `pdip/integrator/integration/types/sourcetotarget/strategies/parallelold/`
+  and `parallelthread/`.
 - Package `__init__.py` files with no logic.
 
 The exclusion list is encoded in a committed `.coveragerc` so
 contributors and CI use the same configuration.
+
+> **2026-04-24 correction:** The ADR originally listed the
+> adapter paths without the ``types/`` segment (``pdip/integrator/connection/sql/*``)
+> because the policy was drafted before a pass through the actual
+> directory layout. The `.coveragerc` was updated to match the
+> real paths in the coverage-to-80 PR; coverage measured against
+> the corrected exclusion list was 68 % at the time of that PR
+> (compared to 47 % with the mislabeled patterns).
 
 ### 2. Floor
 
