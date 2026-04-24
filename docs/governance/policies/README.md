@@ -79,10 +79,20 @@ disagree, the ADR is the source of truth and the policy must be updated.
   [ADR-0026](../adr/0026-test-quality-rules.md). Every test asserts a
   concrete behaviour; no tautologies; AAA structure; mocks at
   boundaries only; `unittest` only; no star imports; deterministic.
-  Five of the rules are machine-enforced by
+  Six of the rules are machine-enforced by
   `tests/unittests/quality_guard/test_conventions.py` — CI fails
   when they are violated. Reviewers enforce the rest with the ADR
   as the reference.
+- **TDD is the default workflow** for new production code
+  ([ADR-0027](../adr/0027-tdd-with-diff-coverage.md)). Write the
+  failing test first, watch it fail for the right reason, then
+  write the smallest change that makes it pass. Reviewers check
+  the commit graph for that ordering.
+- **Diff-coverage gates every PR at 100 %.** New or modified
+  `pdip/` lines must be covered by the same PR's test changes, or
+  CI fails — independent of the overall `fail_under` floor.
+- `# pragma: no cover` requires an inline reason comment on the
+  same line (the `quality_guard` meta-test enforces this).
 
 ## Review expectations
 

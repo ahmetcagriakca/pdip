@@ -34,6 +34,7 @@ shapes how the framework is built and used. See the parent
 | [0024](./0024-release-process.md) | Release process — semver, CHANGELOG, and PyPI publish | Accepted | release, packaging, process |
 | [0025](./0025-dependabot-auto-merge-policy.md) | Dependabot auto-merge policy | Accepted | dependencies, ci, automation |
 | [0026](./0026-test-quality-rules.md) | Test quality rules | Accepted | testing, ci, quality |
+| [0027](./0027-tdd-with-diff-coverage.md) | Test-first development (TDD) with diff-coverage enforcement | Accepted | testing, ci, quality, process |
 
 ## Status legend
 

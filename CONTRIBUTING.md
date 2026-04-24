@@ -38,9 +38,14 @@ Before proposing architecturally significant changes, read the relevant
   [governance README](docs/governance/README.md).
 - Tests follow the quality rules in
   [ADR-0026](docs/governance/adr/0026-test-quality-rules.md). Every
-  test asserts a concrete behaviour; five of the rules are
+  test asserts a concrete behaviour; six of the rules are
   machine-enforced by `tests/unittests/quality_guard/` and will fail
   CI when violated.
+- **New production code is written test-first**
+  ([ADR-0027](docs/governance/adr/0027-tdd-with-diff-coverage.md)).
+  Diff-coverage enforces this mechanically: every PR must leave
+  its newly added or modified `pdip/` lines at 100 % line coverage,
+  measured against the merge-base with `main`. CI fails otherwise.
 
 ## How Can I Contribute?
 
