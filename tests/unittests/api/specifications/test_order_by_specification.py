@@ -93,3 +93,18 @@ class OrderBySpecificationTranslatesParameters(TestCase):
 
         self.assertIsNone(result)
         module_finder.get_module.assert_not_called()
+
+    def test_parameter_missing_order_by_attribute_returns_none(self):
+        # Arrange — an object with ``Order`` but no ``OrderBy``. The
+        # dataclass always carries both so we drop to a bare namespace
+        # to trip the early-return guard.
+        spec, _ = _build_spec_with_stub_module()
+
+        class _OnlyOrder:
+            Order = "asc"
+
+        # Act
+        result = spec.specify(_OnlyOrder())
+
+        # Assert
+        self.assertIsNone(result)

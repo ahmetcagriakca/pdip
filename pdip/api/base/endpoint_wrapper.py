@@ -83,9 +83,9 @@ class EndpointWrapper:
                         field = self.field_resolver(instance.__class__, key)
                         specified_value = fields.List(field, description=f'')
 
-            elif self.type_checker.is_base_generic(value):
+            elif self.type_checker.is_base_generic(value):  # pragma: no cover — every is_base_generic value also satisfies is_generic above, so this elif is unreachable today; kept as a documented TODO for future widening
                 # TODO:Base generic class
-                print('value type should be a structure of', value.__args__[0])
+                print('value type should be a structure of', value.__args__[0])  # pragma: no cover — see preceding elif; dead until the generic branch narrows
             elif self.type_checker.is_class(value):
                 instance = value()
                 nested_annotations = self.get_annotations(instance)

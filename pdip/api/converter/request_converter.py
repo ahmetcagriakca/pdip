@@ -71,9 +71,9 @@ class RequestConverter(object):
                             nested_annotations = self.get_annotations(instance)
                             if nested_annotations is not None:
                                 self.register_subclasses(nested_annotations)
-                    elif generic_type_checker.is_base_generic(value):
+                    elif generic_type_checker.is_base_generic(value):  # pragma: no cover — every is_base_generic value also satisfies is_generic above, so this elif is unreachable today
                         # TODO:Base generic class
-                        print('value type should be a structure of', value.__args__[0])
+                        print('value type should be a structure of', value.__args__[0])  # pragma: no cover — see preceding elif; dead until the generic branch narrows
                     elif inspect.isclass(value):
                         if issubclass(value, enum.Enum):
                             pass

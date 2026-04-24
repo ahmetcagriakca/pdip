@@ -63,3 +63,17 @@ class PagingSpecificationNormalisesParameters(TestCase):
 
         self.assertEqual(page_size, 25)
         self.assertEqual(offset, 0)
+
+    def test_parameter_missing_page_size_attribute_returns_none_pair(self):
+        # Arrange — an object with PageNumber but no PageSize attribute
+        # at all. ``PagingParameter`` always defines both, so build a
+        # bare object to hit the early-return guard.
+        class _OnlyPageNumber:
+            PageNumber = 1
+
+        # Act
+        page_size, offset = self.spec.specify(_OnlyPageNumber())
+
+        # Assert
+        self.assertIsNone(page_size)
+        self.assertIsNone(offset)

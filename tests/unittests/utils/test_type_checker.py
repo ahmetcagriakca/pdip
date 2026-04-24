@@ -97,3 +97,11 @@ class TypeCheckerIsBaseGenericMatchesOpenGenerics(TestCase):
             TypeChecker().is_base_generic(typing.List[int]),
             False,
         )
+
+    def test_generic_origin_parameterisation_is_not_base_generic(self):
+        # ``typing.Generic[TypeVar]`` has an origin equal to
+        # ``typing.Generic`` itself — the helper must short-circuit to
+        # ``False`` (it is the bare ``Generic``, not an open generic).
+        T = typing.TypeVar("T")
+
+        self.assertFalse(TypeChecker().is_base_generic(typing.Generic[T]))

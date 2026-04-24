@@ -50,7 +50,7 @@ class TypeChecker(ITypeChecker):
                 return False
             variadic = getattr(typing, "_VariadicGenericAlias", None)
             if variadic is not None and isinstance(class_type, variadic):
-                return True
+                return True  # pragma: no cover — typing._VariadicGenericAlias was removed in Python 3.9+; branch is defensive on modern runtimes
             return len(class_type.__parameters__) > 0
         if isinstance(class_type, typing._SpecialForm):
             return class_type._name in {'ClassVar', 'Union', 'Optional'}
