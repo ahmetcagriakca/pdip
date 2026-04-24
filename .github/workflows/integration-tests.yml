@@ -1,0 +1,140 @@
+# Nightly + manual integration-test run against real database backends.
+#
+# The main CI workflow (``package-build-and-tests.yml``) only runs the
+# unit suite under ``tests/unittests/``. Adapter code under
+# ``pdip/integrator/connection/types/{sql,bigdata,webservice}/`` is
+# excluded from that run's coverage measurement per ADR-0023 §1 — it
+# cannot be exercised without a real backend.
+#
+# This workflow closes the loop. It boots the pinned Docker images
+# from ``tests/environments/<backend>/docker-compose.yml`` as
+# ``services:`` containers and runs the corresponding
+# ``tests/integrationtests/integrator/integration/sql/<backend>/``
+# module against them.
+#
+# Why nightly (not per-push)?
+# - Integration runs are slower (~3–5 min/backend); running per-push
+#   would dilute the 2-min feedback loop contributors rely on.
+# - Flaky connection / startup timing issues show as noise on PRs.
+#   Nightly absorbs them.
+# - The real value is catching driver-bump / image-bump regressions,
+#   which surface on a day-scale, not a commit-scale.
+# - Manual ``workflow_dispatch`` is always available for on-demand
+#   runs (e.g. just after a Dependabot image bump merges).
+#
+# See ADR-0029 for the full rationale.
+
+name: Integration tests (nightly)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every day at 04:00 UTC. Deliberately late in the European evening
+    # / early morning to avoid GitHub Actions queue pressure.
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------------------------------------------
+  postgres:
+    name: Postgres 16
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Pinned to the same image as
+    # ``tests/environments/postgresql/docker-compose.yml``.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pdi
+          POSTGRES_PASSWORD: pdi!123456
+          POSTGRES_DB: test_pdi
+        ports:
+          # The integration tests hard-code 5434 on the host (matching
+          # the docker-compose fixture); map it through to the 5432
+          # inside the container.
+          - 5434:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Provision ``test_pdi`` schema inside the ``test_pdi`` database
+        # The tests expect a schema named ``test_pdi``; ``POSTGRES_DB``
+        # only creates the database. Create the schema idempotently so
+        # a retried workflow does not fail on "schema exists".
+        env:
+          PGPASSWORD: "pdi!123456"
+        run: |
+          psql -h 127.0.0.1 -p 5434 -U pdi -d test_pdi \
+               -c "CREATE SCHEMA IF NOT EXISTS test_pdi;"
+
+      - name: Run postgres integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/postgresql \
+              -t . \
+              -v
+
+  # ------------------------------------------------------------------
+  mysql:
+    name: MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Pinned to the same image as
+    # ``tests/environments/mysql/docker-compose.yml``.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: test_pdi
+          MYSQL_USER: pdi
+          MYSQL_PASSWORD: pdi!123456
+          MYSQL_ROOT_PASSWORD: pdi!123456
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Run MySQL integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/mysql \
+              -t . \
+              -v
