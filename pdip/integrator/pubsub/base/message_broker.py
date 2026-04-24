@@ -6,6 +6,13 @@ from .event_listener import EventListener
 from .message_broker_worker import MessageBrokerWorker
 
 
+# See ``pdip/processing/base/process_manager.py`` for the rationale:
+# pin ``spawn`` so the broker's Manager server is identical on every
+# supported OS and Python version, surviving the 3.14 POSIX default
+# change from ``fork`` to ``forkserver``.
+_MP_CONTEXT = multiprocessing.get_context('spawn')
+
+
 class MessageBroker:
     def __init__(self, logger):
         self.logger = logger
@@ -34,7 +41,7 @@ class MessageBroker:
             self.manager.shutdown()
 
     def initialize(self):
-        self.manager = multiprocessing.Manager()
+        self.manager = _MP_CONTEXT.Manager()
         self.publish_queue = self.manager.Queue()
         self.message_queue = self.manager.Queue()
         self.publish_channel = ChannelQueue(channel_queue=self.publish_queue)

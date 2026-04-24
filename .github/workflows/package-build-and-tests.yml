@@ -13,25 +13,11 @@ jobs:
   build:
     name: Setup ${{ matrix.python }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        python: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
-        experimental: [ false ]
-        include:
-          # Python 3.14 is exercised as non-blocking while the ecosystem
-          # catches up. See ADR-0019 for the staging plan.
-          - os: ubuntu-latest
-            python: '3.14'
-            experimental: true
-          - os: macos-latest
-            python: '3.14'
-            experimental: true
-          - os: windows-latest
-            python: '3.14'
-            experimental: true
+        python: [ '3.9', '3.10', '3.11', '3.12', '3.13', '3.14' ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python }}

@@ -153,11 +153,12 @@ class EndpointWrapper:
         return argument
 
     def get_annotations(self, obj):
-        if hasattr(obj, '__annotations__'):
-            annotations = obj.__annotations__
-            return annotations
-        else:
-            return None
+        # Python 3.14 stops exposing ``__annotations__`` on instances via
+        # attribute lookup, so fall back to the class. Works on every
+        # supported Python version.
+        cls = obj if isinstance(obj, type) else type(obj)
+        annotations = getattr(cls, '__annotations__', None)
+        return annotations if annotations else None
 
     def request_parser(self, parser_type: typing.Type[T]) -> RequestParser:
         parser: RequestParser = self.api.parser()

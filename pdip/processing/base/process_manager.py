@@ -11,6 +11,16 @@ from ...dependency.container import DependencyContainer
 from ...logging.loggers.console import ConsoleLogger
 
 
+# Python 3.14 changed the default multiprocessing start method on POSIX
+# from ``fork`` to ``forkserver``. pdip's processing + pub/sub layers
+# already require picklable payloads (ADR-0007), so the safest and
+# most portable behaviour is ``spawn`` — it works identically on
+# Linux, macOS, and Windows, and matches what macOS/Windows have been
+# doing for years. Pin the context here instead of relying on the
+# interpreter default.
+_MP_CONTEXT = multiprocessing.get_context('spawn')
+
+
 class ProcessManager:
     def __init__(
             self,
@@ -31,7 +41,7 @@ class ProcessManager:
 
     def get_manager(self):
         if self._manager is None:
-            self._manager = multiprocessing.Manager()
+            self._manager = _MP_CONTEXT.Manager()
         return self._manager
 
     def create_queue(self) -> Queue:
@@ -83,7 +93,7 @@ class ProcessManager:
         else:
             root_directory = None
             initialize_container = False
-        new_process = Process(
+        new_process = _MP_CONTEXT.Process(
             target=self.start_subprocess,
             args=(
                 sub_process_id, root_directory, initialize_container, process_queue, process_result_queue,

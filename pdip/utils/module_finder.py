@@ -103,11 +103,20 @@ class ModuleFinder:
                             module_to_be_added = module_address
                             if module_last_parent_address is not None and module_last_parent_address != '':
                                 module_to_be_added = '.'.join([module_last_parent_address, module_address])
+                            # Python 3.14 tightened importlib.import_module to
+                            # require a ``package`` argument whenever the name
+                            # starts with a leading dot. Guard against empty
+                            # prefixes that would otherwise produce one.
+                            module_to_be_added = module_to_be_added.lstrip('.')
                             importlib.import_module(module_to_be_added)
                         except ModuleNotFoundError as ex:
                             # print("ModuleNotFoundError:" + str(ex))
                             module_base_address = module["module_base_address"]
-                            module_to_be_added = '.'.join([module_base_address, module_address])
+                            if module_base_address is not None and module_base_address != '':
+                                module_to_be_added = '.'.join([module_base_address, module_address])
+                            else:
+                                module_to_be_added = module_address
+                            module_to_be_added = module_to_be_added.lstrip('.')
                             try:
                                 importlib.import_module(module_to_be_added)
                             except KeyError:
