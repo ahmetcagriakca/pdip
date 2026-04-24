@@ -9,11 +9,14 @@ source = pdip
 branch = False
 
 [report]
-# Floor ratcheted 30 -> 95 per ADR-0023 after the coverage-to-95 push
-# (PRs #72, #73, #74, #75, #76 + the earlier #67-#71 and #66). Measured
-# coverage at the time of this ratchet was 95 % across 508 unit tests.
-# Ratchet rounds down to the nearest 5.
-fail_under = 95
+# Floor ratcheted 95 -> 100 per ADR-0023 after the coverage-to-100 push
+# (PRs #80, #81, #82, #83 on top of the 95 % baseline from #72-#76 and
+# #67-#71). Measured coverage at the time of this ratchet is 100 %
+# across 664 unit tests, enforced on every CI run. Combined with the
+# diff-cover gate from ADR-0027, the two guards together keep every
+# line in ``pdip/`` under test and prevent new untested lines from
+# entering the tree.
+fail_under = 100
 show_missing = True
 skip_empty = True
 skip_covered = False

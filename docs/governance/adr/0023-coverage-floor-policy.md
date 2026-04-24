@@ -85,10 +85,20 @@ contributors and CI use the same configuration.
 
 ### 5. CI enforcement
 
-- The existing `coverage report -m` step gains a
-  `--fail-under=20`. With `.coveragerc` present, this line is
-  redundant but explicit (matches what contributors see locally).
-- Coverage artefacts continue to upload so reviewers can diff.
+- Every matrix cell runs `coverage run run_tests.py` + `coverage xml`
+  so the artefacts are always present.
+- The `coverage report --fail-under=N` gate runs on a **single
+  canonical cell** — Python 3.11 on ubuntu-latest, the same cell
+  where the ADR-0027 diff-cover gate runs. Coverage is a single
+  scalar ("what fraction of `pdip/` is exercised by the suite")
+  and is measured against one Python version. Different Python
+  versions legitimately skip different tests (for instance the
+  `typing.Union`-representation tests that `@skipIf(sys.version_info
+  >= (3, 14))` for), so enforcing the same 100 % floor on every
+  matrix cell would either be gamed with `# pragma: no cover` or
+  force artificial coverage of unreachable branches.
+- Coverage artefacts continue to upload from every cell so
+  reviewers can diff 3.14-only gaps against the 3.11 baseline.
 
 ## Consequences
 
@@ -138,12 +148,34 @@ contributors and CI use the same configuration.
 - **Why rejected:** The ratcheting floor handles this more
   transparently.
 
+## Ratchet history
+
+| Date       | From → To | Trigger / PR(s) | Measured at time of ratchet |
+|------------|-----------|-----------------|-----------------------------|
+| 2026-04-24 | 20 → 30   | Baseline landing PRs #47, #66 | 30 % |
+| 2026-04-24 | 30 → 95   | Coverage-to-95 wave (#67–#76) after `.coveragerc` path correction brought the measurement from 47 % to 68 %. | 95 % (508 tests) |
+| 2026-04-24 | 95 → 100  | Coverage-to-100 wave (#80, #81, #82, #83) on top of the 95 % baseline. | 100 % (664 tests) |
+
+At 100 % the ratchet is at its ceiling. Future drift is prevented
+by two orthogonal guards:
+
+1. The overall `fail_under = 100` in `.coveragerc` (this ADR).
+2. The diff-cover gate from [ADR-0027](./0027-tdd-with-diff-coverage.md),
+   which requires every newly added or modified `pdip/` line in a
+   PR to be covered against the merge-base with `main`.
+
+The two guards are orthogonal by design: a refactor that only
+moves lines around passes the diff-cover gate trivially but still
+has to preserve the 100 % floor; a brand-new feature has to arrive
+with tests that land its new lines at 100 %, which in turn keeps
+the overall number pinned.
+
 ## Follow-ups
 
-- Add `.coveragerc` with the exclusion list in the implementation
-  PR.
-- Extend CI's coverage step with `--fail-under=55`.
-- File a "coverage ratchet" reminder in six months.
+- ~~Add `.coveragerc` with the exclusion list in the implementation
+  PR.~~ — done.
+- ~~Extend CI's coverage step with `--fail-under=55`.~~ — done
+  (now `--fail-under=100`).
 - If the floor ever needs to go *down* (e.g. a large module move
   one-time dips the number), it is done via a one-shot ADR, not by
   an edit.
