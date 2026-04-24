@@ -52,10 +52,10 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with unittest and coverage
         run: |
-          coverage run  --source=pdip run_tests.py
-          coverage report -m --omit="*/tests/*,*/site-packages/*"
-          coverage xml  --omit="*/tests/*,*/site-packages/*" -o coverage.xml
-          coverage html --omit="*/tests/*,*/site-packages/*" -d htmlcov
+          coverage run run_tests.py
+          coverage report -m --fail-under=20
+          coverage xml
+          coverage html
 
       - name: Upload coverage artifacts
         if: always()

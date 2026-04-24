@@ -74,7 +74,7 @@ pip install "pdip[integrator]"
 pip install "pdip[api,integrator,cryptography]"
 ```
 
-Python **3.8+** is supported.
+Python **3.9+** is supported.
 
 The extras are defined in [`setup.py`](setup.py). See
 [ADR-0014](docs/governance/adr/0014-optional-extras-packaging.md) for
