@@ -33,6 +33,7 @@ shapes how the framework is built and used. See the parent
 | [0023](./0023-coverage-floor-policy.md) | Coverage floor policy | Accepted | testing, ci, quality |
 | [0024](./0024-release-process.md) | Release process — semver, CHANGELOG, and PyPI publish | Accepted | release, packaging, process |
 | [0025](./0025-dependabot-auto-merge-policy.md) | Dependabot auto-merge policy | Accepted | dependencies, ci, automation |
+| [0026](./0026-test-quality-rules.md) | Test quality rules | Accepted | testing, ci, quality |
 
 ## Status legend
 

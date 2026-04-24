@@ -36,6 +36,11 @@ Before proposing architecturally significant changes, read the relevant
   [ADR-0016](docs/governance/adr/0016-english-only-content.md) for the rationale.
 - Architectural changes require a new or updated ADR; follow the process in the
   [governance README](docs/governance/README.md).
+- Tests follow the quality rules in
+  [ADR-0026](docs/governance/adr/0026-test-quality-rules.md). Every
+  test asserts a concrete behaviour; five of the rules are
+  machine-enforced by `tests/unittests/quality_guard/` and will fail
+  CI when violated.
 
 ## How Can I Contribute?
 

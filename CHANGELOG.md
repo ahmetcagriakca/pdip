@@ -15,6 +15,26 @@ for the public API surface described in
 
 ### Added
 
+- **ADR-0026 — Test quality rules.** Every test asserts a concrete
+  behaviour; no tautologies; AAA structure; mocks at boundaries only;
+  `unittest` only; no star imports; deterministic. Five of the rules
+  are machine-enforced by a new meta-test suite under
+  `tests/unittests/quality_guard/`:
+  - A.1 every `test_*` method contains an `assert`,
+  - A.2 no tautological assertions,
+  - D.1 no `time.sleep >= 0.1s` in unit tests,
+  - F.1 no `pytest` imports (ADR-0018 keeps `unittest`-only),
+  - F.2 no star imports.
+  CI fails when any guard fires. Review covers the rest.
+- Five pre-existing tests rewritten to satisfy A.1 with real
+  behavioural assertions instead of "does-not-raise" or
+  delegate-to-helper patterns: `test_file_logger`,
+  `test_channel_queue::test_done_marks_task_done_on_underlying_queue`,
+  `test_oracle_connector::test_disconnect_is_safe_when_never_connected`,
+  `test_mysql_connector::test_disconnect_is_safe_before_connect`,
+  `test_basic_app_with_cqrs::test_create_user`.
+- Policies README and CONTRIBUTING.md reference ADR-0026 so new
+  contributors (and sub-agents) get the rules up front.
 - `pdip.integrator.pubsub.base.ChannelQueue.get_nowait()` — non-blocking
   accessor that mirrors ``queue.Queue.get_nowait``. Lets observers and
   tests drain a channel without blocking the caller. The existing

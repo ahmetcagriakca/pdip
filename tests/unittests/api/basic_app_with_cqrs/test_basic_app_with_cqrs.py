@@ -52,11 +52,11 @@ class TestBasicAppWithCqrs(TestCase):
             "Surname": "Surname",
         }
         self.create_user(create_user_request)
+
         user_data = self.get_user(create_user_request["Name"])
 
-        # repository_provider = self.pdi.get(RepositoryProvider)
-        # user_repository = repository_provider.get(User)
-        # self.pdi.get(DatabaseSessionManager).engine.connect()
-        # user = user_repository.filter_by(Id=user_data["Id"]).first()
-        # assert user is not None
-        # assert user.Surname == create_user_request["Surname"]
+        # Assert the behaviour in the test body itself so ADR-0026 A.1's
+        # machine guard can see it. The ``create_user`` / ``get_user``
+        # helpers also carry inline asserts, but those are invisible
+        # to a static walker.
+        self.assertEqual(user_data["Name"], create_user_request["Name"])
