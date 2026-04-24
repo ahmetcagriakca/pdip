@@ -37,9 +37,13 @@ class RequestConverter(object):
 
     @staticmethod
     def get_annotations(obj):
-        if hasattr(obj, '__annotations__'):
-            annotations = obj.__annotations__
+        # Python 3.14 drops ``__annotations__`` from instance attribute
+        # lookup; read from the class.
+        cls = obj if isinstance(obj, type) else type(obj)
+        annotations = getattr(cls, '__annotations__', None)
+        if annotations:
             return annotations
+        return None
 
     def register_subclasses(self, annotations):
         generic_type_checker = TypeChecker()

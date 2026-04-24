@@ -69,6 +69,19 @@ for the public API surface described in
   default on POSIX from `fork` to `forkserver`; pinning `spawn`
   makes pdip's behaviour identical on Linux, macOS, and Windows
   across every supported Python.
+- `pdip.utils.ModuleFinder.import_modules` strips leading dots
+  before calling `importlib.import_module`. Python 3.14 now rejects
+  a dotted name whose prefix is empty (a "relative import without
+  package"); pdip produced such a name when the computed
+  `module_base_address` was empty. Imports on 3.14 would crash the
+  DI bootstrap before a single service was registered.
+- `EndpointWrapper.get_annotations`, `RequestConverter.get_annotations`,
+  and `BaseConverter.get_annotations` now resolve `__annotations__`
+  from the **class**, not the instance. Python 3.14 no longer exposes
+  `__annotations__` through instance attribute lookup, so the old
+  code silently returned `None` on 3.14 — which meant the Flask-RESTx
+  request parser had zero fields and every GET ignored its query
+  string. Surfaced by `test_basic_app_with_cqrs`.
 - Bumped safe patch-level dependencies picked up from open Dependabot
   PRs: `coverage` 7.5.1 → 7.6.10, `cryptography` 43.0.0 → 43.0.1,
   `pandas` 2.2.2 → 2.2.3, `PyYAML` 6.0.1 → 6.0.2, `Werkzeug` 3.0.3

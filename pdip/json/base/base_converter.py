@@ -55,9 +55,13 @@ class BaseConverter(object):
         return json.loads(json_str, object_hook=self.class_mapper)
 
     def get_annotations(self, obj):
-        if hasattr(obj, '__annotations__'):
-            annotations = obj.__annotations__
+        # Python 3.14 drops ``__annotations__`` from instance attribute
+        # lookup; read from the class.
+        cls = obj if isinstance(obj, type) else type(obj)
+        annotations = getattr(cls, '__annotations__', None)
+        if annotations:
             return annotations
+        return None
 
     def register_subclasses(self, annotations):
         if annotations is not None and len(annotations) > 0:
