@@ -39,3 +39,16 @@ jobs:
         run: |
           coverage run  --source=pdip run_tests.py
           coverage report -m --omit="*/tests/*,*/site-packages/*"
+          coverage xml  --omit="*/tests/*,*/site-packages/*" -o coverage.xml
+          coverage html --omit="*/tests/*,*/site-packages/*" -d htmlcov
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          path: |
+            coverage.xml
+            htmlcov/
+          if-no-files-found: warn
+          retention-days: 14

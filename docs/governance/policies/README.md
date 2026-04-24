@@ -1,0 +1,67 @@
+# Policies
+
+Policies are **living rules** that apply to day-to-day contribution. They
+are distinct from [ADRs](../adr/), which are point-in-time decisions.
+
+The rules below are derived from the ADRs. When a rule and an ADR
+disagree, the ADR is the source of truth and the policy must be updated.
+
+## Contribution
+
+- All architectural changes require an ADR. See the
+  [governance README](../README.md) for what counts as architectural.
+- Everything committed to the repository is written in English: code,
+  comments, docs, commit messages, and GitHub titles / descriptions /
+  review comments ([ADR-0016](../adr/0016-english-only-content.md)).
+- Pull requests that introduce a new service inherit from `ISingleton`
+  or `IScoped` as required by [ADR-0002](../adr/0002-custom-di-scopes.md);
+  do not hand-bind services to the injector.
+- Handlers placed next to their `ICommand` / `IQuery` follow the
+  convention in [ADR-0003](../adr/0003-cqrs-dispatcher.md). Do not add a
+  central handler registry.
+
+## Data
+
+- All domain tables inherit from `Entity`
+  ([ADR-0010](../adr/0010-audit-columns-on-base-entity.md)).
+- Deletion goes through the repository and sets `GcRecId`
+  ([ADR-0009](../adr/0009-soft-delete-gcrecid.md)). Physical `DELETE`
+  belongs only in dedicated purge jobs.
+- Every query runs in tenant scope unless explicitly widened
+  ([ADR-0011](../adr/0011-multi-tenancy-via-tenant-id.md)).
+
+## Integration
+
+- New source or target backends are added as adapters behind the
+  interfaces in [ADR-0012](../adr/0012-connection-source-target-adapters.md).
+  Do not add backend-specific branches to the executor.
+- Objects that cross the process boundary must be picklable
+  ([ADR-0007](../adr/0007-multiprocessing-for-etl.md)).
+- Lifecycle observability goes through the pub/sub broker events
+  ([ADR-0006](../adr/0006-pubsub-message-broker.md)); do not add direct
+  callbacks on the executor.
+
+## Configuration
+
+- Runtime configuration is YAML plus environment overrides
+  ([ADR-0005](../adr/0005-yaml-configuration-with-env-overrides.md)).
+  Do not hard-code environment-specific values.
+- Secrets live in environment variables, not in YAML files in source
+  control.
+
+## Packaging
+
+- New heavyweight or native dependencies go behind an `extras_require`
+  feature set ([ADR-0014](../adr/0014-optional-extras-packaging.md)).
+  Imports that depend on an extra must be guarded so that the core
+  package remains importable without it.
+
+## Review expectations
+
+Reviewers verify, in order:
+
+1. The change does not violate an existing ADR. If it does, either the
+   ADR is updated / superseded in the same PR, or the change is
+   rejected.
+2. The change follows the policies above.
+3. Code quality, tests, and documentation.
