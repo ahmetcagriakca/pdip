@@ -1,19 +1,65 @@
+"""Kafka source/target connector backed by
+[`confluent-kafka`](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/).
+
+Migrated from ``kafka-python`` per ADR-0022. Public surface stays the
+same so upstream callers are not affected; the kafka-python-style
+config keys that callers pass as ``auth`` are translated to
+confluent-kafka's dotted keys at the adapter boundary.
+"""
+
 import json
 import logging
 from json import dumps
 from queue import Queue
 from typing import List
 
-from kafka import KafkaProducer, KafkaAdminClient, KafkaConsumer
-from kafka.admin import NewTopic
-from kafka.errors import TopicAlreadyExistsError
+from confluent_kafka import Consumer, KafkaException, Producer
+from confluent_kafka.admin import AdminClient, NewTopic
 from pandas import DataFrame
 
-from pdip.integrator.connection.domain import DataQueueTask
+from pdip.integrator.connection.domain.task import DataQueueTask
 from ..base import QueueConnector
 
-kafka_logger = logging.getLogger(name="kafka")
+kafka_logger = logging.getLogger(name="confluent_kafka")
 kafka_logger.setLevel(level=logging.WARNING)
+
+
+# kafka-python used underscored keys such as ``sasl_plain_username``;
+# confluent-kafka expects dotted keys like ``sasl.username``. Translate
+# the handful of commonly used ones so existing callers keep working
+# without editing their configuration.
+_KAFKA_PYTHON_TO_CONFLUENT_KEYS = {
+    "client_id": "client.id",
+    "security_protocol": "security.protocol",
+    "sasl_mechanism": "sasl.mechanism",
+    "sasl_plain_username": "sasl.username",
+    "sasl_plain_password": "sasl.password",
+    "ssl_cafile": "ssl.ca.location",
+    "ssl_certfile": "ssl.certificate.location",
+    "ssl_keyfile": "ssl.key.location",
+    "group_id": "group.id",
+    "auto_offset_reset": "auto.offset.reset",
+    "enable_auto_commit": "enable.auto.commit",
+}
+
+
+def _translate_keys(config: dict) -> dict:
+    """Convert well-known kafka-python keys to their confluent-kafka
+    equivalents. Keys that are already in dotted form (or not in the
+    translation table) pass through unchanged."""
+
+    if not config:
+        return {}
+    translated = {}
+    for key, value in config.items():
+        translated[_KAFKA_PYTHON_TO_CONFLUENT_KEYS.get(key, key)] = value
+    return translated
+
+
+def _servers_to_csv(servers) -> str:
+    if isinstance(servers, str):
+        return servers
+    return ",".join(servers)
 
 
 class KafkaConnector(QueueConnector):
@@ -24,68 +70,68 @@ class KafkaConnector(QueueConnector):
         self.servers = servers
         self.data_frame = None
         self.client_id = "pdi_kafka_client"
-        self.__admin: KafkaAdminClient = None
-        self.__producer: KafkaProducer = None
-        self.__consumer: KafkaConsumer = None
+        self.__admin: AdminClient = None
+        self.__producer: Producer = None
+        self.__consumer: Consumer = None
         self.connect()
 
     def connect(self):
-        # KAFKA_CLIENT_ID: str = "client_id"
         self.create_admin_client()
         self.create_producer()
-        # self.__admin = KafkaAdminClient(bootstrap_servers=self.servers,
-        #                                 **self.auth
-        #                                 )
-        # os.path.isdir(self.folder)
-        pass
 
     def disconnect(self):
-        pass
-        # try:
-        #     if self.file is not None:
-        #         self.file.close()
-        # except Exception:
-        #     pass
+        # confluent_kafka has no Python-level disconnect call; Producer
+        # and Consumer clean up their native resources when garbage
+        # collected or explicitly closed.
+        try:
+            if self.__producer is not None:
+                self.__producer.flush()
+        except Exception:
+            pass
+        try:
+            if self.__consumer is not None:
+                self.__consumer.close()
+        except Exception:
+            pass
+
+    def _base_config(self) -> dict:
+        config = {"bootstrap.servers": _servers_to_csv(self.servers)}
+        if self.auth:
+            config.update(_translate_keys(self.auth))
+        return config
 
     def create_admin_client(self):
-        if self.auth is not None:
-            self.__admin = KafkaAdminClient(bootstrap_servers=self.servers,
-                                            **self.auth
-                                            )
-        elif self.auth is None:
-            self.__admin = KafkaAdminClient(bootstrap_servers=self.servers,
-                                            )
+        self.__admin = AdminClient(self._base_config())
 
     def create_producer(self):
-        if self.auth is not None:
-            self.__producer = KafkaProducer(bootstrap_servers=list(self.servers),
-                                            client_id=self.client_id,
-                                            value_serializer=lambda x: dumps(x).encode('utf-8'),
-                                            **self.auth)
-        elif self.auth is None:
-            self.__producer = KafkaProducer(bootstrap_servers=list(self.servers),
-                                            client_id=self.client_id,
-                                            value_serializer=lambda x: dumps(x).encode('utf-8'))
+        config = self._base_config()
+        config.setdefault("client.id", self.client_id)
+        self.__producer = Producer(config)
 
     def create_consumer(self, topic_name: str, auto_offset_reset: str, enable_auto_commit: bool, group_id: str):
-        # KAFKA_CONSUMER_GROUP_ID: str = "consumer_group_id"
-        # KAFKA_AUTO_OFFSET_RESET: str = "earliest"
-        # KAFKA_ENABLE_AUTO_COMMIT: bool = True
-        if self.auth is not None:
-            self.__consumer = KafkaConsumer(topic_name, bootstrap_servers=list(self.servers),
-                                            consumer_timeout_ms=5000,
-                                            auto_offset_reset=auto_offset_reset,
-                                            enable_auto_commit=enable_auto_commit,
-                                            group_id=group_id,
-                                            value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-                                            **self.auth)
-        if self.auth is None:
-            self.__consumer = KafkaConsumer(topic_name, bootstrap_servers=list(self.servers),
-                                            consumer_timeout_ms=5000,
-                                            auto_offset_reset=auto_offset_reset,
-                                            enable_auto_commit=enable_auto_commit,
-                                            group_id=group_id,
-                                            value_deserializer=lambda x: json.loads(x.decode('utf-8')))
+        config = self._base_config()
+        config.update({
+            "group.id": group_id,
+            "auto.offset.reset": auto_offset_reset,
+            "enable.auto.commit": enable_auto_commit,
+        })
+        self.__consumer = Consumer(config)
+        self.__consumer.subscribe([topic_name])
+
+    def _iter_messages(self, poll_timeout_s: float = 5.0):
+        """Yield decoded message values until a poll returns ``None``
+        (the confluent-kafka analogue of ``consumer_timeout_ms``)."""
+
+        while True:
+            message = self.__consumer.poll(timeout=poll_timeout_s)
+            if message is None:
+                return
+            if message.error():
+                raise KafkaException(message.error())
+            value = message.value()
+            if value is None:
+                continue
+            yield json.loads(value.decode("utf-8"))
 
     def get_unpredicted_data(self, limit: int, process_count: int, data_queue: Queue, result_queue: Queue) -> DataFrame:
         data = []
@@ -93,8 +139,8 @@ class KafkaConnector(QueueConnector):
         limited_data_count = 0
         transmitted_data_count = 0
         task_id = 0
-        for message in self.__consumer:
-            data.append(message.value)
+        for value in self._iter_messages():
+            data.append(value)
             total_data_count = total_data_count + 1
             limited_data_count = limited_data_count + 1
             if limited_data_count >= limit:
@@ -122,9 +168,8 @@ class KafkaConnector(QueueConnector):
     def get_data(self, limit: int) -> DataFrame:
         data = []
         data_count = 0
-        for message in self.__consumer:
-
-            data.append(message.value)
+        for value in self._iter_messages():
+            data.append(value)
             data_count = data_count + 1
             if data_count >= limit:
                 break
@@ -132,18 +177,24 @@ class KafkaConnector(QueueConnector):
         return df
 
     def create_topic(self, topic_name):
-        # KAFKA_TOPIC_NUM_PARTITIONS: int = 3
-        # KAFKA_TOPIC_REPLICA_FACTOR: int = 3
         if not self.topic_exists(topic_name=topic_name):
-            try:
-                topic = [NewTopic(name=topic_name, num_partitions=1, replication_factor=1)]
-                response = self.__admin.create_topics(new_topics=topic, validate_only=False)
-            except TopicAlreadyExistsError as ex:
-                print(f"{topic_name} Topic Exist")
+            topic = NewTopic(topic_name, num_partitions=1, replication_factor=1)
+            futures = self.__admin.create_topics([topic])
+            # ``create_topics`` returns a dict of futures. Block until
+            # each resolves; a pre-existing topic surfaces as a
+            # KafkaException we can swallow for idempotency.
+            for _, future in futures.items():
+                try:
+                    future.result()
+                except KafkaException as ex:
+                    if "already exists" in str(ex).lower():
+                        print(f"{topic_name} Topic Exist")
+                        continue
+                    raise
 
     def topic_exists(self, topic_name) -> bool:
-        topic_metadata = self.__admin.list_topics()
-        return topic_name in topic_metadata
+        metadata = self.__admin.list_topics(timeout=10)
+        return topic_name in metadata.topics
 
     def delete_topic(self, topic_name):
         if self.topic_exists(topic_name=topic_name):
@@ -152,4 +203,5 @@ class KafkaConnector(QueueConnector):
 
     def write_data(self, topic_name: str, messages: DataFrame):
         for message in json.loads(messages.to_json(orient='records', date_format="iso")):
-            response = self.__producer.send(topic=topic_name, value=message)
+            self.__producer.produce(topic=topic_name, value=dumps(message).encode("utf-8"))
+        self.__producer.flush()

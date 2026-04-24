@@ -1,6 +1,7 @@
 # ADR-0022: Replace `kafka-python` with `confluent-kafka` for the Kafka adapter
 
-- **Status:** Accepted
+- **Status:** Accepted — **Implemented 2026-04-24** (PR replacing
+  `kafka_connector.py` + `setup.py` extra + unit tests).
 - **Date:** 2026-04-24
 - **Deciders:** pdip maintainers
 - **Tags:** dependencies, kafka, integrator
