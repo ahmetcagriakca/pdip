@@ -41,11 +41,30 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with unittest and coverage
+        # Every matrix cell runs the tests under ``coverage`` so the
+        # coverage.xml artefact is always present; the ``fail_under``
+        # gate runs only on the canonical cell in the next step.
+        # Rationale: coverage is a single scalar ("what fraction of
+        # pdip/ is exercised by the suite") and is measured against
+        # one Python version. Different Python versions legitimately
+        # skip different tests (e.g. ``@skipIf(sys.version_info >= (3,14))``
+        # for ``typing.Union``-representation tests), so enforcing the
+        # same 100 % floor on every matrix cell would either be gamed
+        # with pragmas or force artificial coverage of unreachable
+        # branches. See ADR-0023 §2 and ADR-0027 for the split.
         run: |
           coverage run run_tests.py
-          coverage report -m --fail-under=100
+          coverage report -m
           coverage xml
           coverage html
+
+      - name: Enforce coverage floor (ADR-0023)
+        # Single canonical cell, same as diff-cover. fail_under=100
+        # measured against the full ``pdip/`` source minus the
+        # integration-adapter omit list in .coveragerc.
+        if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
+        run: |
+          coverage report --fail-under=100
 
       - name: Enforce 100 % diff coverage on changed lines (ADR-0027)
         # Runs only on pull requests, on one matrix cell (avoids

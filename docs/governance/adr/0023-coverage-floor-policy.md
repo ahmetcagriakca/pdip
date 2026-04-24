@@ -85,10 +85,20 @@ contributors and CI use the same configuration.
 
 ### 5. CI enforcement
 
-- The existing `coverage report -m` step gains a
-  `--fail-under=20`. With `.coveragerc` present, this line is
-  redundant but explicit (matches what contributors see locally).
-- Coverage artefacts continue to upload so reviewers can diff.
+- Every matrix cell runs `coverage run run_tests.py` + `coverage xml`
+  so the artefacts are always present.
+- The `coverage report --fail-under=N` gate runs on a **single
+  canonical cell** — Python 3.11 on ubuntu-latest, the same cell
+  where the ADR-0027 diff-cover gate runs. Coverage is a single
+  scalar ("what fraction of `pdip/` is exercised by the suite")
+  and is measured against one Python version. Different Python
+  versions legitimately skip different tests (for instance the
+  `typing.Union`-representation tests that `@skipIf(sys.version_info
+  >= (3, 14))` for), so enforcing the same 100 % floor on every
+  matrix cell would either be gamed with `# pragma: no cover` or
+  force artificial coverage of unreachable branches.
+- Coverage artefacts continue to upload from every cell so
+  reviewers can diff 3.14-only gaps against the 3.11 baseline.
 
 ## Consequences
 
