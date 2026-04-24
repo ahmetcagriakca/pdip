@@ -13,7 +13,7 @@ target. ADR-0026 D.2 forbids real subprocesses in unit tests; the
 
 from queue import Queue
 from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from pdip.processing.base.subprocess import Subprocess
 from pdip.processing.models import ProcessTask
@@ -174,3 +174,29 @@ class SubprocessInitSelectsLoggerByContainerFlag(TestCase):
         subject = Subprocess()
 
         self.assertIsInstance(subject.logger, ConsoleLogger)
+
+    def test_init_boots_container_and_resolves_logger_when_flag_set(self):
+        # ``initialize_container=True`` must call into
+        # ``DependencyContainer.initialize_service`` and then resolve a
+        # logger from the container. Unit tests never boot a real Pdi,
+        # so we patch the container at the module boundary.
+        from pdip.logging.loggers.console import ConsoleLogger
+
+        resolved_logger = MagicMock(name="resolved_logger")
+        fake_instance = MagicMock(name="service_provider")
+        fake_instance.get.return_value = resolved_logger
+
+        with patch(
+            "pdip.processing.base.subprocess.DependencyContainer"
+        ) as container:
+            container.Instance = fake_instance
+
+            subject = Subprocess(
+                initialize_container=True, root_directory="/tmp/fake-root"
+            )
+
+        container.initialize_service.assert_called_once_with(
+            root_directory="/tmp/fake-root", initialize_flask=False
+        )
+        fake_instance.get.assert_called_once_with(ConsoleLogger)
+        self.assertIs(subject.logger, resolved_logger)
