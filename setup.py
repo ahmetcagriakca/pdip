@@ -32,15 +32,15 @@ setup(
     ],
     extras_require={
         "api": [
-            "Flask==3.0.3",
-            "Flask_Cors==5.0.0",
+            "Flask==3.1.3",
+            "Flask_Cors==6.0.0",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.0",
             "markupsafe==2.1.5",
-            "Werkzeug==3.0.6"
+            "Werkzeug==3.1.6"
         ],
         "cryptography": [
-            "cryptography==43.0.1"
+            "cryptography==46.0.7"
         ],
         "integrator": [
             "oracledb>=2,<3",
