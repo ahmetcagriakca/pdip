@@ -35,9 +35,14 @@ class ChannelQueueRoundTripsMessages(TestCase):
         message = TaskMessage(event="done")
         self.channel.put(message)
         self.channel.get()
-        # ``task_done`` raises if called more often than ``put``; the
-        # single call below must succeed.
+
         self.channel.done()
+
+        # ``queue.Queue.task_done`` raises ``ValueError`` when called
+        # more often than ``put``; one further ``done`` would blow up.
+        # Assert that as the behavioural contract.
+        with self.assertRaises(ValueError):
+            self.channel.done()
 
     def test_get_nowait_returns_message_when_available(self):
         message = TaskMessage(event="nb")

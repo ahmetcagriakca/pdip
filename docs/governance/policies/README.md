@@ -67,14 +67,22 @@ disagree, the ADR is the source of truth and the policy must be updated.
 
 ## Testing
 
-- Coverage floor is enforced by `.coveragerc`'s
-  `fail_under=20` ([ADR-0023](../adr/0023-coverage-floor-policy.md)).
-  New tests should hold or improve coverage; the floor is ratcheted
-  up by separate maintenance PRs, not edited on feature PRs.
+- Coverage floor is enforced by `.coveragerc`'s `fail_under`
+  ([ADR-0023](../adr/0023-coverage-floor-policy.md)). New tests should
+  hold or improve coverage; the floor is ratcheted up by separate
+  maintenance PRs, not edited on feature PRs.
 - Integration adapters under
   `pdip/integrator/connection/{sql,bigdata,webservice,file}/` are
   excluded from the unit-coverage score because they need external
   services to run.
+- **Test quality rules** are fixed in
+  [ADR-0026](../adr/0026-test-quality-rules.md). Every test asserts a
+  concrete behaviour; no tautologies; AAA structure; mocks at
+  boundaries only; `unittest` only; no star imports; deterministic.
+  Five of the rules are machine-enforced by
+  `tests/unittests/quality_guard/test_conventions.py` — CI fails
+  when they are violated. Reviewers enforce the rest with the ADR
+  as the reference.
 
 ## Review expectations
 
