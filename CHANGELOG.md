@@ -22,6 +22,20 @@ for the public API surface described in
   REST / ETL examples, project layout, and governance links.
 - `CONTRIBUTING.md` now links to the governance docs and surfaces the
   English-only content rule (ADR-0016).
+- Dependency security audit at
+  `docs/governance/security-audit-2026-04-24.md`.
+- MkDocs-material scaffolding (`mkdocs.yml`, `docs/index.md`) that
+  surfaces the governance docs.
+- CI emits `coverage.xml` and `htmlcov/` as per-job artifacts.
+
+### Changed
+
+- Bumped safe patch-level dependencies picked up from open Dependabot
+  PRs: `coverage` 7.5.1 → 7.6.10, `cryptography` 43.0.0 → 43.0.1,
+  `pandas` 2.2.2 → 2.2.3, `PyYAML` 6.0.1 → 6.0.2, `Werkzeug` 3.0.3
+  → 3.0.6. Major bumps (`injector` 0.22, `mysql-connector-python`
+  9.x) remain open on their respective Dependabot PRs pending manual
+  verification.
 
 ### Fixed
 
