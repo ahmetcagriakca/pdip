@@ -24,10 +24,21 @@ skip_covered = False
 omit =
     */tests/*
     */site-packages/*
-    pdip/integrator/connection/sql/*
-    pdip/integrator/connection/bigdata/*
-    pdip/integrator/connection/webservice/*
-    pdip/integrator/connection/file/*
+    # Integration adapters — need a real backend to exercise, so they
+    # live under tests/integrationtests/ and are out of scope for the
+    # unit-coverage score. The glob must include ``types/`` because
+    # that is the actual on-disk path; the original ADR-0023 wording
+    # omitted it by mistake.
+    pdip/integrator/connection/types/sql/*
+    pdip/integrator/connection/types/bigdata/*
+    pdip/integrator/connection/types/webservice/*
+    pdip/integrator/connection/types/file/*
+    pdip/integrator/connection/types/inmemory/*
+    pdip/integrator/connection/types/queue/*
+    # Parallel execution strategies also depend on a real message
+    # broker + subprocesses; covered by integration tests.
+    pdip/integrator/integration/types/sourcetotarget/strategies/parallelold/*
+    pdip/integrator/integration/types/sourcetotarget/strategies/parallelthread/*
 
 exclude_lines =
     pragma: no cover
