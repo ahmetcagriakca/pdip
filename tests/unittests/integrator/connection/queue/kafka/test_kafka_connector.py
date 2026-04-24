@@ -25,83 +25,104 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 
 
-def _ensure_stub(name, **attrs):
-    module = sys.modules.get(name)
-    if module is None:
-        module = types.ModuleType(name)
-        sys.modules[name] = module
-    for key, value in attrs.items():
-        setattr(module, key, value)
-    return module
+_STUB_KEYS = [
+    "confluent_kafka",
+    "confluent_kafka.admin",
+    "pandas",
+    "pdip.integrator.connection.types.queue.base",
+    "pdip.integrator.connection.types.queue",
+    "pdip.integrator.connection.domain",
+    "pdip.integrator.connection.domain.task",
+]
 
 
 def _install_stubs():
-    # confluent_kafka + admin submodule with just the symbols the
-    # connector imports at module top.
+    """Install just enough stubs in ``sys.modules`` to import the
+    connector file, and return the dict of saved originals so the
+    caller can restore them afterwards."""
+
+    saved = {key: sys.modules.get(key) for key in _STUB_KEYS}
+
+    def _ensure(name, **attrs):
+        module = types.ModuleType(name)
+        for key, value in attrs.items():
+            setattr(module, key, value)
+        sys.modules[name] = module
+        return module
+
     class _KafkaException(Exception):
         pass
 
-    _ensure_stub(
+    _ensure(
         "confluent_kafka",
         Producer=MagicMock(name="Producer"),
         Consumer=MagicMock(name="Consumer"),
         KafkaException=_KafkaException,
     )
-    _ensure_stub(
+    _ensure(
         "confluent_kafka.admin",
         AdminClient=MagicMock(name="AdminClient"),
         NewTopic=MagicMock(name="NewTopic"),
     )
+    _ensure("pandas", DataFrame=MagicMock(name="DataFrame"))
 
-    # pandas DataFrame stub (only the identity is touched in tests).
-    _ensure_stub("pandas", DataFrame=MagicMock(name="DataFrame"))
-
-    # Short-circuit the queue.base package init so the connector's
-    # ``from ..base import QueueConnector`` resolves without loading
-    # queue_provider (which triggers the circular import).
     class _QueueConnector:
         pass
 
-    base_pkg = _ensure_stub(
+    base_pkg = _ensure(
         "pdip.integrator.connection.types.queue.base",
         QueueConnector=_QueueConnector,
     )
-    base_pkg.__path__ = []  # mark as a package so relative imports work
+    base_pkg.__path__ = []
 
-    # DataQueueTask lives on a real submodule; import is fine normally,
-    # but stubbing it removes the need to load the whole domain tree.
-    _ensure_stub(
+    _ensure(
         "pdip.integrator.connection.domain.task",
         DataQueueTask=MagicMock(name="DataQueueTask"),
     )
-    # Ensure the intermediate package modules exist as package objects
-    # so the dotted import path resolves.
     for dotted in (
         "pdip.integrator.connection.domain",
         "pdip.integrator.connection.types.queue",
     ):
-        pkg = _ensure_stub(dotted)
-        if not hasattr(pkg, "__path__"):
-            pkg.__path__ = []
+        pkg = _ensure(dotted)
+        pkg.__path__ = []
+
+    return saved
 
 
-_install_stubs()
+def _restore_stubs(saved):
+    """Restore ``sys.modules`` to its pre-stub state so other tests
+    in the suite see the real modules (or their absence)."""
+
+    for key, original in saved.items():
+        if original is None:
+            sys.modules.pop(key, None)
+        else:
+            sys.modules[key] = original
 
 
 def _load_connector_module():
-    path = (
-        pathlib.Path(__file__).resolve().parents[6]
-        / "pdip" / "integrator" / "connection" / "types" / "queue"
-        / "connectors" / "kafka_connector.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "pdip.integrator.connection.types.queue.connectors.kafka_connector",
-        path,
-    )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    saved = _install_stubs()
+    try:
+        path = (
+            pathlib.Path(__file__).resolve().parents[6]
+            / "pdip" / "integrator" / "connection" / "types" / "queue"
+            / "connectors" / "kafka_connector.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "pdip.integrator.connection.types.queue.connectors.kafka_connector",
+            path,
+        )
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        # Once the connector module has been executed, its own
+        # namespace holds direct references to Producer / Consumer /
+        # etc. (from ``from confluent_kafka import ...``). Restore the
+        # original sys.modules so other test files in the suite are
+        # unaffected.
+        _restore_stubs(saved)
 
 
 _kc = _load_connector_module()
