@@ -18,7 +18,7 @@ class TestBasicAppWithLog(TestCase):
             engine = self.pdi.get(DatabaseSessionManager).engine
             Base.metadata.create_all(engine)
             self.client = self.pdi.get(FlaskAppWrapper).test_client()
-        except:
+        except Exception:
             self.tearDown()
             raise
 

@@ -42,7 +42,7 @@ class TestMssqlIntegration(TestCase):
                 ConnectionColumnBase(Name='NAME', Type='varchar(100)'),
             ]
 
-        except:
+        except Exception:
             self.tearDown()
             raise
 
@@ -91,7 +91,7 @@ class TestMssqlIntegration(TestCase):
                     .drop_table(schema=self.source_schema,
                                 table=self.source_table
                                 )
-            except:
+            except Exception:
                 pass
 
     def test_integration_single_process(self):
@@ -133,7 +133,7 @@ class TestMssqlIntegration(TestCase):
                     .drop_table(schema=self.source_schema,
                                 table=self.source_table
                                 )
-            except:
+            except Exception:
                 pass
 
     def test_integration_parallel(self):
@@ -175,5 +175,5 @@ class TestMssqlIntegration(TestCase):
                     .drop_table(schema=self.source_schema,
                                 table=self.source_table
                                 )
-            except:
+            except Exception:
                 pass

@@ -15,7 +15,7 @@ class DependencyContainer:
                                            configurations=configurations,
                                            excluded_modules=excluded_modules)
             cls.Instance.initialize_injection(initialize_flask=initialize_flask)
-        except:
+        except Exception:
             cls.cleanup()
             raise
 

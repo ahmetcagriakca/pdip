@@ -131,7 +131,7 @@ class EndpointWrapper:
     def create_parser(self, name, input_type: typing.Type[T]) -> RequestParser:
         parser: RequestParser = self.api.parser()
 
-        if TypeChecker().is_class(input_type) == True:
+        if TypeChecker().is_class(input_type):
             parser.add_argument(self.create_argument(name=name, type=input_type, location='form', help=name))
         else:
             parser.add_argument(self.create_argument(name=name, type=input_type, location='args', help=name))
@@ -144,7 +144,7 @@ class EndpointWrapper:
 
     def create_argument(self, name, type, location, help) -> Argument:
         specified_type = type
-        if TypeChecker().is_generic(type) == True:
+        if TypeChecker().is_generic(type):
             specified_type = type.__args__[0]
 
         if specified_type == bool:
