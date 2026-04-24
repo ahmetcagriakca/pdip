@@ -1,0 +1,52 @@
+# Dependabot auto-merge workflow.
+#
+# Policy source: docs/governance/adr/0025-dependabot-auto-merge-policy.md
+# (ADR-0025 — Dependabot auto-merge policy).
+#
+# This workflow enables `gh pr merge --auto --merge` only for Dependabot PRs
+# that are patch-level semver bumps AND do not touch any integrator-extra
+# driver (ADR-0025 rule 2). Every other Dependabot PR is left for a
+# maintainer to review by hand.
+
+name: Dependabot auto-merge
+
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Auto-merge qualifying Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+
+      - name: Auto-merge patch bumps that do not touch integrator extras
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+        run: |
+          set -euo pipefail
+          # ADR-0025 rule 2: integrator-extra drivers and packages whose
+          # behaviour only shows up in integration tests never auto-merge.
+          integrator_extras="oracledb confluent-kafka psycopg2-binary mysql-connector-python pyodbc pandas func-timeout dataclasses-json"
+          # dependency-names is a comma-separated list.
+          normalized_names="$(echo "$DEPENDENCY_NAMES" | tr ',' '\n' | tr -d '[:space:]')"
+          for pkg in $integrator_extras; do
+            if echo "$normalized_names" | grep -Fxq "$pkg"; then
+              echo "Dependency '$pkg' is an integrator extra (ADR-0025 rule 2); skipping auto-merge."
+              exit 0
+            fi
+          done
+          echo "All updated dependencies are eligible for auto-merge: $DEPENDENCY_NAMES"
+          gh pr merge --auto --merge "$PR_URL"

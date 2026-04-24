@@ -1,7 +1,16 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# Dependabot configuration for pdip.
+#
+# Policy source: docs/governance/adr/0025-dependabot-auto-merge-policy.md
+# (ADR-0025 — Dependabot auto-merge policy).
+#
+# Grouping rationale:
+#   - Runtime / dev libraries pinned in requirements.txt and setup.py are
+#     grouped into a single weekly PR (`pip-runtime`). Patch-level grouped
+#     PRs auto-merge via .github/workflows/dependabot-auto-merge.yml.
+#   - Integrator-extra drivers (oracledb, confluent-kafka, psycopg2-binary,
+#     mysql-connector-python, pyodbc, pandas) are NOT grouped. ADR-0025
+#     rule 2 blocks them from auto-merge regardless, and keeping them in
+#     their own PRs keeps the human-review queue focused.
 
 version: 2
 updates:
@@ -9,3 +18,27 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      pip-runtime:
+        patterns:
+          - "Flask"
+          - "Flask-*"
+          - "Flask_*"
+          - "flask-*"
+          - "Werkzeug"
+          - "cryptography"
+          - "PyYAML"
+          - "SQLAlchemy"
+          - "injector"
+          - "coverage"
+          - "dataclasses-json"
+          - "func-timeout"
+        exclude-patterns:
+          - "oracledb"
+          - "confluent-kafka"
+          - "psycopg2-binary"
+          - "mysql-connector-python"
+          - "pyodbc"
+          - "pandas"
