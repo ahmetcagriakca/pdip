@@ -27,8 +27,25 @@ for the public API surface described in
   (ADR-0027 §5): every `# pragma: no cover` must carry an inline
   reason comment on the same line, or the guard fails.
 - `diff-cover==9.2.0` added to `requirements.txt`.
+- **ADR-0028 — Raise `python_requires` floor from 3.9 to 3.10.**
+  Python 3.9 reached EOL on 2025-10-05 (PEP 596). Concretely: no
+  single `coverage.py` release supports both our declared floor
+  (3.9) and Python 3.14 XML generation — 7.11+ dropped 3.9 and
+  fixed 3.14 simultaneously. Keeping 3.9 meant either stale
+  coverage tooling or chains of version-specific workarounds.
+  Supersedes the floor half of ADR-0020.
 
 ### Changed
+
+- **Python floor raised 3.9 → 3.10** per ADR-0028. `setup.py`
+  `python_requires=">=3.10"`, the `Python :: 3.9` classifier is
+  removed, and the CI matrix drops `3.9` (now 5 versions ×
+  3 OS = 15 cells).
+- **`coverage` bumped 7.6.12 → 7.13.5.** Unlocked by the
+  3.9 → 3.10 floor raise. Resolves the 3.14 XML-generation failure
+  that forced the canonical-cell workaround in PR #84; the
+  workflow now runs `coverage xml` on every matrix cell again and
+  each cell uploads its own `coverage-<os>-py<version>` artefact.
 
 - **Coverage floor ratcheted 95 → 100 %** per ADR-0023. Measured
   coverage at the time of this ratchet is **100 %** (3724/3724
@@ -92,6 +109,14 @@ for the public API surface described in
   `if event and event in self.subscribers:` and backed by new unit
   tests (9 cases in
   `tests/unittests/integrator/pubsub/test_message_broker.py`).
+
+### Removed
+
+- **Python 3.9 support** per ADR-0028. The `Programming Language ::
+  Python :: 3.9` trove classifier is removed from `setup.py`, and
+  the `3.9` cell is removed from the CI matrix in
+  `.github/workflows/package-build-and-tests.yml`. Consumers still
+  on 3.9 should pin to pdip `0.7.x`.
 
 ## [0.7.0] — 2026-04-24
 

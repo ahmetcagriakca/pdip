@@ -74,7 +74,7 @@ pip install "pdip[integrator]"
 pip install "pdip[api,integrator,cryptography]"
 ```
 
-Python **3.9+** is supported.
+Python **3.10+** is supported.
 
 The extras are defined in [`setup.py`](setup.py). See
 [ADR-0014](docs/governance/adr/0014-optional-extras-packaging.md) for
@@ -238,7 +238,7 @@ coverage report -m --omit="*/tests/*,*/site-packages/*"
 ```
 
 Detailed test commands are in [`readme.test.md`](readme.test.md).
-CI runs `package-build-and-tests.yml` on Python 3.9–3.11 across Linux,
+CI runs `package-build-and-tests.yml` on Python 3.10–3.14 across Linux,
 macOS, and Windows.
 
 ## Documentation and governance

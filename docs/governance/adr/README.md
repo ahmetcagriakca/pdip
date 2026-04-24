@@ -35,6 +35,7 @@ shapes how the framework is built and used. See the parent
 | [0025](./0025-dependabot-auto-merge-policy.md) | Dependabot auto-merge policy | Accepted | dependencies, ci, automation |
 | [0026](./0026-test-quality-rules.md) | Test quality rules | Accepted | testing, ci, quality |
 | [0027](./0027-tdd-with-diff-coverage.md) | Test-first development (TDD) with diff-coverage enforcement | Accepted | testing, ci, quality, process |
+| [0028](./0028-raise-python-floor-to-3-10.md) | Raise `python_requires` floor from 3.9 to 3.10 | Accepted | packaging, compatibility, python, ci |
 
 ## Status legend
 
