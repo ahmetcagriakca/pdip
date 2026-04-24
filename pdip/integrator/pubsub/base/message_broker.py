@@ -80,8 +80,12 @@ class MessageBroker:
             self.subscribers[event].append(callback)
 
     def unsubscribe(self, event, callback):
-        if event is not None or event != "" \
-                and event in self.subscribers.keys():
+        # Previously: ``if event is not None or event != "" and event
+        # in self.subscribers.keys():``. ``and`` binds tighter than
+        # ``or``, so the first clause short-circuited to True whenever
+        # ``event`` was any non-None value — including events that had
+        # never been subscribed. The ``else`` warning was dead code.
+        if event and event in self.subscribers:
             self.subscribers[event] = list(
                 filter(
                     lambda x: x is not callback,
