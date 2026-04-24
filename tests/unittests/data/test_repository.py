@@ -11,8 +11,10 @@ soft-delete behaviour from ADR-0009.
 
 import uuid
 from dataclasses import dataclass
+from types import SimpleNamespace
 from typing import Optional
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -149,3 +151,67 @@ class RepositoryDeleteIsSoft(TestCase):
 
         still_there = self.mgr.session.query(_Widget).filter_by(Id=widget.Id).one()
         self.assertIsNotNone(still_there.GcRecId)
+
+
+class _PostgresSessionManagerStub:
+    """A stand-in for ``DatabaseSessionManager`` that fakes a
+    postgresql dialect so the UUID-native branches of Repository
+    (lines 40, 47, 55, 66-67) run. No actual postgres is needed —
+    the repository only ever reads ``engine.dialect.name`` and pokes
+    attributes on the entity object before calling ``session.add``."""
+
+    def __init__(self):
+        self.engine = SimpleNamespace(dialect=SimpleNamespace(name="postgresql"))
+        self.session = MagicMock()
+
+    def commit(self):
+        self.session.commit()
+
+
+class _WidgetDto:
+    """Plain object that the repository can mutate freely. We can't
+    use the SQLAlchemy model for this test because we're bypassing
+    the real engine entirely."""
+
+    def __init__(self, name="pg-widget", tenant_id=None):
+        self.Name = name
+        self.TenantId = tenant_id
+        self.CreateUserId = None
+        self.CreateUserTime = None
+        self.UpdateUserId = None
+        self.UpdateUserTime = None
+        self.GcRecId = None
+
+
+class RepositoryAuditColumnsForPostgresDialect(TestCase):
+    def setUp(self):
+        self.mgr = _PostgresSessionManagerStub()
+        self.repo = Repository(_WidgetDto, self.mgr)
+
+    def test_insert_uses_native_uuid_tenant_and_create_user_id(self):
+        widget = _WidgetDto()
+
+        self.repo.insert(widget)
+
+        # Branch on line 40: TenantId becomes a UUID instance, not a str.
+        self.assertIsInstance(widget.TenantId, uuid.UUID)
+        # Branch on line 47: CreateUserId is also a native UUID.
+        self.assertIsInstance(widget.CreateUserId, uuid.UUID)
+        self.mgr.session.add.assert_called_once_with(widget)
+
+    def test_update_uses_native_uuid_update_user_id(self):
+        widget = _WidgetDto()
+
+        self.repo.update(widget)
+
+        # Branch on line 55.
+        self.assertIsInstance(widget.UpdateUserId, uuid.UUID)
+
+    def test_delete_uses_native_uuid_gc_rec_id_and_update_user_id(self):
+        widget = _WidgetDto()
+
+        self.repo.delete(widget)
+
+        # Branches on lines 66-67.
+        self.assertIsInstance(widget.GcRecId, uuid.UUID)
+        self.assertIsInstance(widget.UpdateUserId, uuid.UUID)
