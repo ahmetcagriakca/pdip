@@ -75,3 +75,6 @@ node_modules
 _trial*
 .vscode/settings.json
 **/temp/
+
+# Claude Code agent worktrees (local, per-session)
+.claude/
