@@ -15,10 +15,16 @@ for the public API surface described in
 
 ### Added
 
-- Governance methodology under `docs/governance/` with 17 Architecture
+- Governance methodology under `docs/governance/` with 19 Architecture
   Decision Records documenting existing pdip decisions.
 - ADR-0017 — Python support matrix is owned by `python_requires` and
   cannot be quietly narrowed by a dependency upgrade.
+- ADR-0018 — Testing strategy: unit / integration pyramid, CI gating
+  on test exit code, dependency expectations, priority order for
+  closing coverage gaps.
+- ADR-0019 — Python 3.14 adoption plan: staged, CI-gated matrix
+  expansion with 3.14 as a non-blocking job until the ecosystem
+  catches up.
 - `CHANGELOG.md` in Keep-a-Changelog format.
 - Expanded `README.md` with installation matrix, quickstart, CQRS /
   REST / ETL examples, project layout, and governance links.
@@ -41,6 +47,32 @@ for the public API surface described in
   window, so no effect).
 - `mysql-connector-python` stays pinned at `8.4.0`. Dependabot's 9.1.0
   bump (PR #37) drops Python 3.8 support, which ADR-0017 forbids.
+- CI matrix widened from `3.9/3.10/3.11` to `3.9/3.10/3.11/3.12/3.13`
+  blocking, plus `3.14` non-blocking (`continue-on-error: true`). See
+  ADR-0019 for the staging plan.
+- CI upgraded `actions/checkout@v2 -> v4` and
+  `actions/setup-python@v2 -> v5` with `allow-prereleases: true` so
+  Python 3.14 installs cleanly.
+- `setup.py` classifiers add `Python :: 3.12`, `3.13`, `3.14`.
+- Added 24 new unit tests covering CQRS dispatcher, `Pdi` entry,
+  pub/sub channel queue + publisher + `TaskMessage`, and json
+  helpers. Suite went from 24 runs to 48.
+
+### Fixed
+
+- `run_tests.py` now exits non-zero when any test errors or fails.
+  Previously the guard was commented out and CI always reported
+  green regardless of the result. See ADR-0018.
+- `run_tests.py` test-case discovery now loads **every**
+  `TestCase` subclass in a test module. The previous loop picked only
+  one class per file so any file with multiple `TestCase` groupings
+  silently dropped the others. After the fix, running the suite on
+  Python 3.11 reports 48 tests instead of 24.
+- `dataclasses-json` added to `requirements.txt`. Tests imported it
+  indirectly through the integrator extras; a clean
+  `pip install -r requirements.txt` failed to install it, which
+  broke local runs for contributors and silently hid failures in
+  CI (because of the exit-code bug above).
 
 ### Removed
 

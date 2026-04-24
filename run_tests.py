@@ -23,9 +23,7 @@ if __name__ == "__main__":
             all_test_modules = self.find_test_modules()
             test_results = self.run_all_tests(all_test_modules)
             total = self.print_results(test_results)
-
-            # if total["runs"]!=total["successes"]:
-            #     raise Exception("Tests getting error")
+            return total
 
         def find_test_modules(self):
             module_finder = ModuleFinder(
@@ -46,22 +44,16 @@ if __name__ == "__main__":
             for t in test_modules:
                 suite = TestSuite()
                 try:
-                    try:
-                        mod = __import__(t["module_address"],
-                                         globals(), locals(), ['suite'])
-                    except KeyError:
-                        self.logger.debug(
-                            "!!!!Module Address : " + t["module_address"])
-                        pass
-                    module = None
-                    for c in TestCase.__subclasses__():
-                        if c.__module__.startswith(t["module_address"]):
-                            module = c
-                    if module is not None:
-                        # suitefn = getattr(module, 'suite')
-                        suite.addTest(self.test_loader.loadTestsFromTestCase(module))
+                    mod = __import__(t["module_address"],
+                                     globals(), locals(), ['suite'])
+                    # Load every TestCase subclass defined in the
+                    # imported module. Using __subclasses__ on the bare
+                    # TestCase misses all but the last matching class
+                    # per file (assignment overwrites), so discover
+                    # locally instead.
+                    suite.addTests(
+                        self.test_loader.loadTestsFromModule(mod))
                 except (ImportError, AttributeError) as ex:
-                    # else, just load all the test cases from the module.
                     trace = format_exc()
                     self.logger.debug(trace)
                     suite.addTest(
@@ -118,5 +110,8 @@ if __name__ == "__main__":
             return total
 
 
-    TestRunner('unittests').run()
+    total = TestRunner('unittests').run()
     # TestRunner('integrationtests').run()
+
+    if total["errors"] or total["failures"]:
+        sys.exit(1)

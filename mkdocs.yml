@@ -69,3 +69,5 @@ nav:
           - ADR-0015 Service auto-discovery: governance/adr/0015-service-auto-discovery.md
           - ADR-0016 English-only content: governance/adr/0016-english-only-content.md
           - ADR-0017 Python support policy: governance/adr/0017-python-support-policy.md
+          - ADR-0018 Testing strategy: governance/adr/0018-testing-strategy.md
+          - ADR-0019 Python 3.14 adoption: governance/adr/0019-python-314-adoption.md
