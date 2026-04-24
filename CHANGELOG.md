@@ -49,6 +49,17 @@ for the public API surface described in
 
 ### Changed
 
+- **Oracle adapter migrated from `cx_Oracle` to
+  [`python-oracledb`](https://python-oracledb.readthedocs.io/)** per
+  ADR-0021. `setup.py`'s `integrator` extra replaces
+  `cx_Oracle==8.3.0` with `oracledb>=2,<3`. `OracleConnector` now
+  imports `oracledb`, uses `oracledb.makedsn` / `oracledb.connect`,
+  and the SQLAlchemy engine URL switches from `oracle+cx_oracle` to
+  `oracle+oracledb`. **Thin mode** is the default, so contributors
+  and CI no longer need the Oracle Instant Client installed to boot
+  the package. Six unit tests under
+  `tests/unittests/integrator/connection/sql/oracle/` mock the driver
+  and pin down the new shape.
 - **Python 3.14 is now a blocking CI job** across Linux, macOS, and
   Windows. The `continue-on-error: true` escape hatch from ADR-0019
   is dropped now that the suite is green on 3.14. Two pinned

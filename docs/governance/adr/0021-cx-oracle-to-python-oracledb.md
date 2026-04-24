@@ -1,6 +1,7 @@
 # ADR-0021: Migrate the Oracle adapter from `cx_Oracle` to `python-oracledb`
 
-- **Status:** Accepted
+- **Status:** Accepted — **Implemented 2026-04-24** (PR replacing
+  `oracle_connector.py` + `setup.py` extra + unit tests).
 - **Date:** 2026-04-24
 - **Deciders:** pdip maintainers
 - **Tags:** dependencies, oracle, integrator
