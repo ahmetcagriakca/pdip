@@ -89,21 +89,26 @@ class ConnectionSourceAdapterFactoryRejectsIncompatibleSlot(TestCase):
 
 
 class ConnectionSourceAdapterFactoryUnsupportedPaths(TestCase):
-    """See the target-factory test's equivalent class for context —
-    ``File`` / ``Queue`` reference attributes that ``__init__`` never
-    assigns, producing ``AttributeError`` today."""
+    """``File`` / ``Queue`` source adapters are not wired in this
+    build: the factory raises ``NotSupportedFeatureException``
+    instead of leaking the prior ``AttributeError`` from the missing
+    slot."""
 
-    def test_file_type_raises_attribute_error_today(self):
+    def test_file_type_raises_not_supported_feature(self):
         factory = _build_factory()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
             factory.get_adapter(ConnectionTypes.File)
 
-    def test_queue_type_raises_attribute_error_today(self):
+        self.assertIn("File", str(ctx.exception))
+
+    def test_queue_type_raises_not_supported_feature(self):
         factory = _build_factory()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
             factory.get_adapter(ConnectionTypes.Queue)
+
+        self.assertIn("Queue", str(ctx.exception))
 
 
 class ConnectionSourceAdapterFactoryRejectsUnknownType(TestCase):

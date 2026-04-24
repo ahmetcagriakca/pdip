@@ -275,7 +275,10 @@ class ResponseFileReflectsListAndPagingFlags(TestCase):
         generator.generate(_build_config(name="GetUser", is_list=True, has_paging=False))
 
         response_content = _files_by_name(file_manager)["GetUserResponse"]["content"]
-        self.assertIn("Data: List[GetUserDto] = None", response_content)
+        # Four-space indentation (matching the other branches) —
+        # previously the list-only branch emitted a literal tab char.
+        self.assertIn("    Data: List[GetUserDto] = None", response_content)
+        self.assertNotIn("\tData: List[GetUserDto]", response_content)
         self.assertNotIn("PageNumber", response_content)
         self.assertNotIn("PageSize", response_content)
         self.assertNotIn("Count: int", response_content)
@@ -286,7 +289,9 @@ class ResponseFileReflectsListAndPagingFlags(TestCase):
         generator.generate(_build_config(name="GetUser", is_list=False, has_paging=False))
 
         response_content = _files_by_name(file_manager)["GetUserResponse"]["content"]
-        self.assertIn("Data: GetUserDto = None", response_content)
+        # Four-space indentation (matching every other branch).
+        self.assertIn("    Data: GetUserDto = None", response_content)
+        self.assertNotIn("\tData: GetUserDto", response_content)
         self.assertNotIn("List[GetUserDto]", response_content)
 
     def test_response_imports_dto_from_dotted_namespace(self):

@@ -93,7 +93,9 @@ class ErrorHandlersTranslatesApplicationExceptions(TestCase):
 
         self.assertEqual(body["Message"], "ConnectionServer exception occurred. Exception Message:")
         log_message = logger.error.call_args.args[0]
-        self.assertIn("Messsage:empty", log_message)
+        # Typo fix: the log line now spells "Message", not "Messsage".
+        self.assertIn("Message:empty", log_message)
+        self.assertNotIn("Messsage", log_message)
 
     def test_operational_exception_returns_400_with_concatenated_args(self):
         handler, logger, _, repository_provider = _build_handler()
@@ -115,4 +117,23 @@ class ErrorHandlersTranslatesApplicationExceptions(TestCase):
         handler.handle_operational_exception(exception)
 
         log_message = logger.error.call_args.args[0]
-        self.assertIn("Operational Exception Messsage:empty", log_message)
+        # Typo fix: the log line now spells "Message", not "Messsage".
+        self.assertIn("Operational Exception Message:empty", log_message)
+        self.assertNotIn("Messsage", log_message)
+
+    def test_operational_exception_uses_instance_separator_and_headers(self):
+        # After dropping the three shadowing locals, the method reads
+        # ``self.separator``, ``self.mime_type_string`` and
+        # ``self.default_content_type``. Override the instance
+        # attributes and observe the change flow through.
+        handler, _, _, _ = _build_handler()
+        handler.separator = "~"
+        handler.mime_type_string = "custom_mime_key"
+        handler.default_content_type = "text/plain"
+        exception = Exception("a", "b")
+
+        body, status_code, headers = handler.handle_operational_exception(exception)
+
+        self.assertEqual(status_code, 400)
+        self.assertEqual(body["Message"], "a~b")
+        self.assertEqual(headers, {"custom_mime_key": "text/plain"})

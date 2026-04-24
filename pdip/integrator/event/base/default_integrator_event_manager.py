@@ -69,7 +69,8 @@ class DefaultIntegratorEventManager(IScoped, IntegratorEventManager):
         message = f'{data.Order} - {data.Name} - Source integration completed. (Source Data Count:{row_count})'
         self.logger.info(message)
 
-    def integration_execute_target(self, data: OperationIntegrationBase, row_count):
+    def integration_execute_target(self, data: OperationIntegrationBase, row_count, sleep_fn=None):
         message = f'{data.Order} - {data.Name} - Target integration completed. (Affected Row Count:{row_count})'
         self.logger.info(message)
-        time.sleep(2)
+        sleep = sleep_fn if sleep_fn is not None else time.sleep
+        sleep(2)

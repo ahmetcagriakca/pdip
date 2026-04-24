@@ -170,14 +170,29 @@ class DefaultIntegratorEventManagerCounters(TestCase):
     def test_integration_execute_target_logs_row_count_in_message(self):
         subject, logger = _build_subject()
         data = OperationIntegrationBase(Id=1, Name="oi", Order=8)
+        slept = MagicMock(name="sleep_fn")
 
         # The production method sleeps 2 seconds after emitting the log
-        # (see module-level docstring and ADR-0026 D.1). Patch the
-        # subject's sleep call so the test stays sub-second.
-        with patch.object(default_integrator_event_manager.time, "sleep") as slept:
-            subject.integration_execute_target(data=data, row_count=11)
+        # but accepts an injectable sleep_fn so tests keep sub-second
+        # (ADR-0026 D.1). Pass a spy so we assert the delay arg without
+        # blocking the test runner.
+        subject.integration_execute_target(data=data, row_count=11, sleep_fn=slept)
 
-            logger.info.assert_called_once_with(
-                "8 - oi - Target integration completed. (Affected Row Count:11)"
-            )
-            slept.assert_called_once_with(2)
+        logger.info.assert_called_once_with(
+            "8 - oi - Target integration completed. (Affected Row Count:11)"
+        )
+        slept.assert_called_once_with(2)
+
+    def test_integration_execute_target_defaults_to_time_sleep_when_no_fn_given(self):
+        subject, logger = _build_subject()
+        data = OperationIntegrationBase(Id=1, Name="oi", Order=8)
+
+        # When no sleep_fn is passed the subject falls back to
+        # ``time.sleep`` on its module; patch it so the test stays fast.
+        with patch.object(default_integrator_event_manager.time, "sleep") as slept:
+            subject.integration_execute_target(data=data, row_count=3)
+
+        logger.info.assert_called_once_with(
+            "8 - oi - Target integration completed. (Affected Row Count:3)"
+        )
+        slept.assert_called_once_with(2)

@@ -62,14 +62,14 @@ class SqlLoggerFallsBackToConsoleWhenRepositoryFails(TestCase):
         self.assertIn("42-plain", err_msg)
         self.assertIn("Sql logging getting error", err_msg)
 
-        # finally branch calls console.log with the level. Note the
-        # job_id gets prefixed twice because both the except and the
-        # finally arms re-apply the prefix — asserted explicitly so
-        # future refactors that fix the double-prefix flag here.
+        # finally branch calls console.log with the level. After the
+        # fix, the job_id is prefixed only once: the except arm applies
+        # it, and the finally arm no longer re-applies it on the error
+        # path.
         console.log.assert_called_once()
         level, msg = console.log.call_args[0]
         self.assertEqual(level, ERROR)
-        self.assertEqual(msg, "42-42-plain")
+        self.assertEqual(msg, "42-plain")
 
     def test_missing_job_id_does_not_prefix_message_in_finally(self):
         # Arrange
