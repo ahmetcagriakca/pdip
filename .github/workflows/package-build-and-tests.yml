@@ -57,10 +57,20 @@ jobs:
         # with pragmas or force artificial coverage of unreachable
         # branches. See ADR-0023 §2 and ADR-0027 for the split.
         run: |
-          coverage run run_tests.py
-          coverage report -m --fail-under=0
-          coverage xml
-          coverage html
+          set -x
+          python --version
+          coverage --version
+          coverage run run_tests.py 2>&1 | tee coverage-run.log
+          run_exit=${PIPESTATUS[0]}
+          echo "=== coverage run exit=$run_exit ===" | tee -a coverage-run.log
+          coverage report -m --fail-under=0 2>&1 | tee -a coverage-run.log
+          rep_exit=${PIPESTATUS[0]}
+          echo "=== coverage report exit=$rep_exit ===" | tee -a coverage-run.log
+          coverage xml 2>&1 | tee -a coverage-run.log || true
+          coverage html 2>&1 | tee -a coverage-run.log || true
+          # surface the actual failure
+          test "$run_exit" -eq 0
+          test "$rep_exit" -eq 0
 
       - name: Enforce coverage floor (ADR-0023)
         # Single canonical cell, same as diff-cover. fail_under=100
@@ -96,5 +106,6 @@ jobs:
           path: |
             coverage.xml
             htmlcov/
+            coverage-run.log
           if-no-files-found: warn
           retention-days: 14
