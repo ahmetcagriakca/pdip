@@ -23,10 +23,10 @@ From `setup.py` extras and `requirements.txt`:
 
 | Package | Pin | Extra | Notes |
 |---|---|---|---|
-| `injector` | `0.21.0` | `preferred` / runtime | Small DI library, stable API. |
+| `injector` | `0.22.0` | `preferred` / runtime | Small DI library, stable API. Bumped from 0.21.0 alongside this report. |
 | `SQLAlchemy` | `2.0.35` | `preferred` / runtime | 2.0.x line; check for 2.0.x patch releases. |
 | `PyYAML` | `6.0.1` | `preferred` / runtime | — |
-| `dataclasses` | `0.6` | `preferred` / runtime | Backport; only relevant on Python < 3.7, can be dropped given `python_requires >= 3.8`. |
+| ~~`dataclasses`~~ | ~~`0.6`~~ | — | Removed as part of this audit; Python 3.6 backport is a no-op on `python_requires >= 3.8`. |
 | `dataclasses-json` | `0.6.7` | `integrator` | — |
 | `pandas` | `2.2.2` | `integrator` | — |
 | `pyodbc` | `5.1.0` | `integrator` | — |
@@ -37,13 +37,13 @@ From `setup.py` extras and `requirements.txt`:
 | `func-timeout` | `4.3.5` | `integrator` | — |
 | `Flask` | `3.0.3` | `api` | Current 3.x. |
 | `Flask-Cors` | `5.0.0` | `api` | — |
-| `Flask-Ext` | `0.1` | `api` | Very old; effectively unmaintained. Audit for usage. |
+| ~~`Flask-Ext`~~ | ~~`0.1`~~ | — | Removed as part of this audit; no imports found in `pdip/` or `tests/`. |
 | `Flask-Injector` | `0.15.0` | `api` | Pinned to an older minor; check compatibility with current `injector`. |
 | `flask-restx` | `1.3.0` | `api` | — |
 | `Werkzeug` | `3.0.3` | `api` | Known advisories historically around this minor; re-check. |
 | `markupsafe` | `2.1.5` | `api` | — |
 | `cryptography` | `43.0.0` | `cryptography` | Active CVE surface; always keep current. |
-| `Fernet` | `1.0.1` | `cryptography` | Non-stdlib `Fernet`; `cryptography` already ships Fernet, so this dependency is likely redundant. Audit for usage. |
+| ~~`Fernet`~~ | ~~`1.0.1`~~ | — | Removed as part of this audit; pdip uses `cryptography.fernet.Fernet` from the `cryptography` package. |
 | `coverage` | `7.5.1` | dev only | — |
 
 ## Observations
@@ -106,6 +106,32 @@ In order of impact / risk:
   3.9 / 3.10 / 3.11 × Linux / macOS / Windows matrix would be
   irresponsible.
 - This report does not change `setup.py` or `requirements.txt`.
+
+## Follow-up log
+
+Actions taken after the original audit:
+
+- **2026-04-24** — Safe patch-level bumps landed via PR #44
+  (coverage 7.6.10, cryptography 43.0.1, pandas 2.2.3, PyYAML 6.0.2,
+  Werkzeug 3.0.6).
+- **2026-04-24** — Dependency cleanup and policy work:
+  - Removed redundant pins: `dataclasses==0.6` (backport, no-op on
+    Python 3.8+), `Fernet==1.0.1` (pdip uses `cryptography.fernet.Fernet`
+    and never imported the third-party `Fernet` package), and
+    `Flask-Ext==0.1` (no imports anywhere in the codebase).
+  - `injector` bumped 0.21.0 → 0.22.0 (PR #28 closed as merged via
+    cleanup). 0.22 adds PEP 593 `Annotated` support and drops Python
+    3.7; neither affects pdip.
+  - `mysql-connector-python` **kept at 8.4.0**. Dependabot PR #37
+    proposed 9.1.0, which removes Python 3.8 support; ADR-0017 blocks
+    this until the Python floor is raised deliberately. PR #37 closed
+    with a link to ADR-0017.
+- **Open items**
+  - `cx_Oracle` → `python-oracledb` migration still needs an ADR.
+  - `kafka-python` maintenance status still needs a decision.
+  - CI matrix does not yet include Python 3.8 even though
+    `python_requires >= 3.8`; widening the matrix would catch future
+    floor regressions (see ADR-0017's follow-ups).
 
 ## How to use this report
 

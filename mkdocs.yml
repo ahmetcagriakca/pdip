@@ -68,3 +68,4 @@ nav:
           - ADR-0014 Optional extras packaging: governance/adr/0014-optional-extras-packaging.md
           - ADR-0015 Service auto-discovery: governance/adr/0015-service-auto-discovery.md
           - ADR-0016 English-only content: governance/adr/0016-english-only-content.md
+          - ADR-0017 Python support policy: governance/adr/0017-python-support-policy.md

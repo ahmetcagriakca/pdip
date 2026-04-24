@@ -15,8 +15,10 @@ for the public API surface described in
 
 ### Added
 
-- Governance methodology under `docs/governance/` with 16 Architecture
+- Governance methodology under `docs/governance/` with 17 Architecture
   Decision Records documenting existing pdip decisions.
+- ADR-0017 — Python support matrix is owned by `python_requires` and
+  cannot be quietly narrowed by a dependency upgrade.
 - `CHANGELOG.md` in Keep-a-Changelog format.
 - Expanded `README.md` with installation matrix, quickstart, CQRS /
   REST / ETL examples, project layout, and governance links.
@@ -33,9 +35,21 @@ for the public API surface described in
 - Bumped safe patch-level dependencies picked up from open Dependabot
   PRs: `coverage` 7.5.1 → 7.6.10, `cryptography` 43.0.0 → 43.0.1,
   `pandas` 2.2.2 → 2.2.3, `PyYAML` 6.0.1 → 6.0.2, `Werkzeug` 3.0.3
-  → 3.0.6. Major bumps (`injector` 0.22, `mysql-connector-python`
-  9.x) remain open on their respective Dependabot PRs pending manual
-  verification.
+  → 3.0.6.
+- Bumped `injector` 0.21.0 → 0.22.0. Changelog for 0.22 adds PEP 593
+  `Annotated` support and drops Python 3.7 (not in our supported
+  window, so no effect).
+- `mysql-connector-python` stays pinned at `8.4.0`. Dependabot's 9.1.0
+  bump (PR #37) drops Python 3.8 support, which ADR-0017 forbids.
+
+### Removed
+
+- `dataclasses==0.6` — Python 3.6 backport; no-op on the supported
+  matrix (`python_requires >= 3.8`).
+- `Fernet==1.0.1` — third-party wrapper. pdip imports `Fernet` from
+  the `cryptography` package (`cryptography.fernet.Fernet`), which
+  was already the intended path.
+- `Flask-Ext==0.1` — not imported anywhere in the codebase.
 
 ### Fixed
 

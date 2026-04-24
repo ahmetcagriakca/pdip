@@ -24,6 +24,7 @@ shapes how the framework is built and used. See the parent
 | [0014](./0014-optional-extras-packaging.md) | Ship optional dependencies as `extras_require` feature sets | Accepted | packaging, distribution |
 | [0015](./0015-service-auto-discovery.md) | Auto-discover services by importing all modules at startup | Accepted | di, bootstrap |
 | [0016](./0016-english-only-content.md) | Documentation, code, and commit messages are English-only | Accepted | documentation, contribution |
+| [0017](./0017-python-support-policy.md) | Python support matrix is set by `python_requires`, not by dependency drift | Accepted | packaging, compatibility |
 
 ## Status legend
 
