@@ -25,6 +25,8 @@ shapes how the framework is built and used. See the parent
 | [0015](./0015-service-auto-discovery.md) | Auto-discover services by importing all modules at startup | Accepted | di, bootstrap |
 | [0016](./0016-english-only-content.md) | Documentation, code, and commit messages are English-only | Accepted | documentation, contribution |
 | [0017](./0017-python-support-policy.md) | Python support matrix is set by `python_requires`, not by dependency drift | Accepted | packaging, compatibility |
+| [0018](./0018-testing-strategy.md) | Testing strategy — pyramid, coverage, and CI gating | Accepted | testing, ci, quality |
+| [0019](./0019-python-314-adoption.md) | Python 3.14 adoption plan | Accepted | packaging, compatibility, python |
 
 ## Status legend
 

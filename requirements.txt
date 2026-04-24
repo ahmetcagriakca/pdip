@@ -1,5 +1,6 @@
 coverage==7.6.10
 cryptography==43.0.1
+dataclasses-json==0.6.7
 func-timeout==4.3.5
 Flask==3.0.3
 Flask_Cors==5.0.0
