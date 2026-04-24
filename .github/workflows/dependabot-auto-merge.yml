@@ -23,11 +23,11 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a  # v2
 
       - name: Auto-merge patch bumps that do not touch integrator extras
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
