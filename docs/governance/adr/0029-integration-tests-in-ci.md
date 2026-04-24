@@ -55,12 +55,14 @@ and runs the matching test module against it.
 |---|---|
 | `schedule: cron: "0 4 * * *"` | Daily at 04:00 UTC. |
 | `workflow_dispatch` | Any maintainer can run it on demand from the Actions tab. |
+| `pull_request` with narrow `paths:` | **Self-test only** — fires when a PR touches `.github/workflows/integration-tests.yml`, `tests/environments/**`, or `tests/integrationtests/**`. A workflow / fixture edit should not ship as "merge and hope the next nightly is green"; the PR author gets to see it work against real backends before review. |
 
-**Not** triggered on `push` or `pull_request`. The main CI workflow
-(`package-build-and-tests.yml`) stays focused on the fast unit-test
-path (< 2 min feedback); integration runs would dilute that loop for
-no commit-level benefit — driver / image regressions surface on a
-day-scale, not a commit-scale.
+**Not** triggered on unrelated `push` or `pull_request`. The main CI
+workflow (`package-build-and-tests.yml`) stays focused on the fast
+unit-test path (< 2 min feedback); running integration tests for
+every `pdip/` / test edit would dilute that loop for no commit-level
+benefit — driver / image regressions surface on a day-scale, not a
+commit-scale.
 
 ### 3. Phased backend rollout
 

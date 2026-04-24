@@ -32,6 +32,18 @@ on:
     # Every day at 04:00 UTC. Deliberately late in the European evening
     # / early morning to avoid GitHub Actions queue pressure.
     - cron: "0 4 * * *"
+  # Self-test trigger: a PR that touches the workflow itself or the
+  # docker-compose fixtures it consumes runs immediately so the author
+  # sees it work against real backends before merging — without this,
+  # every workflow edit would be "merge and hope the next nightly is
+  # green". Scoped narrowly to only the integration-test-specific
+  # paths, so the main CI feedback loop stays unchanged. See
+  # ADR-0029 §2 for the "no per-push on unrelated files" rule.
+  pull_request:
+    paths:
+      - ".github/workflows/integration-tests.yml"
+      - "tests/environments/**"
+      - "tests/integrationtests/**"
 
 permissions:
   contents: read
