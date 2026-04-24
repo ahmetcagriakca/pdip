@@ -52,6 +52,7 @@ class TestProcessManager(TestCase):
             kwargs=data_kwargs)
         results = process_manager.get_results()
         assert len(results) == 2
-        for result in results:
-            if result.State == 4:
-                assert str(results[0].Exception) == 'process has error'
+        errored = [r for r in results if r.State == 4]
+        assert errored, 'expected at least one subprocess to report State=4'
+        for result in errored:
+            assert str(result.Exception) == 'process has error'

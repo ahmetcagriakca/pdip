@@ -49,6 +49,23 @@ for the public API surface described in
 
 ### Changed
 
+- **Python 3.14 is now a blocking CI job** across Linux, macOS, and
+  Windows. The `continue-on-error: true` escape hatch from ADR-0019
+  is dropped now that the suite is green on 3.14.
+- `requirements.txt` slimmed: `pandas`, `kafka-python`, and
+  `func-timeout` moved out of the core install and now live only in
+  the `integrator` extra where they belong (they are only imported by
+  integration adapters). A clean `pip install -r requirements.txt`
+  no longer needs to build pandas on Python versions without
+  prebuilt wheels — the immediate cause of the previous 3.14 Linux
+  and 3.14 macOS failures.
+- `pdip.processing.ProcessManager` and
+  `pdip.integrator.pubsub.MessageBroker` now pin the
+  `multiprocessing` start method to **`spawn`** via
+  `multiprocessing.get_context('spawn')`. Python 3.14 changed the
+  default on POSIX from `fork` to `forkserver`; pinning `spawn`
+  makes pdip's behaviour identical on Linux, macOS, and Windows
+  across every supported Python.
 - Bumped safe patch-level dependencies picked up from open Dependabot
   PRs: `coverage` 7.5.1 → 7.6.10, `cryptography` 43.0.0 → 43.0.1,
   `pandas` 2.2.2 → 2.2.3, `PyYAML` 6.0.1 → 6.0.2, `Werkzeug` 3.0.3
@@ -71,6 +88,13 @@ for the public API surface described in
 
 ### Fixed
 
+- `tests/unittests/processing/test_process_manager.py::test_process_error`
+  referenced `results[0]` instead of the loop variable, so the
+  assertion passed only when the first subprocess happened to be
+  the one that errored. Under `spawn` (the new default; see above)
+  only one subprocess typically reports `State=4`, and when that
+  was not index 0 the assertion failed. Rewritten to iterate the
+  errored results.
 - `pdip.data.repository.Repository.delete` / `delete_by_id` used
   `uuid.uuid4()` directly, producing a UUID object rather than the
   dialect-aware string the rest of the repository uses. On SQLite
