@@ -33,11 +33,11 @@ setup(
     extras_require={
         "api": [
             "Flask==3.1.3",
-            "Flask_Cors==6.0.0",
+            "Flask_Cors==6.0.2",
             "Flask-Injector==0.15.0",
-            "flask-restx==1.3.0",
+            "flask-restx==1.3.2",
             "markupsafe==2.1.5",
-            "Werkzeug==3.1.6"
+            "Werkzeug==3.1.8"
         ],
         "cryptography": [
             "cryptography==46.0.7"
@@ -53,9 +53,9 @@ setup(
             "pyodbc==5.1.0"
         ],
         "preferred": [
-            "injector==0.22.0",
+            "injector==0.24.0",
             "PyYAML==6.0.3",
-            "SQLAlchemy==2.0.35"
+            "SQLAlchemy==2.0.49"
         ]
     },
     classifiers=[
