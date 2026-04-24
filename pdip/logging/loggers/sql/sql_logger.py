@@ -39,6 +39,7 @@ class SqlLogger(IScoped, ILogger):
             if self.application_config.hostname is not None:
                 application_name += f'-{self.application_config.hostname}'
             comment = f'{application_name}-{process_info}'
+            errored = False
             try:
                 repository_provider = RepositoryProvider(database_config=self.database_config,
                                                          database_session_manager=None)
@@ -48,11 +49,12 @@ class SqlLogger(IScoped, ILogger):
                 log_repository.insert(log)
                 repository_provider.commit()
             except Exception as ex:
+                errored = True
                 if job_id is not None:
                     message = f"{job_id}-{message}"
                 self.console_logger.error(f'{message}. Sql logging getting error. Error:{ex}')
             finally:
-                if job_id is not None:
+                if not errored and job_id is not None:
                     message = f"{job_id}-{message}"
                 self.console_logger.log(level, f'{message}')
         else:

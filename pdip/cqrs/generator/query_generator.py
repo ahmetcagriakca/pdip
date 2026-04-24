@@ -105,9 +105,9 @@ class {query_name}Dto:
     PageSize: int = None
     Count: int = None'''
             else:
-                attributes = f"\tData: List[{query_name}Dto] = None"
+                attributes = f"    Data: List[{query_name}Dto] = None"
         else:
-            attributes = f"\tData: {query_name}Dto = None"
+            attributes = f"    Data: {query_name}Dto = None"
         content = \
             f'''
 from typing import List

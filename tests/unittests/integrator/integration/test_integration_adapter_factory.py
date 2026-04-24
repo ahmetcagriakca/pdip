@@ -8,9 +8,9 @@ adapter based on the ``IntegrationBase`` shape:
 * source and target both present -> ``source_to_target_integration``
   (guarded by an ``isinstance`` check on ``source_integration``).
 
-Note: the ``else`` branch tests compatibility of ``source_integration``
-but returns ``source_to_target_integration`` — we pin that odd
-behaviour as a **real bug noted** rather than a silent accident.
+After the bug fix, the ``else`` branch guards the same object it
+returns (``source_to_target_integration``), so the negative path only
+trips when the source-to-target adapter is itself incompatible.
 """
 
 from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
@@ -105,13 +105,27 @@ class IntegrationAdapterFactoryRejectsIncompatibleAdapters(TestCase):
         with self.assertRaises(IncompatibleAdapterException):
             factory.get(integration)
 
-    def test_source_and_target_with_incompatible_source_raises(self):
-        # NOTE: the factory checks ``source_integration`` via isinstance
-        # but *returns* ``source_to_target_integration``. The negative
-        # path is still reachable because the isinstance guard is on
-        # ``source_integration``.
-        factory = _build_factory(source=object())
+    def test_source_and_target_with_incompatible_source_to_target_raises(self):
+        # The factory now guards the same object it returns: a
+        # source-to-target slot that is not an ``IntegrationAdapter``
+        # surfaces as ``IncompatibleAdapterException``.
+        factory = _build_factory(source_to_target=object())
         integration = _make_integration(target_name="T", source_name="S")
 
-        with self.assertRaises(IncompatibleAdapterException):
+        with self.assertRaises(IncompatibleAdapterException) as ctx:
             factory.get(integration)
+
+        self.assertIn("incompatible", str(ctx.exception))
+
+    def test_source_and_target_ignores_source_adapter_type_when_s2t_is_valid(self):
+        # Regression: previously the guard mistakenly evaluated
+        # ``source_integration`` and returned ``source_to_target``.
+        # Now a broken source slot no longer blocks routing as long
+        # as the returned s2t adapter is compatible.
+        s2t = MagicMock(spec=IntegrationAdapter, name="s2t")
+        factory = _build_factory(source=object(), source_to_target=s2t)
+        integration = _make_integration(target_name="T", source_name="S")
+
+        result = factory.get(integration)
+
+        self.assertIs(result, s2t)

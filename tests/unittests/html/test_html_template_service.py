@@ -250,12 +250,17 @@ class PrepareTableDataDynamicBuildsRowsAndPaginationMetadata(TestCase):
         )
 
         # Assert
+        # After the key-alignment fix, the emitted dict uses the same
+        # names as ``Pagination.__init__`` (``Page`` + ``TotalCount``)
+        # so downstream code (e.g. ``render_table``) can round-trip it.
         self.assertEqual(pagination.Limit, 50)
         self.assertEqual(pagination.Page, 1)
-        self.assertEqual(result["pagination"]["Count"], 130)
-        self.assertEqual(result["pagination"]["PageNumber"], 1)
+        self.assertEqual(result["pagination"]["TotalCount"], 130)
+        self.assertEqual(result["pagination"]["Page"], 1)
         self.assertEqual(result["pagination"]["Limit"], 50)
         self.assertEqual(result["pagination"]["TotalPage"], 3)  # 130/50 + 1
+        self.assertNotIn("PageNumber", result["pagination"])
+        self.assertNotIn("Count", result["pagination"])
         query.limit.assert_called_once_with(50)
         limited.offset.assert_called_once_with(0)
 
@@ -282,7 +287,7 @@ class PrepareTableDataDynamicBuildsRowsAndPaginationMetadata(TestCase):
         # Assert
         query.limit.assert_called_once_with(20)
         limited.offset.assert_called_once_with(20)  # (2-1)*20
-        self.assertEqual(result["pagination"]["PageNumber"], 2)
+        self.assertEqual(result["pagination"]["Page"], 2)
         self.assertEqual(result["pagination"]["Filter"], "f")
         self.assertEqual(len(result["rows"]), 1)
 
@@ -367,3 +372,36 @@ class RenderTableEmitsTableHtmlWithHeadersAndRows(TestCase):
         # Assert
         self.assertNotIn('class="pagination"', html)
         self.assertNotIn('class="active"', html)
+
+    def test_pagination_block_renders_when_keys_match_pagination_init(self):
+        # Regression for the key-alignment fix: the pagination dict
+        # emitted by ``prepare_table_data_dynamic`` must now round-trip
+        # through ``JsonConvert.FromJSON`` into a ``Pagination`` object
+        # with a working ``Page`` attribute and drive the active-class
+        # highlight on the current page.
+        service, _ = _build_service()
+        pagination_json = {
+            "PageUrl": "/items/{0}",
+            "Page": 2,
+            "Limit": 10,
+            "TotalCount": 25,
+            "TotalPage": 3,
+            "Filter": "",
+        }
+        source = {
+            "columns": [_cell("N")],
+            "rows": [{"data": [_cell("1")]}],
+            "pagination": pagination_json,
+        }
+
+        html = service.render_table(source)
+
+        # The pagination div is rendered; the active page is the one
+        # matching ``Page`` (==2), and there are TotalPage links in all.
+        self.assertIn('class="pagination"', html)
+        self.assertIn('class="active"', html)
+        self.assertEqual(html.count('<a href='), 3)
+        # Only page 2 got the active class.
+        self.assertIn('class="active">2<', html)
+        self.assertNotIn('class="active">1<', html)
+        self.assertNotIn('class="active">3<', html)

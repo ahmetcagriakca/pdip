@@ -78,6 +78,44 @@ class SeedRunnerIteratesSubclasses(TestCase):
         # The DI lookup failure is logged via logger.exception.
         logger.exception.assert_called_once()
 
+    def test_run_continues_to_next_subclass_when_fallback_ctor_raises(self):
+        # Regression: the fallback ``seed_class()`` + ``.seed()`` call
+        # previously ran outside the per-subclass try/except, so a
+        # broken fallback propagated out of the loop and skipped every
+        # remaining subclass. After the fix, the fallback failure is
+        # logged and the loop moves on.
+        runner, logger, service_provider = _build_runner()
+        session_manager = MagicMock(spec=DatabaseSessionManager)
+
+        broken_class = MagicMock(name="broken_seed_class")
+        broken_class.side_effect = RuntimeError("ctor exploded")
+
+        good_class = MagicMock(name="good_seed_class")
+        good_instance = MagicMock()
+        good_class.return_value = good_instance  # not reached on happy path
+
+        def resolve(requested):
+            if requested is DatabaseSessionManager:
+                return session_manager
+            if requested is good_class:
+                return good_instance
+            # Force a DI failure for the broken class so the fallback runs.
+            raise KeyError("not registered")
+
+        service_provider.get.side_effect = resolve
+
+        with patch.object(
+            Seed, "__subclasses__", return_value=[broken_class, good_class]
+        ):
+            runner.run()
+
+        # The broken fallback logged an exception, and the good class
+        # still got its .seed() call — the loop did not abort.
+        good_instance.seed.assert_called_once()
+        # Two exceptions logged for the broken class (DI failure +
+        # fallback ctor failure); none for the good class.
+        self.assertGreaterEqual(logger.exception.call_count, 2)
+
     def test_run_logs_operational_error_when_connect_fails(self):
         runner, logger, service_provider = _build_runner()
         session_manager = MagicMock(spec=DatabaseSessionManager)

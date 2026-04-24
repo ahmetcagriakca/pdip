@@ -350,6 +350,24 @@ class SourceToTargetErrorMessageDependsOnTargetVariant(TestCase):
 
         self.assertEqual(message, "S.T integration execute getting error.")
 
+    def test_error_message_uses_bigdata_schema_and_object_name(self):
+        bigdata = MagicMock(Schema="BD", ObjectName="BT")
+        integration = _build_integration(bigdata=bigdata)
+        subject, _tf, _sf = _build_subject(MagicMock(), MagicMock())
+
+        message = subject.get_error_message(integration)
+
+        self.assertEqual(message, "BD.BT integration execute getting error.")
+
+    def test_error_message_uses_webservice_method(self):
+        webservice = MagicMock(Method="PATCH")
+        integration = _build_integration(webservice=webservice)
+        subject, _tf, _sf = _build_subject(MagicMock(), MagicMock())
+
+        message = subject.get_error_message(integration)
+
+        self.assertEqual(message, "PATCH integration execute getting error.")
+
     def test_error_message_uses_file_folder_and_name(self):
         file = MagicMock(Folder="/out", FileName="b.csv")
         integration = _build_integration(file=file)
@@ -376,10 +394,10 @@ class SourceToTargetErrorMessageDependsOnTargetVariant(TestCase):
 
         self.assertEqual(message, "Integration execute getting error.")
 
-    def test_error_message_webservice_wins_when_set_alongside_sql(self):
-        # Same bug-for-bug behaviour as the source adapter: the second
-        # ``if`` (not ``elif``) for the WebService branch lets
-        # WebService override an earlier Sql match.
+    def test_error_message_sql_wins_when_webservice_also_set(self):
+        # After the if/elif fix, the first matching branch wins —
+        # Sql comes before WebService, so a Sql+WebService combo keeps
+        # the Sql label.
         sql = MagicMock(Schema="S", ObjectName="T")
         webservice = MagicMock(Method="PATCH")
         integration = _build_integration(sql=sql, webservice=webservice)
@@ -387,4 +405,17 @@ class SourceToTargetErrorMessageDependsOnTargetVariant(TestCase):
 
         message = subject.get_error_message(integration)
 
-        self.assertEqual(message, "PATCH integration execute getting error.")
+        self.assertEqual(message, "S.T integration execute getting error.")
+
+
+class SourceToTargetFinishMessageBranchCoverage(TestCase):
+    def test_finish_message_uses_webservice_method(self):
+        # After the duplicate-BigData fix, the WebService branch uses
+        # the WebService method (not the old duplicate BigData guard).
+        webservice = MagicMock(Method="GET")
+        integration = _build_integration(webservice=webservice)
+        subject, _tf, _sf = _build_subject(MagicMock(), MagicMock())
+
+        message = subject.get_finish_message(integration, data_count=0)
+
+        self.assertEqual(message, "GET integration execute finished.")

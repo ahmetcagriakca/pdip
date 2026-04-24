@@ -59,7 +59,7 @@ class ErrorHandlers(ISingleton):
         trace_message = "empty"
         if exception_traceback is not None and exception_traceback != "":
             trace_message = exception_traceback
-        self.logger.error(f'Messsage:{output_message} - Trace:{trace_message}')
+        self.logger.error(f'Message:{output_message} - Trace:{trace_message}')
         return {
                    "Result": "",
                    "IsSuccess": "false",
@@ -67,14 +67,11 @@ class ErrorHandlers(ISingleton):
                }, 500, {self.mime_type_string: self.default_content_type}
 
     def handle_operational_exception(self, exception):
-        separator = '|'
-        default_content_type = "application/json"
-        mime_type_string = "mimetype"
         """Return JSON instead of HTML for HTTP errors."""
         self.service_provider.get(RepositoryProvider).rollback()
         # start with the correct headers and status code from the error
         exception_traceback = traceback.format_exc()
-        output = separator.join(exception.args)
+        output = self.separator.join(exception.args)
         output_message = "empty"
         if output is not None and output != "":
             output_message = output
@@ -82,9 +79,9 @@ class ErrorHandlers(ISingleton):
         if exception_traceback is not None and exception_traceback != "":
             trace_message = exception_traceback
         self.logger.error(
-            f'Operational Exception Messsage:{output_message} - Trace:{trace_message}')
+            f'Operational Exception Message:{output_message} - Trace:{trace_message}')
         return {
                    "Result": "",
                    "IsSuccess": "false",
                    "Message": output
-               }, 400, {mime_type_string: default_content_type}
+               }, 400, {self.mime_type_string: self.default_content_type}

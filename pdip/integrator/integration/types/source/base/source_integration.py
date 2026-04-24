@@ -56,7 +56,7 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             message = f"{integration.SourceConnections.Sql.Schema}.{integration.SourceConnections.Sql.ObjectName} integration execute finished."
         elif integration.SourceConnections.BigData is not None:
             message = f"{integration.SourceConnections.BigData.Schema}.{integration.SourceConnections.BigData.ObjectName} integration execute finished."
-        elif integration.SourceConnections.BigData is not None:
+        elif integration.SourceConnections.WebService is not None:
             message = f"{integration.SourceConnections.WebService.Method} integration execute finished."
         elif integration.SourceConnections.File is not None:
             message = f"{integration.SourceConnections.File.Folder}\\{integration.SourceConnections.File.FileName} integration execute finished."
@@ -71,7 +71,7 @@ class SourceIntegration(IntegrationAdapter, IScoped):
             message = f"{integration.SourceConnections.Sql.Schema}.{integration.SourceConnections.Sql.ObjectName} integration execute getting error."
         elif integration.SourceConnections.BigData is not None:
             message = f"{integration.SourceConnections.BigData.Schema}.{integration.SourceConnections.BigData.ObjectName} integration execute getting error."
-        if integration.SourceConnections.WebService is not None:
+        elif integration.SourceConnections.WebService is not None:
             message = f"{integration.SourceConnections.WebService.Method} integration execute getting error."
         elif integration.SourceConnections.File is not None:
             message = f"{integration.SourceConnections.File.Folder}\\{integration.SourceConnections.File.FileName} integration execute getting error."

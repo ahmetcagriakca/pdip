@@ -104,31 +104,34 @@ class ConnectionTargetAdapterFactoryRejectsIncompatibleSlot(TestCase):
 
 
 class ConnectionTargetAdapterFactoryUnsupportedPaths(TestCase):
-    """``File`` / ``Queue`` / ``InMemory`` reference attributes that
-    ``__init__`` never assigns. Today they raise ``AttributeError``
-    rather than a friendlier ``NotSupportedFeatureException`` — see
-    the module docstring. We pin down the current behaviour so any
-    future fix (which should switch them to raise
-    ``NotSupportedFeatureException``) is a deliberate test update,
-    not a silent change."""
+    """``File`` / ``Queue`` / ``InMemory`` target adapters are not
+    wired in this build: the factory raises
+    ``NotSupportedFeatureException`` instead of leaking the
+    ``AttributeError`` caused by the missing slot (prior behaviour)."""
 
-    def test_file_type_raises_attribute_error_today(self):
+    def test_file_type_raises_not_supported_feature(self):
         factory = _build_factory()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
             factory.get_adapter(ConnectionTypes.File)
 
-    def test_queue_type_raises_attribute_error_today(self):
+        self.assertIn("File", str(ctx.exception))
+
+    def test_queue_type_raises_not_supported_feature(self):
         factory = _build_factory()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
             factory.get_adapter(ConnectionTypes.Queue)
 
-    def test_in_memory_type_raises_attribute_error_today(self):
+        self.assertIn("Queue", str(ctx.exception))
+
+    def test_in_memory_type_raises_not_supported_feature(self):
         factory = _build_factory()
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
             factory.get_adapter(ConnectionTypes.InMemory)
+
+        self.assertIn("InMemory", str(ctx.exception))
 
 
 class ConnectionTargetAdapterFactoryRejectsUnknownType(TestCase):
