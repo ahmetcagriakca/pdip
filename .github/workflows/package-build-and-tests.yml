@@ -41,24 +41,42 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with unittest and coverage
-        # Every matrix cell runs the suite under ``coverage`` and
-        # emits ``coverage.xml``. The ``fail_under`` floor runs only
-        # on the canonical cell (3.11 ubuntu): coverage is a single
-        # scalar, not a per-Python property, and different versions
-        # legitimately skip different tests (e.g. the
-        # ``@skipIf(sys.version_info >= (3, 14))`` decorators on the
-        # ``typing.Union``-representation tests). See ADR-0023 §5.
-        # ``--fail-under=0`` on the shared report step explicitly
-        # overrides the ``fail_under = 100`` in ``.coveragerc`` so
-        # this step never fails on a non-canonical cell.
+        # Every matrix cell runs the tests under ``coverage`` to
+        # catch Python-version-specific test regressions. Only the
+        # canonical cell (3.11 ubuntu) does the ``fail_under`` floor
+        # check and the ``coverage xml`` / ``diff-cover`` steps.
+        #
+        # Rationale for the canonical-cell split:
+        # - Coverage is a single scalar ("what fraction of pdip/ is
+        #   exercised by the suite"), measured against one Python
+        #   version. Different Python versions legitimately skip
+        #   different tests (for example the
+        #   ``@skipIf(sys.version_info >= (3, 14))`` decorators on
+        #   the ``typing.Union``-representation tests), so enforcing
+        #   the same 100 % floor on every cell would either be gamed
+        #   with pragmas or force artificial coverage of unreachable
+        #   branches. See ADR-0023 §5.
+        # - ``coverage xml`` generation still fails on the Python
+        #   3.14 cells even with coverage 7.13.5 (see PR #87 CI
+        #   evidence). Scoping XML output to the canonical cell
+        #   keeps the matrix green; the canonical cell is the only
+        #   place ``diff-cover`` would read it anyway.
+        # - ``--fail-under=0`` on the report step explicitly
+        #   overrides the ``fail_under = 100`` in ``.coveragerc`` so
+        #   this shared step never fails on a matrix cell that is
+        #   not the enforcer.
         run: |
           coverage run run_tests.py
           coverage report -m --fail-under=0
-          coverage xml
 
-      - name: Enforce coverage floor (ADR-0023)
+      - name: Enforce coverage floor + generate XML (ADR-0023, ADR-0027)
+        # Single canonical cell. Generates coverage.xml for the
+        # diff-cover step that follows, and applies the absolute
+        # ``fail_under = 100`` floor from .coveragerc.
         if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
-        run: coverage report --fail-under=100
+        run: |
+          coverage xml
+          coverage report --fail-under=100
 
       - name: Enforce 100 % diff coverage on changed lines (ADR-0027)
         # Runs only on pull requests, on one matrix cell (avoids
@@ -79,12 +97,16 @@ jobs:
             --fail-under=100
 
       - name: Upload coverage artifact
-        # Every cell produces a coverage.xml. The artifact name
-        # includes the matrix coordinates so uploads don't collide.
-        if: always()
+        # Only the canonical cell produces coverage.xml (see above);
+        # other cells skip XML generation because 3.14 still fails
+        # the reporter even with coverage 7.13.5.
+        if: >
+          always()
+          && matrix.python == '3.11'
+          && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          name: coverage-xml
           path: coverage.xml
           if-no-files-found: warn
           retention-days: 14

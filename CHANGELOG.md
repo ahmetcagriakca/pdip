@@ -42,10 +42,12 @@ for the public API surface described in
   removed, and the CI matrix drops `3.9` (now 5 versions ×
   3 OS = 15 cells).
 - **`coverage` bumped 7.6.12 → 7.13.5.** Unlocked by the
-  3.9 → 3.10 floor raise. Resolves the 3.14 XML-generation failure
-  that forced the canonical-cell workaround in PR #84; the
-  workflow now runs `coverage xml` on every matrix cell again and
-  each cell uploads its own `coverage-<os>-py<version>` artefact.
+  3.9 → 3.10 floor raise (7.11+ requires `>= 3.10`). Current
+  stable release; 3.10–3.13 cells verified, plus a stream of
+  general bug fixes / Python 3.13 support improvements. The
+  canonical-cell scoping for `coverage xml` from PR #84 remains
+  in place: 3.14 still fails the XML reporter even on 7.13.5,
+  tracked as a follow-up in ADR-0028.
 
 - **Coverage floor ratcheted 95 → 100 %** per ADR-0023. Measured
   coverage at the time of this ratchet is **100 %** (3724/3724

@@ -52,12 +52,19 @@ The supported Python matrix is raised by one step:
 - CI matrix drops `3.9`; new declared range is **3.10–3.14**
   (five versions, Linux/macOS/Windows, 15 cells).
 - `coverage==7.6.12` pin is replaced with `coverage==7.13.5`
-  (current stable), which resolves the 3.14 XML generation issue
-  and requires `>= 3.10`.
-- `coverage xml` runs on every matrix cell again; each cell
-  uploads its own `coverage-<os>-py<version>` artefact.
+  (current stable), which requires `>= 3.10`.
 - The `fail_under = 100` gate stays on the canonical 3.11 ubuntu
   cell per ADR-0023 §5.
+- `coverage xml` continues to be scoped to the canonical cell.
+  Empirical note from PR #87 CI: coverage 7.13.5 still fails the
+  XML reporter on all three 3.14 matrix cells (ubuntu, macos,
+  windows) even though its trove classifiers list 3.14. The
+  failure is invisible to the `output` field of the check-run
+  API and the workflow logs API is admin-only, so the exact
+  stack trace remains opaque. The canonical-cell scoping from
+  PR #84 stays in force as a pragmatic mitigation; a follow-up
+  investigation can revisit it if a future `coverage.py` release
+  or a 3.14 stdlib patch removes the symptom.
 - This is a **minor** version bump for pdip, per semver for a
   meaningful reduction in supported surface.
 
@@ -71,10 +78,10 @@ matrix; dropping 3.10 next would be its own decision.
 - The advertised floor matches an in-support upstream runtime.
 - Unblocks `coverage.py` ≥ 7.11 and the stream of 3.10+-only
   library bumps that have been piling up behind the floor.
-- Removes the canonical-cell workaround for `coverage xml`
-  introduced in PR #84: the original workflow layout (coverage
-  XML per matrix cell, artefact per cell) is restored now that
-  every cell can generate it.
+- Reduces the surface of workarounds: 3.9-specific compatibility
+  shims elsewhere in the tree (Python floor assumptions in
+  `type_checker`, `multiprocessing` context pinning) can be
+  simplified in follow-up PRs.
 
 ### Negative
 
@@ -126,11 +133,14 @@ matrix; dropping 3.10 next would be its own decision.
 - Delete the 3.9 row from any install-matrix table we publish.
 - Drop the ``Programming Language :: Python :: 3.9`` classifier
   from `setup.py`.
-- Bump `coverage` to `7.13.5` in `requirements.txt`, verify the
-  full suite, and remove the canonical-cell scoping for
-  `coverage xml` introduced in PR #84.
+- Bump `coverage` to `7.13.5` in `requirements.txt` and verify
+  the full suite.
 - Record the drop under a **Removed** section in `CHANGELOG.md`
   alongside this ADR.
+- Keep the canonical-cell scoping for `coverage xml` from PR #84
+  in place; revisit once a future coverage.py release surfaces
+  a reproducible fix for the 3.14 XML reporter failure. Track
+  this as a separate follow-up issue.
 
 ## References
 
