@@ -75,3 +75,5 @@ nav:
           - ADR-0021 cx_Oracle to python-oracledb: governance/adr/0021-cx-oracle-to-python-oracledb.md
           - ADR-0022 kafka-python replacement: governance/adr/0022-kafka-python-replacement.md
           - ADR-0023 Coverage floor policy: governance/adr/0023-coverage-floor-policy.md
+          - ADR-0024 Release process: governance/adr/0024-release-process.md
+          - ADR-0025 Dependabot auto-merge policy: governance/adr/0025-dependabot-auto-merge-policy.md
