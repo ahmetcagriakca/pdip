@@ -20,7 +20,11 @@ setup(
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',
     packages=find_packages(
-        exclude=["tests", "tests*", "test_*", '__pycache__', '*.__pycache__', '__pycache.*', '*.__pycache__.*']),
+        exclude=[
+            "tests", "tests*", "test_*",
+            "examples", "examples.*", "examples*",
+            "__pycache__", "*.__pycache__", "__pycache.*", "*.__pycache__.*",
+        ]),
     zip_safe=False,
     keywords=['PDI', 'API', 'ETL', 'PROCESS', 'MULTIPROCESS', 'IO', 'CQRS', 'MSSQL', 'ORACLE', 'POSTGRES', 'MYSQL',
               'CSV'],
