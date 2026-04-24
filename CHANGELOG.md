@@ -13,6 +13,21 @@ for the public API surface described in
 
 ## [Unreleased]
 
+### Added
+
+- **ADR-0027 — Test-first development (TDD) with diff-coverage
+  enforcement.** New production code in `pdip/` is written
+  test-first: write the failing test, watch it fail for the right
+  reason, then write the smallest change that makes it pass.
+  Machine enforcement via `diff-cover` in the CI workflow — every
+  PR must leave its newly added or modified `pdip/` lines at
+  **100 % line coverage**, measured against the merge-base with
+  `main`. Independent of the `fail_under` overall floor.
+- `quality_guard` gains a sixth machine-checked rule
+  (ADR-0027 §5): every `# pragma: no cover` must carry an inline
+  reason comment on the same line, or the guard fails.
+- `diff-cover==9.2.0` added to `requirements.txt`.
+
 ### Changed
 
 - **Coverage floor ratcheted 30 → 95 %** per ADR-0023. Measured

@@ -78,3 +78,4 @@ nav:
           - ADR-0024 Release process: governance/adr/0024-release-process.md
           - ADR-0025 Dependabot auto-merge policy: governance/adr/0025-dependabot-auto-merge-policy.md
           - ADR-0026 Test quality rules: governance/adr/0026-test-quality-rules.md
+          - ADR-0027 TDD with diff-coverage: governance/adr/0027-tdd-with-diff-coverage.md

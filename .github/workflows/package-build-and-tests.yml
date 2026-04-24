@@ -20,6 +20,10 @@ jobs:
         python: [ '3.9', '3.10', '3.11', '3.12', '3.13', '3.14' ]
     steps:
       - uses: actions/checkout@v4
+        with:
+          # diff-cover needs the merge-base to exist locally so it can
+          # compute "lines changed since main" on pull-request builds.
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v5
         with:
@@ -42,6 +46,24 @@ jobs:
           coverage report -m --fail-under=95
           coverage xml
           coverage html
+
+      - name: Enforce 100 % diff coverage on changed lines (ADR-0027)
+        # Runs only on pull requests, on one matrix cell (avoids
+        # duplicate diff reports from every Python × OS combination).
+        # diff-cover compares coverage.xml against the PR's merge-base
+        # with ``origin/main``; the --fail-under=100 gate fails CI if
+        # any new or modified pdip/ line is uncovered. The override
+        # pattern for tests/config is implicit — those files are not
+        # in coverage.xml to begin with.
+        if: >
+          github.event_name == 'pull_request'
+          && matrix.python == '3.11'
+          && matrix.os == 'ubuntu-latest'
+        run: |
+          git fetch origin "${GITHUB_BASE_REF:-main}" --depth=100
+          diff-cover coverage.xml \
+            --compare-branch "origin/${GITHUB_BASE_REF:-main}" \
+            --fail-under=100
 
       - name: Upload coverage artifacts
         if: always()

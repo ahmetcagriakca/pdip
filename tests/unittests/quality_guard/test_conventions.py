@@ -243,3 +243,58 @@ class RuleF2NoStarImports(TestCase):
             "ADR-0026 F.2: no star imports in tests/. Offenders:\n  "
             + "\n  ".join(offenders),
         )
+
+
+# ---------------------------------------------------------------------------
+# Rule ADR-0027 §5 — ``# pragma: no cover`` must carry a one-line
+# reason comment on the same line (or the line immediately above it
+# when the pragma is on its own line).
+# ---------------------------------------------------------------------------
+
+
+_PRAGMA_NO_COVER_PATTERN = re.compile(r"#\s*pragma:\s*no\s+cover")
+
+
+def _has_pragma_reason(line: str) -> bool:
+    """True when a line with ``# pragma: no cover`` also carries an
+    explanatory comment immediately after the pragma on the same line,
+    e.g. ``foo = 1  # pragma: no cover — constructed only in prod``.
+
+    We look for any non-whitespace text after the ``no cover`` token
+    (other than a trailing closing parenthesis, a colon, a comma, or
+    line-continuation characters). A pragma that lives on its own line
+    with no explanation is rejected."""
+    match = _PRAGMA_NO_COVER_PATTERN.search(line)
+    if not match:
+        return True
+    tail = line[match.end():].strip()
+    # Strip punctuation characters that sometimes trail a pragma
+    # without adding meaning.
+    for ch in "():,;\\":
+        tail = tail.replace(ch, " ")
+    return bool(tail.strip())
+
+
+class RuleADR0027PragmaNoCoverHasReason(TestCase):
+    def test_every_pragma_no_cover_has_an_inline_reason(self):
+        offenders = []
+        src_root = _REPO_ROOT / "pdip"
+        for path in sorted(src_root.rglob("*.py")):
+            if "__pycache__" in path.parts:
+                continue
+            for lineno, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), start=1
+            ):
+                if not _PRAGMA_NO_COVER_PATTERN.search(line):
+                    continue
+                if _has_pragma_reason(line):
+                    continue
+                rel = str(path.relative_to(_REPO_ROOT))
+                offenders.append(f"{rel}:{lineno}: {line.strip()}")
+        self.assertEqual(
+            offenders,
+            [],
+            "ADR-0027 §5: every ``# pragma: no cover`` must carry an "
+            "inline reason comment on the same line. Offenders:\n  "
+            + "\n  ".join(offenders),
+        )
