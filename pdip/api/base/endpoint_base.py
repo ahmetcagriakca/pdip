@@ -62,7 +62,7 @@ class Endpoint:
 
     def find_input_type(self):
         input_types, input_names = self.input_types()
-        if input_types == None or len(input_types) == 0:
+        if input_types is None or len(input_types) == 0:
             return None, None
         elif len(input_types) == 1:
             return input_types[0], input_names[0]

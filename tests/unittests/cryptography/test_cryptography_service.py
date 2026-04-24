@@ -11,7 +11,7 @@ class TestCryptographyService(TestCase):
     def setUp(self):
         try:
             self.pdi = Pdi(configurations=[self.generate_key])
-        except:
+        except Exception:
             self.tearDown()
             raise
 

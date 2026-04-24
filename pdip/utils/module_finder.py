@@ -124,7 +124,7 @@ class ModuleFinder:
                         except Exception as ex:
                             raise
 
-        except:
+        except Exception:
             self.cleanup()
             raise
 

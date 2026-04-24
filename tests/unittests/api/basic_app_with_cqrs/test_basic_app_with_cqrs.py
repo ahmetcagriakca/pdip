@@ -14,7 +14,7 @@ class TestBasicAppWithCqrs(TestCase):
             engine = self.pdi.get(DatabaseSessionManager).engine
             Base.metadata.create_all(engine)
             self.client = self.pdi.get(FlaskAppWrapper).test_client()
-        except:
+        except Exception:
             self.tearDown()
             raise
 
@@ -34,7 +34,7 @@ class TestBasicAppWithCqrs(TestCase):
         assert response.status_code == 200
         response_data = response.get_data(as_text=True)
         json_data = json.loads(response_data)
-        assert json_data['IsSuccess'] == True
+        assert json_data['IsSuccess']
 
     def get_user(self, name):
         response = self.client.get(
@@ -43,7 +43,7 @@ class TestBasicAppWithCqrs(TestCase):
         assert response.status_code == 200
         response_data = response.get_data(as_text=True)
         json_data = json.loads(response_data)
-        assert json_data['IsSuccess'] == True
+        assert json_data['IsSuccess']
         return json_data['Result']['Data']
 
     def test_create_user(self):

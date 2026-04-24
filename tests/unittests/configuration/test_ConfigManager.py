@@ -13,7 +13,7 @@ class TestConfigManager(TestCase):
                 os.path.dirname(os.path.abspath(__file__))))
             self.module_finder = ModuleFinder(root_directory=self.root_directory)
             self.config_manager = None
-        except:
+        except Exception:
             self.tearDown()
             raise
 
