@@ -3,7 +3,7 @@ import sys
 from os import path
 from traceback import format_exc
 from unittest import TestCase
-from unittest.loader import defaultTestLoader, makeSuite, TestLoader
+from unittest.loader import defaultTestLoader, TestLoader
 from unittest.runner import TextTestRunner
 from unittest.suite import TestSuite
 
