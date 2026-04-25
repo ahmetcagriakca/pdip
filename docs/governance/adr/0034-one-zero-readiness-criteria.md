@@ -1,6 +1,6 @@
 # ADR-0034: 1.0 readiness criteria and deprecation policy
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** release, packaging, process, governance, api

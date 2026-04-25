@@ -5,3 +5,13 @@ from .icommand import ICommand
 from .icommand_handler import ICommandHandler
 from .iquery import IQuery
 from .iquery_handler import IQueryHandler
+
+__all__ = (
+    "CommandQueryBase",
+    "CommandQueryHandlerBase",
+    "Dispatcher",
+    "ICommand",
+    "ICommandHandler",
+    "IQuery",
+    "IQueryHandler",
+)

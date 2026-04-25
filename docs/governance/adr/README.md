@@ -39,9 +39,9 @@ shapes how the framework is built and used. See the parent
 | [0029](./0029-integration-tests-in-ci.md) | Integration tests run nightly in CI | Accepted | testing, ci, quality, integration |
 | [0030](./0030-hadoop-impala-fixture-migration.md) | Migrate the Hadoop / Impala / Kudu fixtures off unmaintained images | Proposed | testing, ci, fixtures, bigdata |
 | [0031](./0031-adaptive-nightly-failure-issue.md) | Auto-open a tracking issue on two consecutive nightly integration failures | Proposed | testing, ci, automation, governance |
-| [0032](./0032-hybrid-async-strategy.md) | Hybrid async strategy via additive `pdip[async]` extra | Proposed | integrator, concurrency, packaging, async |
-| [0033](./0033-opentelemetry-observability.md) | OpenTelemetry observability via `pdip[observability]` | Proposed | observability, telemetry, integrator, packaging |
-| [0034](./0034-one-zero-readiness-criteria.md) | 1.0 readiness criteria and deprecation policy | Proposed | release, packaging, process, governance, api |
+| [0032](./0032-hybrid-async-strategy.md) | Hybrid async strategy via additive `pdip[async]` extra | Accepted | integrator, concurrency, packaging, async |
+| [0033](./0033-opentelemetry-observability.md) | OpenTelemetry observability via `pdip[observability]` | Accepted | observability, telemetry, integrator, packaging |
+| [0034](./0034-one-zero-readiness-criteria.md) | 1.0 readiness criteria and deprecation policy | Accepted | release, packaging, process, governance, api |
 
 ## Status legend
 

@@ -1,6 +1,6 @@
 # ADR-0032: Hybrid async strategy via additive `pdip[async]` extra
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** integrator, concurrency, packaging, async

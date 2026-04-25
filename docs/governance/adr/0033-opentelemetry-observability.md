@@ -1,6 +1,6 @@
 # ADR-0033: OpenTelemetry observability via `pdip[observability]`
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** observability, telemetry, integrator, packaging
