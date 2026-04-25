@@ -23,11 +23,17 @@
 
 ## 2. Open PRs
 
-| # | What | Next action | Why deferred |
-|---|---|---|---|
-| [#64](https://github.com/ahmetcagriakca/pdip/pull/64) | Dependabot: `oracledb >=2,<4` (allow 3.x) | **Decide on the upper bound.** Adapter migration to 3.x is a separate ADR — see §4. Hold or merge after a manual smoke against the new Oracle XE nightly job. | [ADR-0025 §2](governance/adr/0025-dependabot-auto-merge-policy.md) — touches an integrator-extra driver, needs human review. |
-| [#63](https://github.com/ahmetcagriakca/pdip/pull/63) | Dependabot: `markupsafe 2.1.5 → 3.0.3` | **Read the 3.0.0 release notes**, confirm transitive-only use (no direct `import markupsafe` in `pdip/`), then merge manually. CI is already green across the full matrix. | [ADR-0025 §1.1](governance/adr/0025-dependabot-auto-merge-policy.md) — major bumps don't auto-merge; 3.0.0 dropped Python 3.7/3.8 and changed `Markup` method signatures. |
-| [#61](https://github.com/ahmetcagriakca/pdip/pull/61) | Dependabot: `pyodbc 5.1.0 → 5.3.0` | **Hold** until the MSSQL nightly job lands (§4) so the bump has a regression signal, then merge manually. | [ADR-0025 §2](governance/adr/0025-dependabot-auto-merge-policy.md) — same integrator-extra carve-out as #64. |
+No tracked open PRs as of 2026-04-25. The three Dependabot bumps that were
+previously open here (#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64 oracledb
+upper-bound to allow 3.x) have all merged after a surface-area audit
+against the adapter call sites — see commits `cdd1bb5`, `ead2013`,
+`a799d7d`.
+
+When new PRs come in, list them here with the same four columns
+(`#`, `What`, `Next action`, `Why deferred`) so the next reader can act
+without re-doing the analysis. If `gh pr list --state open` returns
+nothing for this repo, write a one-line "none" note like this one and
+move on — an empty section is fine, a missing section invites guesswork.
 
 ## 3. Branches
 
@@ -51,7 +57,7 @@ ADR if the answer changed.
 
 | Topic | Status | Pointer |
 |---|---|---|
-| `oracledb` 4.x adoption | Upper bound bump pending in [#64](https://github.com/ahmetcagriakca/pdip/pull/64). 4.x has not been audited against [ADR-0021](governance/adr/0021-cx-oracle-to-python-oracledb.md)'s adapter contract. | Manual smoke + adapter contract review before merging the upper-bound bump. |
+| `oracledb` 4.x adoption | `setup.py` now allows `oracledb>=2,<4`, so 3.x lands automatically; 4.x is not yet released upstream. The adapter only uses `makedsn` + `connect` (DB-API 2.0 surface), which has been stable across the 2.x/3.x line per [ADR-0021](governance/adr/0021-cx-oracle-to-python-oracledb.md). | When Dependabot opens a `<4 → <5` PR, re-run the same surface audit before bumping the upper bound. |
 | MSSQL 2022 nightly job | Listed under [ADR-0029 Follow-ups](governance/adr/0029-integration-tests-in-ci.md). Needs `ACCEPT_EULA=Y` and an SA-login health probe. | Separate PR; image already pinned in `tests/environments/mssql/`. |
 | Kafka 7.7.1 + ZooKeeper nightly job | [ADR-0029 Follow-ups](governance/adr/0029-integration-tests-in-ci.md). Two-service composition + topic-create step. | Separate PR; image already pinned. |
 | Hadoop / Impala fixtures | Marked `# unmaintained` in `tests/environments/`. ADR-0029 explicitly defers their integration-test job until images are migrated. | Migration plan ADR first, then job. |
@@ -78,7 +84,7 @@ rest.
 
 ---
 
-*Last updated on the branch that introduced this file
-(`claude/add-handoff-docs-3qZYI`). When you change anything above, bump
+*Last updated 2026-04-25 on `claude/handoff-clear-merged-prs` (clearing
+the three merged Dependabot rows). When you change anything above, bump
 this line with the date and the branch name so the next reader knows the
 freshness window at a glance.*
