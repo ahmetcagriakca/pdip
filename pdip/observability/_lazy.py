@@ -98,3 +98,49 @@ def get_meter(name):
     except ImportError:
         return _NOOP_METER
     return metrics.get_meter(name)
+
+
+def inject_context():
+    """Return a W3C-compatible carrier dict for the current span
+    context, or ``None`` when observability is disabled, OpenTelemetry
+    is unavailable, or no context is active.
+
+    The carrier is the picklable payload that ``ProcessManager`` ships
+    across the process boundary so a child process can rejoin the
+    parent's trace (ADR-0033 §3 cross-process span propagation).
+    """
+    if not _observability_enabled():
+        return None
+    try:
+        from opentelemetry import propagate
+    except ImportError:
+        return None
+    carrier = {}
+    propagate.inject(carrier)
+    return carrier or None
+
+
+@contextmanager
+def use_context(carrier):
+    """Attach the span context decoded from ``carrier`` for the duration
+    of the ``with`` block.
+
+    No-op when observability is disabled, ``carrier`` is falsy, or
+    OpenTelemetry is unavailable. The wrapped body always runs;
+    ``detach`` is guaranteed even when the body raises.
+    """
+    if not _observability_enabled() or not carrier:
+        yield
+        return
+    try:
+        from opentelemetry import context as otel_context
+        from opentelemetry import propagate
+    except ImportError:
+        yield
+        return
+    extracted = propagate.extract(carrier)
+    token = otel_context.attach(extracted)
+    try:
+        yield
+    finally:
+        otel_context.detach(token)

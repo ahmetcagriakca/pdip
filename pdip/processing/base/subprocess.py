@@ -4,7 +4,11 @@ from time import time
 
 from pdip.dependency.container import DependencyContainer
 from pdip.logging.loggers.console import ConsoleLogger
+from pdip.observability import use_context
 from pdip.processing.models import ProcessTask
+
+
+_TRACE_CARRIER_KWARG = "_pdip_trace_carrier"
 
 
 class Subprocess:
@@ -45,9 +49,14 @@ class Subprocess:
                     # TODO: return result with task
 
                     start = time()
-                    # calling target method
+                    # calling target method — pop the framework-private
+                    # trace carrier (ADR-0033 §3 cross-process span
+                    # propagation) before forwarding kwargs to user
+                    # code so the target_method signature stays clean.
+                    carrier = kwargs.pop(_TRACE_CARRIER_KWARG, None)
                     kwargs["sub_process_id"] = sub_process_id
-                    result = target_method(**kwargs)
+                    with use_context(carrier):
+                        result = target_method(**kwargs)
                     end = time()
                     self.logger.info(
                         f"{sub_process_id} process finished. time:{end - start}")

@@ -9,6 +9,10 @@ from ..models import ProcessInfo
 from ..models import ProcessTask
 from ...dependency.container import DependencyContainer
 from ...logging.loggers.console import ConsoleLogger
+from ...observability import inject_context
+
+
+_TRACE_CARRIER_KWARG = "_pdip_trace_carrier"
 
 
 # Python 3.14 changed the default multiprocessing start method on POSIX
@@ -49,6 +53,15 @@ class ProcessManager:
 
     def start_processes(self, target_method, kwargs, process_count=1):
         self.__configure_process()
+        # Inject the active OTel context (ADR-0033 §3) into a fresh
+        # kwargs copy so the carrier crosses the process boundary
+        # without mutating the caller's dict. ``inject_context``
+        # returns ``None`` when observability is disabled or no span
+        # is active — in that case the kwargs is left untouched.
+        kwargs = dict(kwargs) if kwargs else {}
+        carrier = inject_context()
+        if carrier is not None:
+            kwargs[_TRACE_CARRIER_KWARG] = carrier
         # Initiate the worker processes
         for i in range(process_count):
             # Set process name

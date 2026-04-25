@@ -81,6 +81,8 @@ EXPECTED_PUBLIC_SURFACE = {
     "pdip.observability": (
         "get_meter",
         "get_tracer",
+        "inject_context",
+        "use_context",
     ),
     "pdip.processing": (
         "ProcessManager",
