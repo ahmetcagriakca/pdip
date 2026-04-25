@@ -70,15 +70,17 @@ The first cut ships with:
 
 - **Postgres 16** — `postgres:16-alpine`.
 - **MySQL 8.4** — `mysql:8.4` (LTS).
+- **Oracle XE 21c** — `gvenzl/oracle-xe:21-slim-faststart`,
+  ~40 s boot, exercises ``python-oracledb`` thin mode against a
+  PDB. The integration test now connects via ``ServiceName``
+  (matches gvenzl's CDB+PDB topology) rather than the legacy
+  ``Sid`` field.
 
 Deferred to follow-up PRs, each with its own job block:
 
 - **SQL Server 2022** — the image is public but the service health-
   check needs a different pattern (SA password + Developer edition
   accepts EULA at boot).
-- **Oracle XE 21c** — boots in ~40 s with the `slim-faststart`
-  image, but the pluggable-database lifecycle needs an explicit
-  wait-for-ready probe beyond a simple port check.
 - **Kafka 7.7.1 + ZooKeeper** — two-service composition; needs a
   topic-create step in the job.
 - **Hadoop / Impala bigdata stack** — unmaintained upstream images
@@ -86,6 +88,33 @@ Deferred to follow-up PRs, each with its own job block:
 
 Each deferred backend lands as its own PR so a single broken job
 does not hold up the others.
+
+### 3.1. Speed knob: in-memory data directories
+
+Every backend job mounts the database's data directory as a
+``--tmpfs`` (RAM-backed filesystem). No persistent state is
+expected between job runs anyway, and RAM is one to two orders of
+magnitude faster than the runner's underlying storage. Concrete
+sizes:
+
+| Backend | tmpfs mount | Size |
+|---|---|---|
+| Postgres | `/var/lib/postgresql/data` | 512 MB |
+| MySQL | `/var/lib/mysql` | 512 MB |
+| Oracle XE | `/opt/oracle/oradata` | 2 GB (XE keeps a larger tablespace footprint) |
+
+The Oracle job additionally raises ``--shm-size`` to 1 GB
+(Oracle uses System Global Area shared memory; the Docker default
+of 64 MB is below the XE minimum). Image-level ``slim-faststart``
+already pre-creates the database during image build, so first boot
+just starts the listener (~40 s) instead of running CREATE
+DATABASE.
+
+Boot time is dominated by image-side initialisation scripts; tmpfs
+does not move that. What it does move is per-test query latency,
+which adds up across the integration suite (table create + bulk
+insert + select cycles, especially in the ``TestSqlUtils`` helper
+that seeds 10000 rows for each test).
 
 ### 4. Connection fixture is stable, not parameterised
 

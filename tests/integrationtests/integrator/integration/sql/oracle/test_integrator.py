@@ -24,7 +24,14 @@ class TestOracleIntegration(TestCase):
                     Host='localhost',
                     Port=1521
                 ),
-                Sid='xe',
+                # Modern Oracle (12c+) is a CDB containing pluggable
+                # databases (PDBs); the ``gvenzl/oracle-xe:21-*`` image
+                # creates a PDB named after ``ORACLE_DATABASE`` and
+                # creates ``APP_USER`` inside it. Connect via the PDB
+                # service name rather than the legacy SID. See
+                # tests/environments/oracle/ for the matching image
+                # configuration.
+                ServiceName='test_pdi',
                 BasicAuthentication=ConnectionBasicAuthentication(
                     User='pdi',
                     Password='pdi!123456'
