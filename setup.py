@@ -40,7 +40,7 @@ setup(
             "Flask_Cors==6.0.2",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.2",
-            "markupsafe==2.1.5",
+            "markupsafe==3.0.3",
             "Werkzeug==3.1.8"
         ],
         "cryptography": [
