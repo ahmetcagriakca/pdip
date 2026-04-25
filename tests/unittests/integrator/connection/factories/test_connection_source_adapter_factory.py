@@ -10,7 +10,7 @@ factory test for the real-bug note).
 from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
 
 from unittest import TestCase  # noqa: E402
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 from pdip.exceptions import (  # noqa: E402
     IncompatibleAdapterException,
@@ -123,3 +123,50 @@ class ConnectionSourceAdapterFactoryRejectsUnknownType(TestCase):
 
         with self.assertRaises(NotSupportedFeatureException):
             factory.get_adapter(_Fake())
+
+
+class ConnectionSourceAdapterFactoryAsyncBranch(TestCase):
+    """ADR-0032 §3 — ``is_async=True`` must (a) verify the
+    ``pdip[async]`` extra is installed (clean ImportError otherwise)
+    and (b) raise ``NotSupportedFeatureException`` for every connection
+    type until the matching async sibling adapter lands. The check
+    runs before any sibling lookup so the failure mode is the same
+    for every type."""
+
+    def test_is_async_true_raises_import_error_when_extra_missing(self):
+        factory = _build_factory()
+        with patch(
+            "pdip.integrator.connection.factories"
+            ".connection_source_adapter_factory.require_async_extra",
+            side_effect=ImportError(
+                "install ``pdip[async]`` to use async adapters"
+            ),
+        ):
+            with self.assertRaises(ImportError) as ctx:
+                factory.get_adapter(ConnectionTypes.Sql, is_async=True)
+        self.assertIn("pdip[async]", str(ctx.exception))
+
+    def test_is_async_true_with_extra_present_raises_not_supported(self):
+        factory = _build_factory()
+        with patch(
+            "pdip.integrator.connection.factories"
+            ".connection_source_adapter_factory.require_async_extra",
+            return_value=None,
+        ):
+            with self.assertRaises(NotSupportedFeatureException) as ctx:
+                factory.get_adapter(ConnectionTypes.Sql, is_async=True)
+        self.assertIn("async", str(ctx.exception).lower())
+
+    def test_is_async_default_false_keeps_existing_sync_routing(self):
+        sql_adapter = MagicMock(spec=ConnectionSourceAdapter, name="sql")
+        factory = _build_factory(sql=sql_adapter)
+
+        # Default ``is_async=False`` must not invoke the async-extra
+        # check at all — the sync routing is unchanged.
+        with patch(
+            "pdip.integrator.connection.factories"
+            ".connection_source_adapter_factory.require_async_extra",
+            side_effect=AssertionError("must not be called for sync"),
+        ):
+            result = factory.get_adapter(ConnectionTypes.Sql)
+        self.assertIs(result, sql_adapter)

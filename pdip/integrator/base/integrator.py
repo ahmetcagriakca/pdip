@@ -5,6 +5,7 @@ from ..operation.base import OperationExecution
 from ..operation.domain import OperationBase
 from ..pubsub.base import MessageBroker
 from ...logging.loggers.console import ConsoleLogger
+from ...observability import get_tracer
 
 
 class Integrator:
@@ -37,23 +38,33 @@ class Integrator:
             raise Exception('Operation required')
 
         if isinstance(operation, OperationBase):
-            try:
-                operation = self.integrator_initializer_factory \
-                    .get() \
-                    .initialize(operation=operation,
-                                message_broker=self.message_broker,
-                                execution_id=execution_id,
-                                ap_scheduler_job_id=ap_scheduler_job_id
-                                )
-                self.operation_execution.start(
-                    operation=operation,
-                    channel=self.message_broker.get_publish_channel()
+            with get_tracer("pdip.integrator").start_as_current_span(
+                    "pdip.integrator.job"
+            ) as span:
+                span.set_attribute(
+                    "pdip.integration.id",
+                    operation.Id if operation.Id is not None else 0,
                 )
-            except Exception as ex:
-                raise
-            finally:
-                self.message_broker.join()
-                self.close()
+                span.set_attribute(
+                    "pdip.integration.name", operation.Name or ""
+                )
+                try:
+                    operation = self.integrator_initializer_factory \
+                        .get() \
+                        .initialize(operation=operation,
+                                    message_broker=self.message_broker,
+                                    execution_id=execution_id,
+                                    ap_scheduler_job_id=ap_scheduler_job_id
+                                    )
+                    self.operation_execution.start(
+                        operation=operation,
+                        channel=self.message_broker.get_publish_channel()
+                    )
+                except Exception as ex:
+                    raise
+                finally:
+                    self.message_broker.join()
+                    self.close()
         else:
             raise Exception('Operation type is not suitable')
 

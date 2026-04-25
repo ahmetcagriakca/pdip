@@ -43,6 +43,12 @@ setup(
             "markupsafe==3.0.3",
             "Werkzeug==3.1.8"
         ],
+        "async": [
+            "asyncpg>=0.29,<1",
+            "aiomysql>=0.2,<1",
+            "aioodbc>=0.5,<1",
+            "aiokafka>=0.10,<1"
+        ],
         "cryptography": [
             "cryptography==46.0.7"
         ],
@@ -55,6 +61,10 @@ setup(
             "pandas==2.2.3",
             "psycopg2-binary==2.9.12",
             "pyodbc==5.3.0"
+        ],
+        "observability": [
+            "opentelemetry-api>=1.26,<2",
+            "opentelemetry-sdk>=1.26,<2"
         ],
         "preferred": [
             "injector==0.24.0",

@@ -165,6 +165,90 @@ class SubprocessReportsTargetExceptions(TestCase):
         subject.logger.error.assert_called_once()
 
 
+class SubprocessHonoursTraceCarrierKwarg(TestCase):
+    """ADR-0033 §3 cross-process propagation — when the kwargs payload
+    carries a ``_pdip_trace_carrier`` key, ``Subprocess.start`` must
+    (a) pop it before invoking ``target_method`` so the user's
+    callable does not see the framework-private key, and (b) wrap the
+    call in ``pdip.observability.use_context(carrier)`` so the worker
+    rejoins the parent's trace."""
+
+    def test_carrier_is_popped_from_kwargs_before_target_invocation(self):
+        subject = _build_subject()
+        target = MagicMock(name="target", return_value=None)
+        live = ProcessTask(IsFinished=False)
+
+        out = _start_with(
+            subject,
+            [live],
+            target,
+            kwargs={
+                "data": "x",
+                "_pdip_trace_carrier": {"traceparent": "00-abc-01-01"},
+            },
+            sub_process_id=4,
+        )
+
+        # The user's target_method receives the work kwargs without
+        # the framework-private carrier key.
+        target.assert_called_once_with(sub_process_id=4, data="x")
+        # And the result still flows back as usual.
+        self.assertEqual(_drain(out)[0].State, 3)
+
+    def test_use_context_is_invoked_with_the_carrier(self):
+        subject = _build_subject()
+        captured_calls = []
+
+        # Replace ``use_context`` with a context-manager that records
+        # the carrier it received and runs the body.
+        from contextlib import contextmanager
+
+        @contextmanager
+        def _recorder(carrier):
+            captured_calls.append(carrier)
+            yield
+
+        target = MagicMock(name="target", return_value="ok")
+        live = ProcessTask(IsFinished=False)
+
+        with patch(
+            "pdip.processing.base.subprocess.use_context",
+            side_effect=_recorder,
+        ):
+            _start_with(
+                subject,
+                [live],
+                target,
+                kwargs={"_pdip_trace_carrier": {"traceparent": "00-x"}},
+            )
+
+        self.assertEqual(captured_calls, [{"traceparent": "00-x"}])
+
+    def test_kwargs_without_carrier_passes_none_through(self):
+        subject = _build_subject()
+        captured_calls = []
+
+        from contextlib import contextmanager
+
+        @contextmanager
+        def _recorder(carrier):
+            captured_calls.append(carrier)
+            yield
+
+        target = MagicMock(name="target", return_value="ok")
+        live = ProcessTask(IsFinished=False)
+
+        with patch(
+            "pdip.processing.base.subprocess.use_context",
+            side_effect=_recorder,
+        ):
+            _start_with(subject, [live], target, kwargs={"data": 1})
+
+        # ``None`` is the documented "no carrier present" sentinel —
+        # ``use_context`` short-circuits to a no-op for ``None``.
+        self.assertEqual(captured_calls, [None])
+
+
 class SubprocessInitSelectsLoggerByContainerFlag(TestCase):
     def test_init_falls_back_to_console_logger_without_container(self):
         # ``initialize_container`` left as ``None`` exercises the else
