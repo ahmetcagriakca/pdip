@@ -9,6 +9,13 @@ on:
   pull_request:
     branches: [ development, main ]
 
+# Least-privilege GITHUB_TOKEN per CodeQL `actions/missing-workflow-permissions`.
+# This workflow only checks out the repo, runs tests, and uploads a coverage
+# artifact — none of which need write access. `actions/upload-artifact@v4+`
+# uses the run's own credentials and does not require elevated token scopes.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Setup ${{ matrix.python }} ${{ matrix.os }}
