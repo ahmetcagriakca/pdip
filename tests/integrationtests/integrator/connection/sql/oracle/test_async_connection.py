@@ -64,14 +64,30 @@ async def _drop_if_exists(connector, schema, table):
 )
 class TestAsyncOracleConnection(TestCase):
     def setUp(self):
+        # Match the credentials the sync Oracle integration tests run
+        # against in nightly CI (per
+        # ``tests/integrationtests/integrator/integration/sql/oracle/test_integrator.py``).
+        # The fixture's ``ORACLE_DATABASE: test_pdi`` env creates a
+        # PDB named ``test_pdi`` and ``APP_USER: test_pdi`` creates
+        # the matching user inside that PDB; Oracle treats
+        # ``user name == schema name`` so writes land in the
+        # ``TEST_PDI`` schema (Oracle uppercases unquoted identifiers).
+        # The original smoke pattern used ``XEPDB1`` + a non-existent
+        # ``pdi`` user — the workflow never provisioned either, so
+        # the smoke jobs failed even before the adapter cases below
+        # were added. ``AsyncOracleConnector`` reads the
+        # ``Database`` field as ``service_name`` for
+        # ``oracledb.connect_async`` (parallel to the sync sibling's
+        # explicit ``ServiceName`` field, which the async
+        # configuration model does not yet expose).
         self.connection = SqlConnectionConfiguration(
             Name='TestAsyncOracleConnection',
             ConnectionType=ConnectionTypes.Sql,
             ConnectorType=ConnectorTypes.ORACLE,
             Server=ConnectionServer(Host='localhost', Port='1521'),
-            Database='XEPDB1',
+            Database='test_pdi',
             BasicAuthentication=ConnectionBasicAuthentication(
-                User='pdi', Password='pdi!123456'
+                User='test_pdi', Password='pdi!123456'
             ),
         )
 
@@ -165,7 +181,7 @@ class TestAsyncOracleConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "PDI"
+        schema = "TEST_PDI"
         table = "TEST_ASYNC_ITERATOR_PAGES"
         adapter = AsyncSqlSourceAdapter()
         integration = IntegrationBase(
@@ -230,7 +246,7 @@ class TestAsyncOracleConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "PDI"
+        schema = "TEST_PDI"
         table = "TEST_ASYNC_PAGING"
         adapter = AsyncSqlSourceAdapter()
         integration = IntegrationBase(
@@ -308,7 +324,7 @@ class TestAsyncOracleConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "PDI"
+        schema = "TEST_PDI"
         table = "TEST_ASYNC_WRITE_DATA"
         adapter = AsyncSqlTargetAdapter()
         integration = IntegrationBase(
@@ -386,7 +402,7 @@ class TestAsyncOracleConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "PDI"
+        schema = "TEST_PDI"
         table = "TEST_ASYNC_DO_TARGET_OP"
         adapter = AsyncSqlTargetAdapter()
 
@@ -468,7 +484,7 @@ class TestAsyncOracleConnection(TestCase):
         )
 
         adapter = AsyncSqlTargetAdapter()
-        schema = "PDI"
+        schema = "TEST_PDI"
         table = "TEST_ASYNC_CLEAR_DATA"
         integration = IntegrationBase(
             TargetConnections=IntegrationConnectionBase(
