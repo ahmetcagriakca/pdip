@@ -47,7 +47,7 @@ setup(
             "cryptography==46.0.7"
         ],
         "integrator": [
-            "oracledb>=2,<3",
+            "oracledb>=2,<4",
             "confluent-kafka>=2.4,<3",
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
