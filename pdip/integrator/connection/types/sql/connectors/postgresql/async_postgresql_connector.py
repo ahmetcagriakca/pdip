@@ -38,3 +38,9 @@ class AsyncPostgresqlConnector(AsyncSqlConnector):
         # sync sibling already pairs schemas + tables this way.
         query = f'SELECT COUNT(*) FROM "{schema}"."{table}"'
         return await self.connection.fetchval(query)
+
+    async def execute(self, query):
+        # asyncpg auto-commits each ``execute`` outside an explicit
+        # transaction; the contract from the sync sibling is "the
+        # statement is durable when this returns".
+        await self.connection.execute(query)

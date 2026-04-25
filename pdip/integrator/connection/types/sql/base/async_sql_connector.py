@@ -26,3 +26,13 @@ class AsyncSqlConnector(object):
         cross-cutting smoke method — additional read / write
         operations are added per-driver as concrete adapters land."""
         pass
+
+    @abstractmethod
+    async def execute(self, query):
+        """Run a side-effecting statement (TRUNCATE / DELETE / DDL).
+        Concrete connectors are responsible for committing where the
+        underlying driver requires an explicit commit (aiomysql /
+        aioodbc / oracledb), and for wrapping in an asyncpg
+        transaction where appropriate. Used by
+        :meth:`AsyncSqlTargetAdapter.clear_data`."""
+        pass
