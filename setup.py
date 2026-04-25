@@ -40,7 +40,7 @@ setup(
             "Flask_Cors==6.0.2",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.2",
-            "markupsafe==2.1.5",
+            "markupsafe==3.0.3",
             "Werkzeug==3.1.8"
         ],
         "cryptography": [
@@ -54,7 +54,7 @@ setup(
             "mysql-connector-python>=9.1,<10",
             "pandas==2.2.3",
             "psycopg2-binary==2.9.12",
-            "pyodbc==5.1.0"
+            "pyodbc==5.3.0"
         ],
         "preferred": [
             "injector==0.24.0",
