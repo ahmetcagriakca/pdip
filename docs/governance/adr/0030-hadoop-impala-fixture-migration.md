@@ -1,8 +1,10 @@
 # ADR-0030: Migrate the Hadoop / Impala / Kudu fixtures off unmaintained images
 
-- **Status:** Proposed (revised 2026-04-25 after a Docker Hub audit
-  reframed Stage 1 — see *Decision §Stage 1* and the *Revision
-  history* footer)
+- **Status:** Proposed (revised 2026-04-25 twice — first after the
+  Docker Hub audit reframed Stage 1 as multi-component, then after
+  the Stage 1 fixture translation surfaced that Stage 3's intended
+  test target is currently a stub. See *Decision §Stage 1*,
+  *Decision §Stage 3*, and the *Revision history* footer.)
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** testing, ci, fixtures, bigdata
@@ -129,7 +131,7 @@ Kudu features are reached.
 
 ### Stage 3 — wire the bigdata nightly job
 
-With both fixtures pointing at maintained, version-pinned images,
+With the fixture pointing at maintained, version-pinned images,
 add an `impala:` job to `.github/workflows/integration-tests.yml`
 mirroring the `postgres:` / `mysql:` / `oracle:` / `mssql:`
 pattern. The runner installs the **Cloudera Impala ODBC driver**
@@ -137,6 +139,20 @@ pattern. The runner installs the **Cloudera Impala ODBC driver**
 Apache 4.x build), boots the compose-defined services as Actions
 `services:` containers, and runs
 `tests/integrationtests/integrator/integration/bigdata/impala/`.
+
+> **Stage 3 prerequisite — test code first.** During Stage 1
+> implementation we discovered that
+> `tests/integrationtests/integrator/integration/bigdata/impala/`
+> contains exactly two files (`test_integration_single_process.py`
+> and `test_integration_limit_off.py`) and **both are entirely
+> commented out** — the file content is `# from unittest import …`
+> top to bottom. Wiring a CI job today would `unittest discover`
+> zero tests and pass trivially, providing no regression signal.
+>
+> Stage 3 therefore adds a dependency: somebody first uncomments
+> (or rewrites) the test bodies against the Apache Impala fixture
+> and verifies they pass locally. Once a real test count exists,
+> Stage 3 lands as originally planned.
 
 This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
 
@@ -231,12 +247,25 @@ This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
 
 ## Follow-ups
 
-- **Stage 1 PR** — replace `tests/environments/bigdata/impala/docker-compose.yml`,
-  delete `tests/environments/hadoop/`, update
-  `tests/environments/README.md`. Status: pending audit.
-- **Stage 2 PR (conditional)** — Kudu service re-introduction if the
-  existing tests need it. Likely a one-line addition to the Stage 1
-  compose file.
+- **Stage 1 mechanical PR** — `tests/environments/hadoop/` deletion +
+  `tests/environments/README.md` update. **Landed in PR #110**
+  (`1f2cd4f`).
+- **Stage 1 substantive PR** — replace
+  `tests/environments/bigdata/impala/docker-compose.yml` with the
+  `apache/impala:4.5.0-*` quickstart translation, vendor
+  `quickstart_conf/hive-site.xml`. The compose lands without local
+  Docker validation (the originating session lacked a Docker
+  daemon); the next contributor with `docker compose up` access
+  should boot it once and confirm `localhost:21050` accepts a
+  pyodbc connection before merging anything that depends on it.
+- **Stage 2 PR (conditional)** — Kudu service re-introduction if a
+  future test needs it. Likely a one-paragraph addition to the
+  Stage 1 compose file plus an `apache/kudu:1.17.0` image pin.
+- **Stage 3 prerequisite PR** — uncomment / rewrite
+  `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`
+  (both files are stubs today: every line is `# from unittest …`).
+  The CI job in Stage 3 has nothing meaningful to run until this
+  lands.
 - **Stage 3 PR** — `impala:` job in
   `.github/workflows/integration-tests.yml`, plus a CHANGELOG entry
   closing the ADR-0029 Follow-ups bullet.
@@ -254,6 +283,7 @@ This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
 - Apache Impala project: <https://impala.apache.org/>
 - Apache Impala Docker quickstart: <https://github.com/apache/impala/tree/master/docker>
 - Apache Kudu project: <https://kudu.apache.org/>
+- Vendored config: `tests/environments/bigdata/impala/quickstart_conf/hive-site.xml` — copied verbatim from the upstream `apache/impala/docker/quickstart_conf/`.
 
 ## Revision history
 
@@ -272,3 +302,16 @@ This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
   pins Dependabot can track. Stage 3's Negative consequences
   expanded with the realities of multi-service boot ordering on
   Actions and the HMS image's ~1.82 GB pull cost.
+- **2026-04-25** (Stage 1 substantive translation, same day). The
+  Stage 1 compose translation lands without local Docker validation
+  (originating session lacked a daemon). Vendors the upstream
+  `quickstart_conf/hive-site.xml` — the only config file the
+  upstream cluster mounts. While reading the matching test target
+  for Stage 3, surfaces that
+  `tests/integrationtests/integrator/integration/bigdata/impala/`
+  is currently two stub files: every line is `# from unittest …`,
+  the test bodies are entirely commented out. Stage 3 grows a new
+  prerequisite — a separate PR that uncomments / rewrites the
+  tests against the new fixture before the CI job can produce a
+  meaningful regression signal. The §Decision text and the
+  §Follow-ups list are updated accordingly.
