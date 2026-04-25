@@ -23,15 +23,17 @@
 
 ## 2. Open PRs
 
-No tracked open PRs as of 2026-04-25. The Async / OTel / 1.0 cut work
-landed on `main` across **#116** (foundation + first five follow-ups,
-squash-merged), **#117** (post-merge handoff refresh), and the
-queued-follow-up PR that lands the asyncpg Postgres end-to-end
-sibling + ADR-0035 signature-snapshot guard. See §4 for the full
-list of what came in. Earlier Dependabot bumps (#61 pyodbc 5.3.0,
-#63 markupsafe 3.0.3, #64 oracledb upper-bound to allow 3.x) merged
-after a surface-area audit against the adapter call sites — see
-commits `cdd1bb5`, `ead2013`, `a799d7d`.
+No tracked open PRs as of 2026-04-25. The Async / OTel / 1.0 cut
+work-stream landed on `main` across **#116** (foundation + first
+five follow-ups), **#117** (post-merge handoff refresh), **#118**
+(asyncpg Postgres end-to-end + ADR-0035 signature-snapshot guard),
+**#119** (post-#118 handoff refresh), and **#120** (async
+MySQL/MSSQL/Oracle skeletons + Postgres `clear_data` end-to-end +
+`SingleProcessIntegrationExecute` adapter-call-site spans + ADR-0036
+Proposed). See §4 for the full breakdown. Earlier Dependabot bumps
+(#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64 oracledb upper-bound
+to allow 3.x) merged after a surface-area audit against the adapter
+call sites — see commits `cdd1bb5`, `ead2013`, `a799d7d`.
 
 When new PRs come in, list them here with the same four columns
 (`#`, `What`, `Next action`, `Why deferred`) so the next reader can act
@@ -51,7 +53,8 @@ listed. **Reserved (not yet pushed):**
   `claude/handoff-start-continue-OolIR` (#116),
   `claude/handoff-post-merge-OolIR` (#117),
   `claude/handoff-asyncpg-sigguard-OolIR` (#118),
-  `claude/handoff-post-118-refresh-OolIR` (#119), and the
+  `claude/handoff-post-118-refresh-OolIR` (#119),
+  `claude/handoff-async-backends-spans-OolIR` (#120), and the
   current branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
@@ -89,25 +92,26 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-async-backends-spans-OolIR`
-(after the post-#119 follow-ups landed: (a-2) async MySQL /
-MSSQL / Oracle connector skeletons + `_connector_for` dispatch +
-per-backend integration smoke scaffolds; (a-3 partial)
-`AsyncSqlConnector.execute` + `AsyncPostgresqlConnector.execute`
-+ `AsyncSqlTargetAdapter.clear_data` end-to-end for Postgres
-(`TRUNCATE TABLE`); (a-4) `pdip.integrator.source.read` /
-`pdip.integrator.target.write` spans in
-`SingleProcessIntegrationExecute` with the documented
-`pdip.connection.{type,driver}` / `pdip.batch.size` /
-`pdip.rows.written` attributes; (e-3) ADR-0036 **Proposed** —
-checked-in deprecation manifest + two new quality_guard rules
-(implementation is the ADR Follow-ups list). 100 % unit coverage
-on the canonical `run_tests.py` cell (745 tests); 8
-quality_guard rules green; flake8 clean across `pdip/`,
-`tests/`, `scripts/`. Remaining queued items: async
-iterator/paging + async write_data; spans in
-`parallelthread/` + `parallelold/` strategies; integration tests
-for MySQL/MSSQL/Oracle async smokes when their fixtures + extras
-are present; ADR-0036 Accepted + landed. When you change
-anything above, bump this line with the date and the branch
-name so the next reader knows the freshness window at a glance.*
+*Last updated 2026-04-25 on `claude/handoff-post-120-refresh-OolIR`
+(post-merge refresh after #120 squash-merged the four
+post-#119 follow-ups to `main` — singleprocess adapter-call-site
+spans, async MySQL/MSSQL/Oracle connector skeletons + dispatch,
+`AsyncSqlConnector.execute` + Postgres `clear_data` end-to-end,
+ADR-0036 Proposed). `main` is at `3052278`; the Async / OTel /
+1.0 readiness work-stream now sits at four Accepted ADRs (0032 /
+0033 / 0034 / 0035), one Proposed ADR (0036 — implementation
+queued), and a public surface that includes `pdip.observability`
+plus async adapter siblings wired through both connection
+factories for `ConnectionTypes.Sql` with all four async SQL
+connectors discoverable via lazy driver imports. ADR-0034 §5
+enforcement is complete in three layers (drift / coverage /
+signature). 100 % unit coverage on the canonical `run_tests.py`
+cell (745 tests); 8 quality_guard rules green. Remaining queued
+work — async iterator/paging + async write_data,
+`parallelthread/` + `parallelold/` adapter-call-site spans,
+MySQL/MSSQL/Oracle async integration smokes when fixtures +
+extras are present, ADR-0036 Accepted + the manifest + the two
+new quality_guard rules — recorded in §4 Async/OTel/1.0 row.
+When you change anything above, bump this line with the date and
+the branch name so the next reader knows the freshness window
+at a glance.*
