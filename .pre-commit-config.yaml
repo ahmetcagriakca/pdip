@@ -43,8 +43,8 @@ repos:
   - repo: local
     hooks:
       - id: quality-guard
-        name: ADR-0026 / ADR-0027 §5 quality rules
-        # Runs the six machine-enforced rules from
+        name: ADR-0026 / ADR-0027 §5 / ADR-0034 §5 quality rules
+        # Runs the seven machine-enforced rules from
         # tests/unittests/quality_guard/test_conventions.py:
         #   A.1 every test_* method has an assertion,
         #   A.2 no tautological assertions,
@@ -52,7 +52,10 @@ repos:
         #   F.1 no pytest imports (unittest-only per ADR-0018),
         #   F.2 no star imports in tests/,
         #   ADR-0027 §5 every ``# pragma: no cover`` carries an
-        #     inline reason comment on the same line.
+        #     inline reason comment on the same line,
+        #   ADR-0034 §5 every directory directly under ``pdip/`` is
+        #     either documented in the public-API contract or in the
+        #     internal-package allowlist with a reason comment.
         # The suite runs in ~300 ms locally — well within budget
         # for pre-commit.
         entry: python -m unittest tests.unittests.quality_guard.test_conventions

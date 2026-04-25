@@ -125,11 +125,32 @@ A `1.0.0` release is cut only when **all** the following hold on
 
 ### 5. Enforcement
 
-- A new quality_guard rule fails CI if a symbol exported from a public
-  `__init__.py` (§1) is removed or has its signature changed without
-  a `DeprecationWarning` having been raised in a previous minor. The
-  rule reads `__all__` or, where absent, the set of names imported in
-  the `__init__.py`.
+The contract is enforced in three layers, two already shipped:
+
+- **Drift guard (shipped)** —
+  `tests/unittests/public_api/test_public_api_contract.py` walks
+  every package in `EXPECTED_PUBLIC_SURFACE`, asserts `__all__` is
+  declared, matches the documented set, contains no unresolved or
+  duplicated names. A change to any of `docs/public-api.md`, the
+  package's `__all__`, or the test mapping that is not mirrored in
+  the other two fails CI.
+- **Coverage guard (shipped)** — quality_guard rule
+  `RuleADR0034NoUndocumentedTopLevelPackage` in
+  `tests/unittests/quality_guard/test_conventions.py` walks every
+  directory directly under `pdip/` and fails CI when one is neither
+  in `EXPECTED_PUBLIC_SURFACE` nor on the rule's
+  `_ADR0034_INTERNAL_PACKAGES` allowlist (which itself requires a
+  one-line reason comment per ADR-0026 §G.3). A new top-level
+  package cannot be added without an explicit public/internal
+  decision.
+- **Signature guard (deferred to a follow-up ADR)** — comparing the
+  public signature against the previous minor needs an external
+  baseline (PyPI sdist, git tag artefact, or a checked-in snapshot)
+  and is its own design decision; tracked as a §Follow-ups item
+  below.
+
+Adjacent process steps:
+
 - `CHANGELOG.md` lint already catches missing release headers under
   ADR-0024; we extend it to require a `# Deprecated` and `# Removed`
   sub-header on majors that contain removals.
@@ -198,9 +219,17 @@ A `1.0.0` release is cut only when **all** the following hold on
 
 ## Follow-ups
 
-- 1.0 audit PR: walk every subpackage in §1, write or update the
+- ✅ 1.0 audit PR: walk every subpackage in §1, write or update the
   `__init__.py` `__all__`, record results in `docs/public-api.md`.
-- quality_guard rule for §5.
+  *(Landed.)*
+- ✅ quality_guard "coverage" rule for §5
+  (`RuleADR0034NoUndocumentedTopLevelPackage`). *(Landed.)*
+- Signature-baseline guard: compare each public symbol's signature
+  against the previous minor's release artefact and fail CI on a
+  break that is not preceded by a `DeprecationWarning`. Needs a
+  separate design ADR to pick the baseline source (PyPI sdist /
+  git-tag introspection / checked-in snapshot) and the diff
+  algorithm.
 - Release-PR template update for §4.
 - Coordinate with ADR-0032 and ADR-0033 so the new public symbols
   introduced by Async / OTel land *with* their `__all__` entries, not

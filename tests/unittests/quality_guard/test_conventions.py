@@ -298,3 +298,75 @@ class RuleADR0027PragmaNoCoverHasReason(TestCase):
             "inline reason comment on the same line. Offenders:\n  "
             + "\n  ".join(offenders),
         )
+
+
+# ---------------------------------------------------------------------------
+# Rule ADR-0034 §1 — every directory directly under ``pdip/`` with an
+# ``__init__.py`` must either appear in ``EXPECTED_PUBLIC_SURFACE``
+# (the documented public surface — see
+# ``tests/unittests/public_api/test_public_api_contract.py``) or be in
+# the explicit internal allowlist below with a one-line reason
+# comment. This catches a brand-new top-level package that was added
+# without a public-API decision being made.
+# ---------------------------------------------------------------------------
+
+
+# Top-level subpackages that exist under ``pdip/`` but are
+# intentionally NOT part of the 1.0 public surface. Each entry needs
+# a comment explaining why — same convention as the other allow-list
+# constants in this file (ADR-0026 §G.3).
+_ADR0034_INTERNAL_PACKAGES: frozenset[str] = frozenset({
+    # ``pdip.base`` re-exports ``Pdi``, the framework's bootstrap
+    # entry point. Kept internal pre-1.0 because the bootstrap
+    # surface is being audited under ADR-0034 and the public
+    # signature is not yet frozen.
+    "base",
+})
+
+
+class RuleADR0034NoUndocumentedTopLevelPackage(TestCase):
+    def test_every_pdip_subpackage_is_either_public_or_internal_allowlisted(self):
+        # Resolve the documented public surface from its single
+        # source of truth — re-importing the contract test module is
+        # cheap and keeps the two artefacts in lockstep without
+        # duplicating the surface list here.
+        from tests.unittests.public_api.test_public_api_contract import (
+            EXPECTED_PUBLIC_SURFACE,
+        )
+        documented = set()
+        for fqn in EXPECTED_PUBLIC_SURFACE:
+            if fqn == "pdip":
+                continue
+            if not fqn.startswith("pdip."):
+                continue
+            tail = fqn[len("pdip."):]
+            if "." in tail:
+                # Sub-subpackage — out of scope for this rule.
+                continue
+            documented.add(tail)
+
+        offenders = []
+        src_root = _REPO_ROOT / "pdip"
+        for child in sorted(src_root.iterdir()):
+            if not child.is_dir():
+                continue
+            if child.name == "__pycache__":
+                continue
+            if not (child / "__init__.py").exists():
+                continue
+            if child.name in documented:
+                continue
+            if child.name in _ADR0034_INTERNAL_PACKAGES:
+                continue
+            offenders.append(f"pdip.{child.name}")
+
+        self.assertEqual(
+            offenders,
+            [],
+            "ADR-0034 §1: every top-level ``pdip/`` subpackage must "
+            "appear in EXPECTED_PUBLIC_SURFACE (and in "
+            "docs/public-api.md) OR in this rule's "
+            "_ADR0034_INTERNAL_PACKAGES allowlist with a one-line "
+            "reason comment. New packages are not silently public. "
+            "Offenders:\n  " + "\n  ".join(offenders),
+        )
