@@ -25,9 +25,9 @@
 
 | # | What | Next action | Why deferred |
 |---|---|---|---|
-| [#64](https://github.com/ahmetcagriakca/pdip/pull/64) | Dependabot: `oracledb >=2,<4` (allow 3.x) | **Decide on the upper bound.** Adapter migration to 3.x is a separate ADR — see §4. Hold or merge after a manual smoke against the new Oracle XE nightly job. | Driver bumps for integrator adapters are excluded from auto-merge per [ADR-0025 §3](governance/adr/0025-dependabot-auto-merge-policy.md). |
-| [#63](https://github.com/ahmetcagriakca/pdip/pull/63) | Dependabot: `markupsafe 2.1.5 → 3.0.3` | Auto-merge if CI green; transitively used via Flask/Jinja, no direct `import markupsafe` in `pdip/`. | — |
-| [#61](https://github.com/ahmetcagriakca/pdip/pull/61) | Dependabot: `pyodbc 5.1.0 → 5.3.0` | **Hold** until MSSQL nightly job lands (§4) so the bump has a regression signal. | Same ADR-0025 §3 carve-out as #64. |
+| [#64](https://github.com/ahmetcagriakca/pdip/pull/64) | Dependabot: `oracledb >=2,<4` (allow 3.x) | **Decide on the upper bound.** Adapter migration to 3.x is a separate ADR — see §4. Hold or merge after a manual smoke against the new Oracle XE nightly job. | [ADR-0025 §2](governance/adr/0025-dependabot-auto-merge-policy.md) — touches an integrator-extra driver, needs human review. |
+| [#63](https://github.com/ahmetcagriakca/pdip/pull/63) | Dependabot: `markupsafe 2.1.5 → 3.0.3` | **Read the 3.0.0 release notes**, confirm transitive-only use (no direct `import markupsafe` in `pdip/`), then merge manually. CI is already green across the full matrix. | [ADR-0025 §1.1](governance/adr/0025-dependabot-auto-merge-policy.md) — major bumps don't auto-merge; 3.0.0 dropped Python 3.7/3.8 and changed `Markup` method signatures. |
+| [#61](https://github.com/ahmetcagriakca/pdip/pull/61) | Dependabot: `pyodbc 5.1.0 → 5.3.0` | **Hold** until the MSSQL nightly job lands (§4) so the bump has a regression signal, then merge manually. | [ADR-0025 §2](governance/adr/0025-dependabot-auto-merge-policy.md) — same integrator-extra carve-out as #64. |
 
 ## 3. Branches
 
