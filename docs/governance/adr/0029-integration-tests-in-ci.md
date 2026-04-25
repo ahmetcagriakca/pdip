@@ -101,20 +101,28 @@ sizes:
 |---|---|---|
 | Postgres | `/var/lib/postgresql/data` | 512 MB |
 | MySQL | `/var/lib/mysql` | 512 MB |
-| Oracle XE | `/opt/oracle/oradata` | 2 GB (XE keeps a larger tablespace footprint) |
+| Oracle XE | _(no tmpfs — see note below)_ | _n/a_ |
 
-The Oracle job additionally raises ``--shm-size`` to 1 GB
+Postgres and MySQL detect an empty data directory on first boot
+and initialise it themselves, so a tmpfs mount is transparent to
+them. Oracle XE in the ``slim-faststart`` variant **bakes the
+pre-created database files into the image** at
+``/opt/oracle/oradata`` — that is the entire point of the
+``faststart`` tag (boots in ~40 s instead of running CREATE
+DATABASE for 10+ min). Mounting a fresh tmpfs there erases the
+baked-in DB and the entrypoint fails ~40 s later with "tablespace
+not found". So the Oracle job keeps disk-backed storage and
+trades RAM-disk speed for keeping the slim-faststart shortcut.
+
+The Oracle job still raises ``--shm-size`` to 1 GB independently
 (Oracle uses System Global Area shared memory; the Docker default
-of 64 MB is below the XE minimum). Image-level ``slim-faststart``
-already pre-creates the database during image build, so first boot
-just starts the listener (~40 s) instead of running CREATE
-DATABASE.
+of 64 MB is below the XE minimum).
 
-Boot time is dominated by image-side initialisation scripts; tmpfs
-does not move that. What it does move is per-test query latency,
-which adds up across the integration suite (table create + bulk
-insert + select cycles, especially in the ``TestSqlUtils`` helper
-that seeds 10000 rows for each test).
+Boot time is dominated by image-side initialisation scripts;
+tmpfs does not move that. What it does move is per-test query
+latency on Postgres / MySQL, which adds up across the integration
+suite (table create + bulk insert + select cycles, especially in
+the ``TestSqlUtils`` helper that seeds 10000 rows for each test).
 
 ### 4. Connection fixture is stable, not parameterised
 

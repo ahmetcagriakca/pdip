@@ -179,7 +179,16 @@ jobs:
           --health-retries=20
           --health-start-period=60s
           --shm-size=1g
-          --tmpfs=/opt/oracle/oradata:rw,size=2g
+        # No ``--tmpfs=/opt/oracle/oradata``! ``slim-faststart`` bakes
+        # the pre-created database files into the image at that path
+        # — mounting a fresh tmpfs there erases them and the
+        # entrypoint then fails with "tablespace not found" within
+        # ~40 s. The whole point of ``faststart`` is to avoid the
+        # 10-minute CREATE DATABASE on first boot, so the trade-off
+        # we want is "keep image-baked DB, accept disk-backed I/O"
+        # rather than "RAM-backed I/O, slow boot". Postgres and MySQL
+        # do not have this issue because they detect an empty data
+        # dir and initialise it themselves.
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
