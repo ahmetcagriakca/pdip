@@ -82,11 +82,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (runtime + integrator extra)
+      - name: Install dependencies (runtime + integrator + async extras)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e ".[integrator]"
+          pip install -e ".[integrator,async]"
 
       - name: Provision ``test_pdi`` schema inside the ``test_pdi`` database
         # The tests expect a schema named ``test_pdi``; ``POSTGRES_DB``
@@ -102,6 +102,17 @@ jobs:
         run: |
           python -m unittest discover \
               -s tests/integrationtests/integrator/integration/sql/postgresql \
+              -t . \
+              -v
+
+      - name: Run postgres async smoke tests (ADR-0032 follow-up a-5)
+        # The async-connector smoke tests under
+        # ``tests/integrationtests/integrator/connection/sql/postgresql/``
+        # require the ``pdip[async]`` extra (asyncpg). They share the
+        # same Postgres fixture as the sync integration tests above.
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/connection/sql/postgresql \
               -t . \
               -v
 
@@ -136,16 +147,23 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (runtime + integrator extra)
+      - name: Install dependencies (runtime + integrator + async extras)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e ".[integrator]"
+          pip install -e ".[integrator,async]"
 
       - name: Run MySQL integration tests
         run: |
           python -m unittest discover \
               -s tests/integrationtests/integrator/integration/sql/mysql \
+              -t . \
+              -v
+
+      - name: Run MySQL async smoke tests (ADR-0032 follow-up a-5)
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/connection/sql/mysql \
               -t . \
               -v
 
@@ -205,11 +223,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (runtime + integrator extra)
+      - name: Install dependencies (runtime + integrator + async extras)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e ".[integrator]"
+          pip install -e ".[integrator,async]"
 
       - name: Wait for Oracle to accept ``test_pdi`` user logins
         # Belt-and-braces beyond the service health-check: the Oracle
@@ -244,6 +262,13 @@ jobs:
         run: |
           python -m unittest discover \
               -s tests/integrationtests/integrator/integration/sql/oracle \
+              -t . \
+              -v
+
+      - name: Run Oracle async smoke tests (ADR-0032 follow-up a-5)
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/connection/sql/oracle \
               -t . \
               -v
 
@@ -323,11 +348,11 @@ jobs:
           sudo apt-get update
           sudo ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17
 
-      - name: Install dependencies (runtime + integrator extra)
+      - name: Install dependencies (runtime + integrator + async extras)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e ".[integrator]"
+          pip install -e ".[integrator,async]"
 
       - name: Wait for SQL Server, provision login + database + schema
         # Belt-and-braces: connect as ``sa`` first to verify the
@@ -391,5 +416,12 @@ jobs:
         run: |
           python -m unittest discover \
               -s tests/integrationtests/integrator/integration/sql/mssql \
+              -t . \
+              -v
+
+      - name: Run MSSQL async smoke tests (ADR-0032 follow-up a-5)
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/connection/sql/mssql \
               -t . \
               -v

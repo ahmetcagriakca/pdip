@@ -1,4 +1,5 @@
 {
+  "pdip.__version__": "'0.8.0'",
   "pdip.configuration.ConfigManager": "class ConfigManager(self, root_directory: str, module_finder: pdip.utils.module_finder.ModuleFinder) -> None",
   "pdip.cqrs.CommandQueryBase": "class CommandQueryBase(self) -> +CQ",
   "pdip.cqrs.CommandQueryHandlerBase": "class CommandQueryHandlerBase(self) -> +CQH",

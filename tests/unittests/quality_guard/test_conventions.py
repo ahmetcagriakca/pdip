@@ -462,3 +462,252 @@ class RuleADR0035PublicApiSignatureSnapshotMatches(TestCase):
             "ADR-0034 §3 deprecation policy for any removals. "
             "Drift:\n  " + "\n  ".join(diffs),
         )
+
+
+# ---------------------------------------------------------------------------
+# Rules ADR-0036 §2 — automating the warning-bearing-prior-release
+# check ADR-0034 §3 currently enforces in review.
+#
+# Two rules:
+#  - RuleADR0036DeprecationWarningHasManifestEntry walks ``pdip/`` for
+#    ``warnings.warn(..., DeprecationWarning)`` calls and asserts the
+#    enclosing symbol appears as a key in
+#    ``docs/public-api-deprecations.json``.
+#  - RuleADR0036RemovalRespectsDeprecationCycle cross-checks the
+#    ADR-0035 signature-snapshot REMOVED diff against the manifest:
+#    every removed key must be in the manifest with ``removable_in``
+#    less than or equal to ``pdip.__version__``.
+#
+# To deprecate a public symbol:
+#   1. Emit ``warnings.warn("X is deprecated since Y, use Z;
+#      removable in W", DeprecationWarning)`` from the symbol body.
+#   2. Add the symbol's qualified key to the manifest with
+#      ``deprecated_in`` / ``removable_in`` / ``replacement`` /
+#      ``reason``.
+#   3. Ship the minor.
+#   4. In the major where ``removable_in`` lands, remove the symbol
+#      AND its manifest entry together — both rules go quiet at the
+#      same time.
+# ---------------------------------------------------------------------------
+
+
+_PUBLIC_API_DEPRECATIONS_MANIFEST_PATH = (
+    _REPO_ROOT / "docs" / "public-api-deprecations.json"
+)
+
+
+def _is_deprecation_warning_arg(node):
+    """True when ``node`` denotes ``DeprecationWarning`` — either as
+    a bare ``Name`` (``warnings.warn(msg, DeprecationWarning)``) or
+    as an attribute (``warnings.warn(msg, builtins.DeprecationWarning)``).
+    """
+    if isinstance(node, ast.Name) and node.id == "DeprecationWarning":
+        return True
+    if isinstance(node, ast.Attribute) and node.attr == "DeprecationWarning":
+        return True
+    return False
+
+
+def _call_is_warnings_warn(call_node):
+    """True when ``call_node`` is a ``warnings.warn(...)`` invocation
+    — handles ``warnings.warn`` (attribute access on the imported
+    module) and the bare ``warn`` form when the function was
+    re-exported with ``from warnings import warn``."""
+    func = call_node.func
+    if isinstance(func, ast.Attribute) and func.attr == "warn":
+        if isinstance(func.value, ast.Name) and func.value.id == "warnings":
+            return True
+    if isinstance(func, ast.Name) and func.id == "warn":
+        # Likely ``from warnings import warn`` — treat as a candidate.
+        # The DeprecationWarning category check still gates whether
+        # this counts as a deprecation site.
+        return True
+    return False
+
+
+def _call_emits_deprecation_warning(call_node):
+    """True when ``call_node`` is a ``warnings.warn(...)`` call whose
+    category (positional second arg or ``category=`` kwarg) names
+    ``DeprecationWarning``."""
+    if not _call_is_warnings_warn(call_node):
+        return False
+    if len(call_node.args) >= 2 and _is_deprecation_warning_arg(
+            call_node.args[1]
+    ):
+        return True
+    for kw in call_node.keywords:
+        if kw.arg == "category" and _is_deprecation_warning_arg(kw.value):
+            return True
+    return False
+
+
+def _module_qualname_for_pdip_path(path):
+    """Translate ``pdip/foo/bar.py`` into ``pdip.foo.bar``."""
+    rel = path.relative_to(_REPO_ROOT)
+    parts = list(rel.parts)
+    parts[-1] = parts[-1][:-len(".py")] if parts[-1].endswith(".py") else parts[-1]
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
+def _enclosing_qualname(stack, module_qualname):
+    """Compose ``<module>.<Class>.<func>`` from the ``ast``-walk
+    enclosing-scope ``stack`` (built from ``ClassDef`` / ``FunctionDef``
+    / ``AsyncFunctionDef`` names in source order)."""
+    if not stack:
+        return module_qualname
+    return f"{module_qualname}." + ".".join(stack)
+
+
+def _walk_with_scope(tree, module_qualname):
+    """Yield ``(qualname, call_node)`` for every ``Call`` in ``tree``
+    paired with the qualified name of its enclosing scope."""
+    stack = []
+
+    def visit(node):
+        if isinstance(node, ast.ClassDef):
+            stack.append(node.name)
+            for child in ast.iter_child_nodes(node):
+                yield from visit(child)
+            stack.pop()
+            return
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            stack.append(node.name)
+            for child in ast.iter_child_nodes(node):
+                yield from visit(child)
+            stack.pop()
+            return
+        if isinstance(node, ast.Call):
+            yield _enclosing_qualname(stack, module_qualname), node
+        for child in ast.iter_child_nodes(node):
+            yield from visit(child)
+
+    yield from visit(tree)
+
+
+def _load_deprecations_manifest():
+    return json.loads(
+        _PUBLIC_API_DEPRECATIONS_MANIFEST_PATH.read_text(encoding="utf-8")
+    )
+
+
+def _parse_semver(version_string):
+    """Return a ``(major, minor, patch)`` tuple suitable for
+    comparison. Tolerates ``"1.0.0"`` and ``"1.0"`` shapes; anything
+    weirder falls back to ``(0, 0, 0)`` so the comparison still
+    behaves predictably."""
+    parts = version_string.split(".")
+    out = []
+    for part in parts[:3]:
+        # Strip any pre-release / build suffix attached to the patch
+        # (e.g. ``"1.0.0rc1"`` → 1.0.0 for ordering purposes).
+        digits = ""
+        for ch in part:
+            if ch.isdigit():
+                digits += ch
+            else:
+                break
+        out.append(int(digits) if digits else 0)
+    while len(out) < 3:
+        out.append(0)
+    return tuple(out)
+
+
+class RuleADR0036DeprecationWarningHasManifestEntry(TestCase):
+    def test_every_deprecation_warning_call_has_a_manifest_entry(self):
+        manifest = _load_deprecations_manifest()
+        offenders = []
+        src_root = _REPO_ROOT / "pdip"
+        for path in sorted(src_root.rglob("*.py")):
+            if "__pycache__" in path.parts:
+                continue
+            try:
+                tree = ast.parse(
+                    path.read_text(encoding="utf-8"), filename=str(path)
+                )
+            except SyntaxError:
+                continue
+            module_qualname = _module_qualname_for_pdip_path(path)
+            for qualname, call_node in _walk_with_scope(
+                    tree, module_qualname
+            ):
+                if not _call_emits_deprecation_warning(call_node):
+                    continue
+                if qualname in manifest:
+                    continue
+                rel = str(path.relative_to(_REPO_ROOT))
+                offenders.append(
+                    f"{rel}:{call_node.lineno}: ``warnings.warn(..., "
+                    f"DeprecationWarning)`` from ``{qualname}`` is "
+                    "missing from docs/public-api-deprecations.json"
+                )
+        self.assertEqual(
+            offenders,
+            [],
+            "ADR-0036 §2: every public-symbol deprecation warning "
+            "must register an entry in "
+            "docs/public-api-deprecations.json with "
+            "``deprecated_in`` / ``removable_in`` / ``replacement`` "
+            "/ ``reason`` per ADR-0036 §1. Offenders:\n  "
+            + "\n  ".join(offenders),
+        )
+
+
+class RuleADR0036RemovalRespectsDeprecationCycle(TestCase):
+    def test_every_removed_public_symbol_was_deprecated_and_due(self):
+        from tests.unittests.public_api.test_public_api_contract import (
+            EXPECTED_PUBLIC_SURFACE,
+        )
+        import pdip
+
+        snapshot = json.loads(
+            _PUBLIC_API_SIGNATURE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+        )
+        live_keys = set()
+        for package_name, names in EXPECTED_PUBLIC_SURFACE.items():
+            for symbol_name in names:
+                live_keys.add(f"{package_name}.{symbol_name}")
+        removed_keys = sorted(set(snapshot) - live_keys)
+
+        if not removed_keys:
+            # Nothing removed — nothing to police.
+            self.assertEqual(removed_keys, [])
+            return
+
+        manifest = _load_deprecations_manifest()
+        current_version = _parse_semver(pdip.__version__)
+
+        offenders = []
+        for key in removed_keys:
+            entry = manifest.get(key)
+            if entry is None:
+                offenders.append(
+                    f"{key}: REMOVED without a "
+                    "docs/public-api-deprecations.json entry. "
+                    "ADR-0034 §3 requires a prior-minor "
+                    "DeprecationWarning."
+                )
+                continue
+            removable_in = entry.get("removable_in")
+            if removable_in is None:
+                offenders.append(
+                    f"{key}: manifest entry has no ``removable_in`` "
+                    "field — cannot decide whether the removal is due."
+                )
+                continue
+            if _parse_semver(removable_in) > current_version:
+                offenders.append(
+                    f"{key}: removable_in={removable_in} > current "
+                    f"version {pdip.__version__}; the deprecation "
+                    "cycle has not elapsed yet."
+                )
+        self.assertEqual(
+            offenders,
+            [],
+            "ADR-0036 §2: a removed public symbol must appear in "
+            "docs/public-api-deprecations.json with "
+            "``removable_in`` <= pdip.__version__ before the "
+            "removal is allowed (ADR-0034 §3 deprecation policy). "
+            "Offenders:\n  " + "\n  ".join(offenders),
+        )

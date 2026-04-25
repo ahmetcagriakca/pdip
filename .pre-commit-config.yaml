@@ -43,8 +43,8 @@ repos:
   - repo: local
     hooks:
       - id: quality-guard
-        name: ADR-0026 / ADR-0027 §5 / ADR-0034 §5 / ADR-0035 §3 quality rules
-        # Runs the eight machine-enforced rules from
+        name: ADR-0026 / ADR-0027 §5 / ADR-0034 §5 / ADR-0035 §3 / ADR-0036 §2 quality rules
+        # Runs the ten machine-enforced rules from
         # tests/unittests/quality_guard/test_conventions.py:
         #   A.1 every test_* method has an assertion,
         #   A.2 no tautological assertions,
@@ -58,7 +58,12 @@ repos:
         #     internal-package allowlist with a reason comment,
         #   ADR-0035 §3 the rendered signature of every public symbol
         #     matches the checked-in snapshot at
-        #     ``docs/public-api-signatures.json``.
+        #     ``docs/public-api-signatures.json``,
+        #   ADR-0036 §2 every ``warnings.warn(..., DeprecationWarning)``
+        #     call has a matching entry in
+        #     ``docs/public-api-deprecations.json``,
+        #   ADR-0036 §2 every removed public symbol's manifest entry
+        #     declares ``removable_in`` <= pdip.__version__.
         # The suite runs in ~300 ms locally — well within budget
         # for pre-commit.
         entry: python -m unittest tests.unittests.quality_guard.test_conventions

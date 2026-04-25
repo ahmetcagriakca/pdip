@@ -29,7 +29,9 @@ from unittest import TestCase
 
 
 EXPECTED_PUBLIC_SURFACE = {
-    "pdip": (),
+    "pdip": (
+        "__version__",
+    ),
     "pdip.api": (),
     "pdip.configuration": (
         "ConfigManager",

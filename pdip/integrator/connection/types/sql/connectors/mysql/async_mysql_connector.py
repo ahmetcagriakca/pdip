@@ -45,3 +45,22 @@ class AsyncMysqlConnector(AsyncSqlConnector):
         async with self.connection.cursor() as cursor:
             await cursor.execute(query)
             await self.connection.commit()
+
+    async def fetch_all(self, query):
+        async with self.connection.cursor(aiomysql_dict_cursor()) as cursor:
+            await cursor.execute(query)
+            return list(await cursor.fetchall())
+
+    async def executemany(self, query, rows):
+        async with self.connection.cursor() as cursor:
+            await cursor.executemany(query, rows)
+            await self.connection.commit()
+
+
+def aiomysql_dict_cursor():
+    """Return aiomysql's dict cursor class lazily so the
+    surrounding module never depends on ``aiomysql`` at import
+    time. ``cursor(cursor_class)`` then yields rows as ``dict``
+    objects, matching the asyncpg sibling's contract."""
+    import aiomysql.cursors
+    return aiomysql.cursors.DictCursor

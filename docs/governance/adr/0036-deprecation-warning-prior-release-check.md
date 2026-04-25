@@ -1,6 +1,6 @@
 # ADR-0036: Automating the warning-bearing-prior-release check for public-API removals
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** testing, ci, quality, governance, api, release
@@ -155,6 +155,14 @@ take applies here.
   manifest entry, ship the minor; later, in the major, remove the
   source + the manifest entry together.
 
+### 6. Format stability
+
+The manifest's flat-JSON shape (`<package>.<symbol>` keys with the
+documented value object) is part of the contract this ADR
+establishes. Changing the format — for example, splitting into
+per-package nested files when the manifest grows past ~50
+entries — requires its own ADR.
+
 ## Consequences
 
 ### Positive
@@ -225,19 +233,25 @@ take applies here.
 
 ## Follow-ups
 
-- Add the manifest at
+- ✅ Manifest at
   [`docs/public-api-deprecations.json`](../../public-api-deprecations.json)
-  with an empty object (`{}`) — there are no current deprecations
-  in the public surface.
-- Implement
+  shipped as an empty object (`{}`) — no current deprecations in
+  the public surface. *(Landed.)*
+- ✅
   `RuleADR0036DeprecationWarningHasManifestEntry` and
-  `RuleADR0036RemovalRespectsDeprecationCycle` in
-  `tests/unittests/quality_guard/test_conventions.py`.
-- Update `CONTRIBUTING.md` with the "Deprecating a public symbol"
-  section.
-- Update ADR-0034 §5 to add the fourth (deprecation-cycle) bullet
-  once the rules ship; flip the §Follow-ups item from "review
-  enforced" to "automated via ADR-0036".
+  `RuleADR0036RemovalRespectsDeprecationCycle` shipped in
+  `tests/unittests/quality_guard/test_conventions.py`. *(Landed.)*
+- ✅ ADR-0034 §5 grew the fourth (deprecation-cycle) bullet
+  pointing here. *(Landed.)*
+- ✅ `pdip.__version__` exposed as a public symbol so the
+  removal-cycle rule can read the live version without parsing
+  `setup.py`. *(Landed.)*
+- ✅ `CONTRIBUTING.md` gained the "Deprecating a public symbol"
+  section walking through the three-step process. *(Landed.)*
+- The first real deprecation will exercise the manifest format —
+  if it surfaces ergonomic gaps (e.g. wanting nested per-package
+  files for large manifests) those land as a follow-up ADR per
+  ADR-0036 §6.
 
 ## References
 

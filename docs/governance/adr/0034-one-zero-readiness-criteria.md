@@ -125,7 +125,7 @@ A `1.0.0` release is cut only when **all** the following hold on
 
 ### 5. Enforcement
 
-The contract is enforced in three layers, all shipped:
+The contract is enforced in four layers, all shipped:
 
 - **Drift guard (shipped)** —
   `tests/unittests/public_api/test_public_api_contract.py` walks
@@ -150,6 +150,16 @@ The contract is enforced in three layers, all shipped:
   signature change. The snapshot is the contract; the regen helper
   at `scripts/regenerate_public_api_signatures.py` is a developer
   convenience for legitimate updates.
+- **Deprecation-cycle guard (shipped — see [ADR-0036](./0036-deprecation-warning-prior-release-check.md))** —
+  two quality_guard rules close the §3 contract:
+  `RuleADR0036DeprecationWarningHasManifestEntry` AST-walks
+  `pdip/` and asserts every `warnings.warn(..., DeprecationWarning)`
+  call's enclosing symbol appears in
+  `docs/public-api-deprecations.json`;
+  `RuleADR0036RemovalRespectsDeprecationCycle` cross-checks the
+  ADR-0035 REMOVED diff against the manifest's `removable_in`
+  field versus `pdip.__version__`. Reviewers stop being the
+  load-bearing layer for §3.
 
 Adjacent process steps:
 

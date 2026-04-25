@@ -2,6 +2,7 @@ from func_timeout import func_set_timeout
 from injector import inject
 
 from ...base import IntegrationSourceToTargetExecuteStrategy
+from ...base.span_helpers import attr_name as _attr_name, resolve_driver as _resolve_driver
 from .......connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from .......domain.enums.events import EVENT_LOG
 from .......operation.domain.operation import OperationIntegrationBase
@@ -10,41 +11,6 @@ from .......pubsub.domain import TaskMessage
 from .......pubsub.publisher import Publisher
 from ........dependency import IScoped
 from ........observability import get_tracer
-
-
-def _attr_name(value):
-    """Best-effort stringification for the OTel ``pdip.connection.type``
-    attribute — accepts both real enums (``ConnectionTypes.Sql``)
-    and the bare strings used by some unit-test stubs."""
-    return getattr(value, "name", value if isinstance(value, str) else "")
-
-
-def _resolve_driver(connections):
-    """Best-effort ``pdip.connection.driver`` resolution per ADR-0033 §3.
-
-    Looks at the connection-type-specific sub-payload (``Sql`` /
-    ``BigData`` / ``WebService``) and reads its
-    ``Connection.ConnectorType.name``. Returns ``""`` when the chain
-    is incomplete — OTel's ``set_attribute`` rejects ``None`` and the
-    span should still emit even when the driver is unresolved (e.g.
-    in unit-test stubs that mock the upper layers).
-    """
-    if connections is None:
-        return ""
-    for sub_attr in ("Sql", "BigData", "WebService"):
-        sub = getattr(connections, sub_attr, None)
-        if sub is None:
-            continue
-        connection = getattr(sub, "Connection", None)
-        if connection is None:
-            continue
-        connector_type = getattr(connection, "ConnectorType", None)
-        if connector_type is None:
-            continue
-        name = getattr(connector_type, "name", None)
-        if isinstance(name, str):
-            return name
-    return ""
 
 
 class SingleProcessIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScoped):

@@ -36,3 +36,19 @@ class AsyncSqlConnector(object):
         transaction where appropriate. Used by
         :meth:`AsyncSqlTargetAdapter.clear_data`."""
         pass
+
+    @abstractmethod
+    async def fetch_all(self, query):
+        """Execute ``query`` and return every row as a list of
+        ``dict``-like rows. Used by
+        :meth:`AsyncSqlSourceAdapter.get_iterator` and
+        :meth:`AsyncSqlSourceAdapter.get_source_data_with_paging`."""
+        pass
+
+    @abstractmethod
+    async def executemany(self, query, rows):
+        """Execute ``query`` once per row in ``rows`` (a sequence of
+        positional argument tuples). Used by
+        :meth:`AsyncSqlTargetAdapter.write_data` for bulk inserts.
+        Concrete connectors must commit if the driver requires it."""
+        pass

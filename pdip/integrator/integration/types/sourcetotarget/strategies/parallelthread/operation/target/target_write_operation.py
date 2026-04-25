@@ -11,10 +11,15 @@ from pdip.integrator.connection.domain.task import DataQueueTask
 from pdip.integrator.connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_LOG
 from pdip.integrator.integration.domain.base import IntegrationBase
+from pdip.integrator.integration.types.sourcetotarget.strategies.base.span_helpers import (
+    attr_name,
+    resolve_driver,
+)
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
+from pdip.observability import get_tracer
 
 
 class TargetWriteOperation(IScoped):
@@ -159,14 +164,27 @@ class TargetWriteOperation(IScoped):
                                               start,
                                               end
                                               ):
+        source_connection_type = integration.SourceConnections.ConnectionType
         source_adapter = self.connection_source_adapter_factory.get_adapter(
-            connection_type=integration.SourceConnections.ConnectionType
+            connection_type=source_connection_type
         )
-        source_data = source_adapter.get_source_data_with_paging(
-            integration=integration,
-            start=start,
-            end=end
-        )
+        tracer = get_tracer("pdip.integrator")
+        with tracer.start_as_current_span(
+                "pdip.integrator.source.read"
+        ) as read_span:
+            read_span.set_attribute(
+                "pdip.connection.type", attr_name(source_connection_type)
+            )
+            read_span.set_attribute(
+                "pdip.connection.driver",
+                resolve_driver(integration.SourceConnections),
+            )
+            read_span.set_attribute("pdip.batch.size", end - start)
+            source_data = source_adapter.get_source_data_with_paging(
+                integration=integration,
+                start=start,
+                end=end
+            )
         target_adapter = self.connection_target_adapter_factory.get_adapter(
             connection_type=integration.TargetConnections.ConnectionType
         )
@@ -185,5 +203,25 @@ class TargetWriteOperation(IScoped):
             integration,
             source_data
     ):
-        target_adapter.write_data(integration=integration,
-                                  source_data=source_data)
+        target_connection_type = integration.TargetConnections.ConnectionType
+        tracer = get_tracer("pdip.integrator")
+        with tracer.start_as_current_span(
+                "pdip.integrator.target.write"
+        ) as write_span:
+            write_span.set_attribute(
+                "pdip.connection.type", attr_name(target_connection_type)
+            )
+            write_span.set_attribute(
+                "pdip.connection.driver",
+                resolve_driver(integration.TargetConnections),
+            )
+            write_span.set_attribute(
+                "pdip.batch.size",
+                len(source_data) if source_data is not None else 0,
+            )
+            write_span.set_attribute(
+                "pdip.rows.written",
+                len(source_data) if source_data is not None else 0,
+            )
+            target_adapter.write_data(integration=integration,
+                                      source_data=source_data)

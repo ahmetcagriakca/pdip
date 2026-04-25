@@ -44,3 +44,16 @@ class AsyncPostgresqlConnector(AsyncSqlConnector):
         # transaction; the contract from the sync sibling is "the
         # statement is durable when this returns".
         await self.connection.execute(query)
+
+    async def fetch_all(self, query):
+        # asyncpg returns ``Record`` objects; coerce to plain dicts
+        # so the strategy layer can treat the result the same way it
+        # treats the sync sibling's pandas-derived row dicts.
+        records = await self.connection.fetch(query)
+        return [dict(record) for record in records]
+
+    async def executemany(self, query, rows):
+        # asyncpg's ``executemany`` is the documented bulk-insert
+        # path; each row tuple is bound to ``$1, $2, ...``
+        # placeholders inside the query.
+        await self.connection.executemany(query, rows)
