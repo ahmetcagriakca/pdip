@@ -15,6 +15,27 @@ for the public API surface described in
 
 ### Added
 
+- **Async SQL adapter chain wired end-to-end across all four
+  backends (ADR-0032 §3 follow-up (a-3)).** New
+  `pdip/integrator/connection/types/sql/base/async_sql_dialect.py`
+  centralises the per-backend SQL fragments
+  (`quote_identifier` / `quote_table` / `insert_placeholders` /
+  `paging_clause` / `truncate_query`) that
+  :class:`AsyncSqlSourceAdapter` and :class:`AsyncSqlTargetAdapter`
+  splice into their generated queries; concrete subclasses
+  encode the dialect specifics — asyncpg `$N` + `"…"`,
+  aiomysql `%s` + ``…``, aioodbc `?` + `[…]`, oracledb `:N` +
+  upper-case `"…"` — and the ANSI `OFFSET … FETCH NEXT` paging
+  override on MSSQL / Oracle. Both async adapters now route
+  through `async_dialect_for(config)` instead of hard-coding
+  Postgres syntax, so `write_data` / `do_target_operation` /
+  `clear_data` (target) and `get_iterator` /
+  `get_source_data_with_paging` / `get_source_data_count`
+  (source) light up real on MySQL / MSSQL / Oracle alongside the
+  Postgres path. Pinned by 26 new dialect unit tests under
+  `tests/unittests/integrator/connection/sql/test_async_sql_dialect.py`
+  plus per-backend integration suites that mirror the existing
+  asyncpg Postgres test layout.
 - **ADR-0029 — Integration tests run nightly in CI.** New
   `.github/workflows/integration-tests.yml` boots the pinned
   Postgres 16, MySQL 8.4, **and Oracle XE 21c**
