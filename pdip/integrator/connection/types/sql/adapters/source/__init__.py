@@ -1,1 +1,2 @@
+from .async_sql_source_adapter import AsyncSqlSourceAdapter
 from .sql_source_adapter import SqlSourceAdapter

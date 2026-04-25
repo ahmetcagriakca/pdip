@@ -1,10 +1,10 @@
 from injector import inject
 
-from ..base import ConnectionSourceAdapter
+from ..base import AsyncConnectionSourceAdapter, ConnectionSourceAdapter
 from ..base._async_extra import require_async_extra
 from ..domain.enums import ConnectionTypes
 from ..types.bigdata.adapters.source import BigDataSourceAdapter
-from ..types.sql.adapters.source import SqlSourceAdapter
+from ..types.sql.adapters.source import AsyncSqlSourceAdapter, SqlSourceAdapter
 from ..types.webservice.adapters.source import WebServiceSourceAdapter
 from ....dependency import IScoped
 from ....exceptions import IncompatibleAdapterException, NotSupportedFeatureException
@@ -16,6 +16,7 @@ class ConnectionSourceAdapterFactory(IScoped):
                  sql_source_adapter: SqlSourceAdapter,
                  big_data_source_adapter: BigDataSourceAdapter,
                  web_service_source_adapter: WebServiceSourceAdapter,
+                 async_sql_source_adapter: AsyncSqlSourceAdapter,
                  # file_adapter: FileAdapter,
                  # queue_adapter: QueueAdapter,
                  ):
@@ -24,6 +25,7 @@ class ConnectionSourceAdapterFactory(IScoped):
         self.web_service_source_adapter = web_service_source_adapter
         self.big_data_source_adapter = big_data_source_adapter
         self.sql_source_adapter = sql_source_adapter
+        self.async_sql_source_adapter = async_sql_source_adapter
 
     def get_adapter(
             self,
@@ -32,6 +34,16 @@ class ConnectionSourceAdapterFactory(IScoped):
     ) -> ConnectionSourceAdapter:
         if is_async:
             require_async_extra()
+            if connection_type == ConnectionTypes.Sql:
+                if isinstance(
+                        self.async_sql_source_adapter,
+                        AsyncConnectionSourceAdapter,
+                ):
+                    return self.async_sql_source_adapter
+                raise IncompatibleAdapterException(
+                    f"{self.async_sql_source_adapter} is incompatible "
+                    f"with AsyncConnectionSourceAdapter"
+                )
             raise NotSupportedFeatureException(
                 f"async {connection_type.name} source adapter is not yet "
                 f"wired in this build (see ADR-0032 follow-ups)"

@@ -1,3 +1,4 @@
+from .async_sql_connector import AsyncSqlConnector
 from .sql_connector import SqlConnector
 from .sql_context import SqlContext
 from .sql_dialect import SqlDialect

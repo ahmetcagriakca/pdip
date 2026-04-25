@@ -16,14 +16,17 @@ from pdip.exceptions import (  # noqa: E402
     IncompatibleAdapterException,
     NotSupportedFeatureException,
 )
-from pdip.integrator.connection.base import ConnectionSourceAdapter  # noqa: E402
+from pdip.integrator.connection.base import (  # noqa: E402
+    AsyncConnectionSourceAdapter,
+    ConnectionSourceAdapter,
+)
 from pdip.integrator.connection.domain.enums import ConnectionTypes  # noqa: E402
 from pdip.integrator.connection.factories.connection_source_adapter_factory import (  # noqa: E402
     ConnectionSourceAdapterFactory,
 )
 
 
-def _build_factory(sql=None, big_data=None, web_service=None):
+def _build_factory(sql=None, big_data=None, web_service=None, async_sql=None):
     sql = sql if sql is not None else MagicMock(spec=ConnectionSourceAdapter)
     big_data = (
         big_data if big_data is not None else MagicMock(spec=ConnectionSourceAdapter)
@@ -33,10 +36,16 @@ def _build_factory(sql=None, big_data=None, web_service=None):
         if web_service is not None
         else MagicMock(spec=ConnectionSourceAdapter)
     )
+    async_sql = (
+        async_sql
+        if async_sql is not None
+        else MagicMock(spec=AsyncConnectionSourceAdapter)
+    )
     return ConnectionSourceAdapterFactory(
         sql_source_adapter=sql,
         big_data_source_adapter=big_data,
         web_service_source_adapter=web_service,
+        async_sql_source_adapter=async_sql,
     )
 
 
@@ -128,10 +137,10 @@ class ConnectionSourceAdapterFactoryRejectsUnknownType(TestCase):
 class ConnectionSourceAdapterFactoryAsyncBranch(TestCase):
     """ADR-0032 §3 — ``is_async=True`` must (a) verify the
     ``pdip[async]`` extra is installed (clean ImportError otherwise)
-    and (b) raise ``NotSupportedFeatureException`` for every connection
-    type until the matching async sibling adapter lands. The check
-    runs before any sibling lookup so the failure mode is the same
-    for every type."""
+    and (b) for ``ConnectionTypes.Sql`` return the registered async
+    adapter; for every other type it still raises
+    ``NotSupportedFeatureException`` until that connection-type's
+    async sibling lands."""
 
     def test_is_async_true_raises_import_error_when_extra_missing(self):
         factory = _build_factory()
@@ -146,16 +155,47 @@ class ConnectionSourceAdapterFactoryAsyncBranch(TestCase):
                 factory.get_adapter(ConnectionTypes.Sql, is_async=True)
         self.assertIn("pdip[async]", str(ctx.exception))
 
-    def test_is_async_true_with_extra_present_raises_not_supported(self):
+    def test_is_async_true_with_extra_present_returns_async_sql_adapter(self):
+        async_sql = MagicMock(
+            spec=AsyncConnectionSourceAdapter, name="async_sql"
+        )
+        factory = _build_factory(async_sql=async_sql)
+        with patch(
+            "pdip.integrator.connection.factories"
+            ".connection_source_adapter_factory.require_async_extra",
+            return_value=None,
+        ):
+            result = factory.get_adapter(ConnectionTypes.Sql, is_async=True)
+
+        self.assertIs(result, async_sql)
+
+    def test_is_async_true_sql_slot_filled_with_non_async_adapter_raises_incompatible(self):
+        factory = _build_factory(async_sql=object())
+        with patch(
+            "pdip.integrator.connection.factories"
+            ".connection_source_adapter_factory.require_async_extra",
+            return_value=None,
+        ):
+            with self.assertRaises(IncompatibleAdapterException):
+                factory.get_adapter(ConnectionTypes.Sql, is_async=True)
+
+    def test_is_async_true_non_sql_type_raises_not_supported(self):
         factory = _build_factory()
         with patch(
             "pdip.integrator.connection.factories"
             ".connection_source_adapter_factory.require_async_extra",
             return_value=None,
         ):
-            with self.assertRaises(NotSupportedFeatureException) as ctx:
-                factory.get_adapter(ConnectionTypes.Sql, is_async=True)
-        self.assertIn("async", str(ctx.exception).lower())
+            for unsupported in (
+                ConnectionTypes.BigData,
+                ConnectionTypes.WebService,
+                ConnectionTypes.File,
+                ConnectionTypes.Queue,
+            ):
+                with self.assertRaises(NotSupportedFeatureException) as ctx:
+                    factory.get_adapter(unsupported, is_async=True)
+                self.assertIn("async", str(ctx.exception).lower())
+                self.assertIn(unsupported.name, str(ctx.exception))
 
     def test_is_async_default_false_keeps_existing_sync_routing(self):
         sql_adapter = MagicMock(spec=ConnectionSourceAdapter, name="sql")
