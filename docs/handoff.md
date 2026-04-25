@@ -47,9 +47,10 @@ artifacts from squash-merged PRs — safe to ignore unless a name below is
 listed. **Reserved (not yet pushed):**
 
 - No active reserved branches at the moment.
-  `claude/handoff-start-continue-OolIR` (post-merge artifact of #116)
-  and `claude/handoff-post-merge-OolIR` (post-merge artifact of
-  #117) are safe to ignore.
+  `claude/handoff-start-continue-OolIR` (post-merge artifact of
+  #116), `claude/handoff-post-merge-OolIR` (post-merge artifact of
+  #117), and `claude/handoff-asyncpg-sigguard-OolIR` (post-merge
+  artifact of #118) are safe to ignore.
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -86,22 +87,22 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-asyncpg-sigguard-OolIR`
-(after the queued follow-ups landed on top of #116 / #117 — (a) the
-asyncpg Postgres end-to-end sibling: `AsyncSqlConnector` ABC,
-`AsyncPostgresqlConnector` with lazy asyncpg import,
-`AsyncSqlSourceAdapter` / `AsyncSqlTargetAdapter` returned by both
-connection factories for `ConnectionTypes.Sql`, integration smoke
-test against the existing Postgres fixture; and (e-2) ADR-0035
-Accepted: checked-in `docs/public-api-signatures.json` snapshot +
-`scripts/regenerate_public_api_signatures.py` regen helper +
-`RuleADR0035PublicApiSignatureSnapshotMatches` quality_guard rule —
-ADR-0034 §5 enforcement is now complete in three layers).
-`main` sits at 100 % unit coverage on the canonical `run_tests.py`
-cell (736 tests) with all 8 quality_guard rules green. Remaining
-queued work — additional async backends (MySQL/MSSQL/Oracle), async
-iterator/paging implementation, source/target adapter call-site
-spans, optional warning-bearing-prior-release ADR — recorded in §4.
-When you change anything above, bump this line with the date and
-the branch name so the next reader knows the freshness window at a
-glance.*
+*Last updated 2026-04-25 on `claude/handoff-post-118-refresh-OolIR`
+(post-merge refresh after #118 squash-merged the asyncpg Postgres
+end-to-end sibling and ADR-0035 signature-snapshot guard to `main`,
+closing the last two queued follow-ups from the post-#116 §4 row).
+`main` is at `b2a431f`; the Async / OTel / 1.0 readiness work-stream
+sits at three Accepted ADRs (0032 / 0033 / 0034), one Accepted
+follow-up ADR (0035), and a public surface that includes
+`pdip.observability` plus async adapter siblings wired through
+both connection factories for `ConnectionTypes.Sql`. ADR-0034 §5
+enforcement is complete in three layers (drift / coverage /
+signature). 100 % unit coverage on the canonical `run_tests.py`
+cell (736 tests); 8 quality_guard rules green. Remaining queued
+work — additional async backends (MySQL via aiomysql, MSSQL via
+aioodbc, Oracle via oracledb async), async iterator/paging
+implementation, source/target adapter call-site spans, optional
+ADR for the warning-bearing-prior-release check — recorded in §4
+Async/OTel/1.0 row. When you change anything above, bump this line
+with the date and the branch name so the next reader knows the
+freshness window at a glance.*
