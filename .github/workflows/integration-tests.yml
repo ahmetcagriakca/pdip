@@ -290,12 +290,19 @@ jobs:
         # ``mssql_connector.py``'s ``find_driver_name`` discovers; the
         # canonical "ODBC Driver 18 for SQL Server" is published in
         # Microsoft's apt repo for Ubuntu.
+        #
+        # Use Microsoft's officially documented one-shot installer
+        # (``packages-microsoft-prod.deb``) instead of the older
+        # ``apt-key add`` + ``prod.list`` flow — ``apt-key`` was
+        # removed in Ubuntu 24.04 (which is what ``ubuntu-latest``
+        # currently resolves to), and the previous shape failed at
+        # ``apt-get update`` with exit code 2.
         run: |
-          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-              | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
           UBUNTU_VERSION="$(. /etc/os-release && echo "${VERSION_ID}")"
-          curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/prod.list" \
-              | sudo tee /etc/apt/sources.list.d/mssql-release.list >/dev/null
+          curl -fsSL -o packages-microsoft-prod.deb \
+              "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          rm -f packages-microsoft-prod.deb
           sudo apt-get update
           sudo ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18
 
