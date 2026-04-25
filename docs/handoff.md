@@ -59,8 +59,8 @@ ADR if the answer changed.
 | Topic | Status | Pointer |
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
-| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1's mechanical part landed in PR #110 (deleted `tests/environments/hadoop/`, updated environments README). Stage 1's substantive part (translate the upstream `apache/impala/docker/quickstart.yml` into a 5-service fixture: postgres + impala_quickstart_hms + statestored + catalogd + impalad_coord_exec) and Stage 3 (`impala:` nightly job) still pending. | Open one PR carrying the new compose + the workflow job; the integration-tests self-test trigger fires on the PR, so the Actions matrix validates the boot end-to-end. |
-| Async / OpenTelemetry / 1.0 cut | No ADR drafted. Mentioned as long-horizon items in conversation; not on any milestone. | Open as ADR-0032+ when an actual driver appears. |
+| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
+| Async / OpenTelemetry / 1.0 cut | **Active development authorized 2026-04-25** — three ADRs queued for drafting in the next session: **ADR-0032** (hybrid async strategy — additive `pdip[async]` extra parallel to sync API, supersedes ADR-0007 partially), **ADR-0033** (OpenTelemetry observability — optional `pdip[observability]` extra, span hierarchy + metric conventions), **ADR-0034** (1.0 readiness criteria + deprecation policy). Foundation package = 3 ADRs + 3 first-implementation PRs (one tractable slice each); subsequent sessions deepen each line (every connector → async, full instrumentation depth, full API audit + 1.0 cut). | TDD focus mandated by the authorising user — every new PR satisfies ADR-0027's diff-cover 100 % gate and ADR-0026's quality_guard rules. Implementation order: 1.0 audit → OTel → Async (smallest blast radius first, biggest API rewrite last). |
 
 ## 5. Read this first
 
@@ -82,10 +82,9 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-clear-deferred-zero` (after
-PRs #110–#112: hadoop fixture deleted, ADR-0031 + nightly-failure-tracker
-workflow landed, examples/etl + pubsub_observer landed; oracledb 4.x and
-the now-implemented adaptive-schedule rows removed from §4 since they no
-longer reflect deferred work). When you change anything above, bump this
-line with the date and the branch name so the next reader knows the
-freshness window at a glance.*
+*Last updated 2026-04-25 on `claude/handoff-pre-session-handover` (after
+PR #114 landed Stage 1 substantive — apache/impala fixture translation —
+and the authorising user explicitly green-lit Async + OpenTelemetry +
+1.0-cut work for the next session under TDD discipline). When you
+change anything above, bump this line with the date and the branch name
+so the next reader knows the freshness window at a glance.*
