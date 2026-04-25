@@ -7,9 +7,8 @@ a single command against the checked-out source tree.
 | Example | What it shows | Run |
 |---|---|---|
 | [`crud_api/`](./crud_api) | Minimal REST + CQRS + Repository app. One `Note` entity, a `CreateNote` command, a `ListNotes` query, and a Flask-Restx resource that dispatches both. Persists to a local SQLite file via pdip's `RepositoryProvider`. | `python examples/crud_api/main.py` |
-
-More examples (a pub/sub observer demo, a minimal ETL integrator
-pipeline) are planned follow-ups.
+| [`etl/`](./etl) | Minimal ETL flow: two SQLite databases (source / target) over pdip's `InMemoryProvider`. Seeds three rows, copies them across, prints what landed. Demonstrates the cross-adapter `execute` / `execute_many` / `fetch_query` primitives without booting an external database. | `python examples/etl/main.py` |
+| [`pubsub_observer/`](./pubsub_observer) | Minimal observer pattern over `MessageBroker.subscribe`. Two callbacks register against two different events; the script publishes one of each and prints what each observer saw. Skips the multi-process worker pipeline so the demo boots in milliseconds. | `python examples/pubsub_observer/main.py` |
 
 ## Running an example
 
