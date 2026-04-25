@@ -30,6 +30,7 @@ without warning. Open an issue if you need it promoted.
 | `pdip.io` | `FileManager`, `FolderManager` | [`pdip/io/__init__.py`](../pdip/io/__init__.py) |
 | `pdip.json` | `BaseConverter`, `DateTimeEncoder`, `JsonConvert`, `MultipleJsonEncoders`, `UUIDEncoder`, `date_time_parser` | [`pdip/json/__init__.py`](../pdip/json/__init__.py) |
 | `pdip.logging` | *(empty — concrete loggers are composed by the host)* | [`pdip/logging/__init__.py`](../pdip/logging/__init__.py) |
+| `pdip.observability` | `get_meter`, `get_tracer` (lazy no-op-by-default OpenTelemetry helpers — install `pdip[observability]` and set `PDIP_OBSERVABILITY_ENABLED=1` to emit) | [`pdip/observability/__init__.py`](../pdip/observability/__init__.py) |
 | `pdip.processing` | `ProcessManager` | [`pdip/processing/__init__.py`](../pdip/processing/__init__.py) |
 | `pdip.utils` | `ModuleFinder`, `TypeChecker`, `Utils` | [`pdip/utils/__init__.py`](../pdip/utils/__init__.py) |
 

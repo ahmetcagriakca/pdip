@@ -10,6 +10,7 @@ from .iquery import IQuery
 from .iquery_handler import IQueryHandler
 from ..dependency import IScoped
 from ..dependency.provider import ServiceProvider
+from ..observability import get_tracer
 
 T = TypeVar('T', covariant=True)
 
@@ -34,13 +35,17 @@ class Dispatcher(IScoped):
     def dispatch(self, cq: CommandQueryBase[T]) -> T:
         if isinstance(cq, IQuery):
             handler_type = IQueryHandler
+            span_name = "pdip.cqrs.query"
         elif isinstance(cq, ICommand):
             handler_type = ICommandHandler
+            span_name = "pdip.cqrs.command"
         else:
             raise Exception("Command or query not found")
-        handler = self.find_handler(cq, handler_type)
-        if handler is None:
-            raise Exception("Handler not founded")
-        result = handler.handle(cq)
-        if isinstance(cq, IQuery):
-            return result
+        with get_tracer("pdip.cqrs").start_as_current_span(span_name) as span:
+            handler = self.find_handler(cq, handler_type)
+            if handler is None:
+                raise Exception("Handler not founded")
+            span.set_attribute("pdip.cqrs.handler", type(handler).__name__)
+            result = handler.handle(cq)
+            if isinstance(cq, IQuery):
+                return result

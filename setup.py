@@ -56,6 +56,10 @@ setup(
             "psycopg2-binary==2.9.12",
             "pyodbc==5.3.0"
         ],
+        "observability": [
+            "opentelemetry-api>=1.26,<2",
+            "opentelemetry-sdk>=1.26,<2"
+        ],
         "preferred": [
             "injector==0.24.0",
             "PyYAML==6.0.3",

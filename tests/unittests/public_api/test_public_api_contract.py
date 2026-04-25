@@ -78,6 +78,10 @@ EXPECTED_PUBLIC_SURFACE = {
         "date_time_parser",
     ),
     "pdip.logging": (),
+    "pdip.observability": (
+        "get_meter",
+        "get_tracer",
+    ),
     "pdip.processing": (
         "ProcessManager",
     ),

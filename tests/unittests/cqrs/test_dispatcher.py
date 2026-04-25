@@ -7,7 +7,7 @@ isolation from the DI bootstrap.
 """
 
 from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from pdip.cqrs import (
     Dispatcher,
@@ -128,3 +128,103 @@ class DispatcherResolvesHandlerThroughServiceProvider(TestCase):
 
         provider.get.assert_called_once_with(SampleCommandHandler)
         self.assertEqual(SampleCommandHandler.calls[-1], "marker")
+
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry instrumentation (ADR-0033 §3).
+#
+# Spans are emitted through the lazy helper from ``pdip.observability``;
+# we patch the import the dispatcher uses so we can capture the span
+# names and attributes without booting the OTel SDK.
+# ---------------------------------------------------------------------------
+
+
+class _SpanRecorder:
+    """Minimal context-manager span stub that records every attribute
+    the dispatcher sets on it. One stub is shared across all
+    ``start_as_current_span`` calls in a test so ``set_attribute``
+    history is observable in one place."""
+
+    def __init__(self):
+        self.attributes = {}
+        self.entered = 0
+        self.exited = 0
+
+    def __enter__(self):
+        self.entered += 1
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.exited += 1
+        return False
+
+    def set_attribute(self, key, value):
+        self.attributes[key] = value
+
+
+class _TracerRecorder:
+    def __init__(self):
+        self.span = _SpanRecorder()
+        self.span_names = []
+
+    def start_as_current_span(self, name):
+        self.span_names.append(name)
+        return self.span
+
+
+class DispatcherEmitsOTelSpansPerADR0033(TestCase):
+    def setUp(self):
+        SampleCommandHandler.calls.clear()
+        self.provider = FakeServiceProvider(
+            {
+                SampleCommandHandler: SampleCommandHandler(),
+                SampleQueryHandler: SampleQueryHandler(),
+            }
+        )
+        self.dispatcher = Dispatcher(service_provider=self.provider)
+        self.tracer = _TracerRecorder()
+
+    def test_command_dispatch_emits_pdip_cqrs_command_span(self):
+        with patch(
+            "pdip.cqrs.dispatcher.get_tracer", return_value=self.tracer
+        ):
+            self.dispatcher.dispatch(SampleCommand(payload="marker"))
+
+        self.assertEqual(self.tracer.span_names, ["pdip.cqrs.command"])
+        self.assertEqual(self.tracer.span.entered, 1)
+        self.assertEqual(self.tracer.span.exited, 1)
+        self.assertEqual(
+            self.tracer.span.attributes.get("pdip.cqrs.handler"),
+            "SampleCommandHandler",
+        )
+
+    def test_query_dispatch_emits_pdip_cqrs_query_span(self):
+        with patch(
+            "pdip.cqrs.dispatcher.get_tracer", return_value=self.tracer
+        ):
+            result = self.dispatcher.dispatch(SampleQuery(term="x"))
+
+        self.assertEqual(result, "result:x")
+        self.assertEqual(self.tracer.span_names, ["pdip.cqrs.query"])
+        self.assertEqual(
+            self.tracer.span.attributes.get("pdip.cqrs.handler"),
+            "SampleQueryHandler",
+        )
+
+    def test_span_is_closed_when_handler_raises(self):
+        # The instrumentation must use ``with`` so the span ends even
+        # on exception — otherwise spans leak across requests.
+        boom_handler = MagicMock()
+        boom_handler.handle.side_effect = RuntimeError("boom")
+        provider = MagicMock()
+        provider.get = MagicMock(return_value=boom_handler)
+        dispatcher = Dispatcher(service_provider=provider)
+
+        with patch(
+            "pdip.cqrs.dispatcher.get_tracer", return_value=self.tracer
+        ):
+            with self.assertRaises(RuntimeError):
+                dispatcher.dispatch(SampleCommand(payload="boom"))
+
+        self.assertEqual(self.tracer.span.entered, 1)
+        self.assertEqual(self.tracer.span.exited, 1)
