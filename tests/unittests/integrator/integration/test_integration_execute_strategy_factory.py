@@ -15,7 +15,10 @@ from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
 from unittest import TestCase  # noqa: E402
 from unittest.mock import MagicMock  # noqa: E402
 
-from pdip.exceptions import IncompatibleAdapterException  # noqa: E402
+from pdip.exceptions import (  # noqa: E402
+    IncompatibleAdapterException,
+    NotSupportedFeatureException,
+)
 from pdip.integrator.integration.types.sourcetotarget.strategies.base import (  # noqa: E402
     IntegrationSourceToTargetExecuteStrategy,
 )
@@ -79,3 +82,46 @@ class StrategyFactoryRejectsIncompatibleStrategies(TestCase):
 
         with self.assertRaises(IncompatibleAdapterException):
             factory.get(process_count=1)
+
+
+class StrategyFactoryAsyncBranch(TestCase):
+    """ADR-0032 §4 — ``is_async=True`` is the configuration entry
+    point for the new async strategy. The concrete
+    ``AsyncIntegrationExecute`` implementation requires asyncpg /
+    aiomysql / aioodbc-backed adapters that are queued as a
+    follow-up; until those land, the factory raises
+    ``NotSupportedFeatureException`` so the caller fails fast and
+    diagnosable instead of silently falling back to the sync
+    strategy."""
+
+    def test_is_async_true_raises_not_supported_with_pointer_to_adr(self):
+        factory = _build_factory()
+
+        with self.assertRaises(NotSupportedFeatureException) as ctx:
+            factory.get(process_count=None, is_async=True)
+
+        message = str(ctx.exception)
+        self.assertIn("async", message.lower())
+        self.assertIn("ADR-0032", message)
+
+    def test_is_async_true_independent_of_process_count(self):
+        # Asking for async mode must short-circuit the
+        # process_count branch — the failure mode is the same
+        # regardless of how many processes were requested.
+        factory = _build_factory()
+
+        for pc in (None, 1, 4):
+            with self.assertRaises(NotSupportedFeatureException):
+                factory.get(process_count=pc, is_async=True)
+
+    def test_is_async_default_false_keeps_existing_sync_routing(self):
+        single = MagicMock(
+            spec=IntegrationSourceToTargetExecuteStrategy, name="s"
+        )
+        factory = _build_factory(single=single)
+
+        # Default ``is_async=False`` must not change anything: the
+        # legacy ``process_count`` switch keeps routing.
+        result = factory.get(process_count=None)
+
+        self.assertIs(result, single)
