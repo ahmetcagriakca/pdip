@@ -24,7 +24,7 @@ from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
 
 import queue  # noqa: E402
 from unittest import TestCase  # noqa: E402
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 from pdip.integrator.domain.enums.events import EVENT_LOG  # noqa: E402
 from pdip.integrator.integration.types.sourcetotarget.strategies.singleprocess.base.single_process_integration_execute import (  # noqa: E402
@@ -243,3 +243,244 @@ class SingleProcessWriteTargetDataDelegatesToAdapter(TestCase):
         target.write_data.assert_called_once_with(
             integration=integration, source_data=data,
         )
+
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry instrumentation (ADR-0033 §3) — adapter call sites.
+#
+# The strategy emits one ``pdip.integrator.source.read`` span around
+# the ``source_adapter.get_iterator`` call, and one
+# ``pdip.integrator.target.write`` span per page (around each
+# ``write_target_data`` call). Both spans carry the documented
+# ``pdip.connection.{type,driver}`` attributes plus the relevant
+# size / count counters from ADR-0033 §3.
+# ---------------------------------------------------------------------------
+
+
+class _SpanRecorder:
+    def __init__(self):
+        self.attributes = {}
+        self.entered = 0
+        self.exited = 0
+
+    def __enter__(self):
+        self.entered += 1
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.exited += 1
+        return False
+
+    def set_attribute(self, key, value):
+        self.attributes[key] = value
+
+
+class _TracerRecorder:
+    """One recorder per test; ``start_as_current_span`` returns a fresh
+    span per call so per-call attributes are observable in isolation."""
+
+    def __init__(self):
+        self.spans = []
+
+    def start_as_current_span(self, name):
+        span = _SpanRecorder()
+        span.name = name
+        self.spans.append(span)
+        return span
+
+
+class SingleProcessExecuteEmitsSourceReadAndTargetWriteSpansPerADR0033(TestCase):
+    def setUp(self):
+        self.channel = ChannelQueue(queue.Queue())
+
+    def test_execute_opens_pdip_integrator_source_read_span_around_get_iterator(self):
+        source = MagicMock(name="source_adapter")
+        source.get_iterator.return_value = iter([])
+        target = MagicMock(name="target_adapter")
+        operation = _build_operation(source_type="SQL", limit=25)
+        subject, _s, _t = _build_subject(source, target)
+
+        tracer = _TracerRecorder()
+        with patch(
+            "pdip.integrator.integration.types.sourcetotarget"
+            ".strategies.singleprocess.base"
+            ".single_process_integration_execute.get_tracer",
+            return_value=tracer,
+        ):
+            subject.execute(operation_integration=operation, channel=self.channel)
+
+        # First span emitted is the source read span.
+        self.assertGreaterEqual(len(tracer.spans), 1)
+        read_span = tracer.spans[0]
+        self.assertEqual(read_span.name, "pdip.integrator.source.read")
+        self.assertEqual(read_span.entered, 1)
+        self.assertEqual(read_span.exited, 1)
+        # ``pdip.connection.type`` mirrors the ``ConnectionType`` value
+        # the strategy used to resolve the adapter.
+        self.assertEqual(
+            read_span.attributes.get("pdip.connection.type"), "SQL"
+        )
+        self.assertEqual(read_span.attributes.get("pdip.batch.size"), 25)
+        # ``pdip.connection.driver`` is best-effort — for a MagicMock
+        # operation it falls back to "" rather than leaking a
+        # MagicMock repr into traces.
+        self.assertEqual(
+            read_span.attributes.get("pdip.connection.driver"), ""
+        )
+
+    def test_execute_opens_pdip_integrator_target_write_span_per_page(self):
+        source = MagicMock(name="source_adapter")
+        source.get_iterator.return_value = iter([[1, 2], [3]])
+        target = MagicMock(name="target_adapter")
+        operation = _build_operation(target_type="QUEUE", limit=10)
+        subject, _s, _t = _build_subject(source, target)
+
+        tracer = _TracerRecorder()
+        with patch(
+            "pdip.integrator.integration.types.sourcetotarget"
+            ".strategies.singleprocess.base"
+            ".single_process_integration_execute.get_tracer",
+            return_value=tracer,
+        ):
+            subject.execute(operation_integration=operation, channel=self.channel)
+
+        # One source.read span + two target.write spans (one per page).
+        write_spans = [s for s in tracer.spans if s.name == "pdip.integrator.target.write"]
+        self.assertEqual(len(write_spans), 2)
+        for span in write_spans:
+            self.assertEqual(span.entered, 1)
+            self.assertEqual(span.exited, 1)
+            self.assertEqual(
+                span.attributes.get("pdip.connection.type"), "QUEUE"
+            )
+            self.assertEqual(span.attributes.get("pdip.batch.size"), 10)
+        # ``pdip.rows.written`` mirrors the page length per ADR-0033 §3.
+        self.assertEqual(write_spans[0].attributes.get("pdip.rows.written"), 2)
+        self.assertEqual(write_spans[1].attributes.get("pdip.rows.written"), 1)
+
+    def test_execute_resolves_driver_from_sql_connector_type_when_present(self):
+        from pdip.integrator.connection.domain.enums import (
+            ConnectionTypes,
+            ConnectorTypes,
+        )
+
+        source = MagicMock(name="source_adapter")
+        source.get_iterator.return_value = iter([])
+        target = MagicMock(name="target_adapter")
+        operation = MagicMock(name="operation_integration")
+        operation.Limit = 5
+        operation.Integration.SourceConnections.ConnectionType = (
+            ConnectionTypes.Sql
+        )
+        operation.Integration.TargetConnections.ConnectionType = (
+            ConnectionTypes.Sql
+        )
+        operation.Integration.SourceConnections.Sql.Connection.ConnectorType = (
+            ConnectorTypes.POSTGRESQL
+        )
+        operation.Integration.SourceConnections.BigData = None
+        operation.Integration.SourceConnections.WebService = None
+        operation.Integration.TargetConnections.Sql = None
+        operation.Integration.TargetConnections.BigData = None
+        operation.Integration.TargetConnections.WebService = None
+        subject, _s, _t = _build_subject(source, target)
+
+        tracer = _TracerRecorder()
+        with patch(
+            "pdip.integrator.integration.types.sourcetotarget"
+            ".strategies.singleprocess.base"
+            ".single_process_integration_execute.get_tracer",
+            return_value=tracer,
+        ):
+            subject.execute(operation_integration=operation, channel=self.channel)
+
+        read_span = tracer.spans[0]
+        self.assertEqual(read_span.name, "pdip.integrator.source.read")
+        self.assertEqual(
+            read_span.attributes.get("pdip.connection.type"), "Sql"
+        )
+        self.assertEqual(
+            read_span.attributes.get("pdip.connection.driver"),
+            "POSTGRESQL",
+        )
+
+    def test_execute_handles_none_limit_in_batch_size_attribute(self):
+        # ``operation.Limit`` is allowed to be ``None``; the span
+        # attribute must still be SDK-safe (no ``None``s — OTel's
+        # ``set_attribute`` rejects ``None``).
+        source = MagicMock(name="source_adapter")
+        source.get_iterator.return_value = iter([])
+        target = MagicMock(name="target_adapter")
+        operation = _build_operation(limit=None)
+        subject, _s, _t = _build_subject(source, target)
+
+        tracer = _TracerRecorder()
+        with patch(
+            "pdip.integrator.integration.types.sourcetotarget"
+            ".strategies.singleprocess.base"
+            ".single_process_integration_execute.get_tracer",
+            return_value=tracer,
+        ):
+            subject.execute(operation_integration=operation, channel=self.channel)
+
+        read_span = tracer.spans[0]
+        self.assertEqual(read_span.attributes.get("pdip.batch.size"), 0)
+
+
+class ResolveDriverHelperHandlesPartialChains(TestCase):
+    """``_resolve_driver`` is the OTel-attribute resolver that walks
+    the per-connection-type sub-payload looking for a
+    ``ConnectionType``-specific ``ConnectorType.name``. It must
+    return ``""`` quietly for every shape of incomplete or
+    unsupported chain so the resulting span attribute stays
+    SDK-safe (OTel's ``set_attribute`` rejects ``None``)."""
+
+    def setUp(self):
+        from pdip.integrator.integration.types.sourcetotarget.strategies.singleprocess.base import (  # noqa: E501
+            single_process_integration_execute as module,
+        )
+        self._resolve_driver = module._resolve_driver
+
+    def test_returns_empty_string_when_connections_is_none(self):
+        self.assertEqual(self._resolve_driver(None), "")
+
+    def test_skips_subpayload_that_is_none(self):
+        # All three sub-payloads (``Sql`` / ``BigData`` /
+        # ``WebService``) explicitly set to ``None`` exercises the
+        # ``if sub is None: continue`` guard for each branch.
+        connections = MagicMock(spec=[])
+        for attr in ("Sql", "BigData", "WebService"):
+            setattr(connections, attr, None)
+        self.assertEqual(self._resolve_driver(connections), "")
+
+    def test_skips_subpayload_with_no_connection(self):
+        # ``Sql`` is present but ``Connection`` is ``None`` — exercises
+        # the ``if connection is None: continue`` guard.
+        connections = MagicMock(spec=[])
+        connections.Sql = MagicMock(spec=["Connection"])
+        connections.Sql.Connection = None
+        connections.BigData = None
+        connections.WebService = None
+        self.assertEqual(self._resolve_driver(connections), "")
+
+    def test_skips_connection_with_no_connector_type(self):
+        # Sub + Connection present but ``ConnectorType`` is ``None``
+        # — exercises the ``if connector_type is None: continue``
+        # guard.
+        connections = MagicMock(spec=[])
+        connections.Sql = MagicMock(spec=["Connection"])
+        connections.Sql.Connection = MagicMock(spec=["ConnectorType"])
+        connections.Sql.Connection.ConnectorType = None
+        connections.BigData = None
+        connections.WebService = None
+        self.assertEqual(self._resolve_driver(connections), "")
+
+    def test_returns_connector_type_name_when_chain_is_complete(self):
+        from pdip.integrator.connection.domain.enums import ConnectorTypes
+        connections = MagicMock(spec=[])
+        connections.Sql = MagicMock(spec=["Connection"])
+        connections.Sql.Connection = MagicMock(spec=["ConnectorType"])
+        connections.Sql.Connection.ConnectorType = ConnectorTypes.MYSQL
+        connections.BigData = None
+        connections.WebService = None
+        self.assertEqual(self._resolve_driver(connections), "MYSQL")
