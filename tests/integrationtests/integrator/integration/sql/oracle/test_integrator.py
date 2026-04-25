@@ -24,9 +24,22 @@ class TestOracleIntegration(TestCase):
                     Host='localhost',
                     Port=1521
                 ),
-                Sid='xe',
+                # Modern Oracle (12c+) is a CDB containing pluggable
+                # databases (PDBs); the ``gvenzl/oracle-xe:21-*`` image
+                # creates a PDB named after ``ORACLE_DATABASE`` and
+                # creates ``APP_USER`` inside it. Connect via the PDB
+                # service name rather than the legacy SID. See
+                # tests/environments/oracle/ for the matching image
+                # configuration.
+                ServiceName='test_pdi',
                 BasicAuthentication=ConnectionBasicAuthentication(
-                    User='pdi',
+                    # Oracle treats ``user name == schema name``, so
+                    # connecting as ``test_pdi`` lands writes under
+                    # the ``TEST_PDI`` schema below. The fixture's
+                    # APP_USER env in
+                    # ``tests/environments/oracle/docker-compose.yml``
+                    # creates this user inside the ``test_pdi`` PDB.
+                    User='test_pdi',
                     Password='pdi!123456'
                 )
             )

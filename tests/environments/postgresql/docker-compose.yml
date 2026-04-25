@@ -1,9 +1,18 @@
-version: "3.8"
+# Postgres 16 (current stable, released 2023-09, EOL 2028-11).
+# ``alpine`` variant keeps the image small — the test suite does
+# not exercise anything that requires the glibc build.
+#
+# Previously used the floating ``postgres`` tag; pinning avoids
+# "works on my machine" drift when a new major arrives.
+#
+# Non-standard host port 5434 (mapped to container 5432) is
+# intentional — tests hard-code 5434, matching the historical
+# fixture so a local postgres on 5432 does not clash.
 
 services:
   postgresql:
     restart: always
-    image: postgres
+    image: postgres:16-alpine  # pinned current stable
     ports:
       - "5434:5432"
     environment:
@@ -14,6 +23,6 @@ services:
       - PG_TRUST_LOCALNET=true
     volumes:
       - pdipgdata:/var/lib/postgresql/data
-# Names our volume
+
 volumes:
   pdipgdata:

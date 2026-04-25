@@ -1,8 +1,21 @@
-version: "3"
+# Hadoop cluster for the ``[integrator]`` bigdata tests.
+#
+# ⚠ UNMAINTAINED IMAGE — bde2020/hadoop-* has not been updated since
+# 2020 and Apache does not ship a drop-in replacement with the same
+# per-service granularity. Migration is a separate project (tracked
+# as a follow-up to the CI integration-tests workflow); for now the
+# fixture stays on the known-working 2020 image so existing
+# bigdata integration tests keep reproducing. If the images ever
+# disappear from Docker Hub, the best current alternatives are:
+#   - apache/hadoop (Apache official, single image, different layout)
+#   - a local mini-Hive-Metastore + Spark combo for most test use cases
+#
+# Until that migration, leave these pins alone and do not expect
+# Dependabot to move them — it has nothing to move to.
 
 services:
   namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8  # unmaintained; see header
     container_name: namenode
     restart: always
     ports:
@@ -16,7 +29,7 @@ services:
       - ./hadoop.env
 
   datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8  # unmaintained
     container_name: datanode
     restart: always
     volumes:
@@ -27,7 +40,7 @@ services:
       - ./hadoop.env
 
   resourcemanager:
-    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8  # unmaintained
     container_name: resourcemanager
     restart: always
     environment:
@@ -36,7 +49,7 @@ services:
       - ./hadoop.env
 
   nodemanager1:
-    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8  # unmaintained
     container_name: nodemanager
     restart: always
     environment:
@@ -45,7 +58,7 @@ services:
       - ./hadoop.env
 
   historyserver:
-    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8  # unmaintained
     container_name: historyserver
     restart: always
     environment:

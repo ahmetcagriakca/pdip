@@ -1,7 +1,18 @@
-version: '3'
+# Impala + Kudu cluster for the ``[integrator]`` bigdata tests.
+#
+# ⚠ LEGACY — the Impala and Kudu images (``ibisproject/impala``,
+# ``parrotstream/kudu:latest``) are third-party and no longer
+# updated. Same caveat as ``../hadoop/docker-compose.yml``: the
+# bigdata fixture as a whole is staged for a follow-up migration
+# to Apache-official or community-maintained replacements.
+#
+# In the meantime we still pin the one image we control — the
+# metastore backend ``postgres`` — to match the main postgres
+# fixture. The third-party images stay on their historical tags.
+
 services:
   postgres:
-    image: postgres
+    image: postgres:16-alpine  # pinned, matches ../../postgresql/
     networks:
       - impala-nw
     ports:
@@ -12,7 +23,7 @@ services:
     build: .
     cap_add:
       - SYS_TIME
-    image: ibisproject/impala
+    image: ibisproject/impala  # unmaintained; see header
     hostname: localhost
     networks:
       - impala-nw
@@ -39,7 +50,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: parrotstream/kudu:latest
+    image: parrotstream/kudu:latest  # unmaintained; see header
     networks:
       impala-nw:
         aliases:
@@ -55,7 +66,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: parrotstream/kudu:latest
+    image: parrotstream/kudu:latest  # unmaintained; see header
     networks:
       - impala-nw
     cap_add:

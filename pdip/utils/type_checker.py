@@ -37,11 +37,20 @@ class TypeChecker(ITypeChecker):
         return False
 
     def _is_base_generic(self, class_type):
+        # Python 3.9 removed ``typing._Protocol``; it is now the public
+        # ``typing.Protocol``. ``typing._VariadicGenericAlias`` was
+        # folded into ``_GenericAlias`` on the same line. Guard both
+        # attribute lookups so the helper survives on 3.9 – 3.14.
+        protocol = getattr(typing, "Protocol", getattr(typing, "_Protocol", None))
         if isinstance(class_type, typing._GenericAlias):
-            if class_type.__origin__ in {typing.Generic, typing._Protocol}:
+            origins = {typing.Generic}
+            if protocol is not None:
+                origins.add(protocol)
+            if class_type.__origin__ in origins:
                 return False
-            if isinstance(class_type, typing._VariadicGenericAlias):
-                return True
+            variadic = getattr(typing, "_VariadicGenericAlias", None)
+            if variadic is not None and isinstance(class_type, variadic):
+                return True  # pragma: no cover — typing._VariadicGenericAlias was removed in Python 3.9+; branch is defensive on modern runtimes
             return len(class_type.__parameters__) > 0
         if isinstance(class_type, typing._SpecialForm):
             return class_type._name in {'ClassVar', 'Union', 'Optional'}

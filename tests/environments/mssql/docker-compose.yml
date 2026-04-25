@@ -1,15 +1,24 @@
-version: "3.9"
+# SQL Server 2022 Developer (GA 2022-11; mainstream support till 2028-01).
+# Previously pinned to 2017 which still works but has its mainstream
+# support window closing in 2027-10 and increasingly lacks parity with
+# the drivers we ship.
+#
+# ``MSSQL_PID=Developer`` enables every server feature and is licensed
+# free for non-production use, which is what tests are. The 2017
+# fixture pinned ``Express``; Developer is a cleaner match for
+# integration tests because it exposes the same feature set as
+# Enterprise.
 
 services:
   sql-server-db:
-    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    image: mcr.microsoft.com/mssql/server:2022-latest  # pinned major
     restart: always
     ports:
       - "1433:1433"
     environment:
       SA_PASSWORD: "yourStrong(!)Password"
       ACCEPT_EULA: "Y"
-      MSSQL_PID: Express
+      MSSQL_PID: Developer
     volumes:
       - mssql-db:/var/opt/mssql/data
 

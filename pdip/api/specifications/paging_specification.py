@@ -26,6 +26,6 @@ class PagingSpecification(IScoped):
         else:
             page_number = paging_parameter.PageNumber
         offset = (page_number - 1) * page_size
-        if offset is None or offset < self.default_offset:
-            offset = self.default_offset
+        if offset is None or offset < self.default_offset:  # pragma: no cover — offset is always (>=1 - 1) * (>=5) so >= 0; clamp is defensive only
+            offset = self.default_offset  # pragma: no cover — same defensive clamp as the guard above
         return page_size, offset

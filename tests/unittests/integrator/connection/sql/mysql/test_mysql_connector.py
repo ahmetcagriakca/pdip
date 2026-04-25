@@ -104,7 +104,13 @@ class MysqlConnectorUsesDbApiCallShape(TestCase):
 
     def test_disconnect_is_safe_before_connect(self):
         connector = MysqlConnector(_build_config())
-        connector.disconnect()  # must not raise
+
+        connector.disconnect()
+
+        # After a disconnect with no prior connect, the connector's
+        # state stays unset — no phantom connection or cursor appears.
+        self.assertIsNone(connector.connection)
+        self.assertIsNone(connector.cursor)
 
 
 class MysqlConnectorBuildsSqlAlchemyUrl(TestCase):

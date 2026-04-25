@@ -47,13 +47,14 @@ def _build_execution(adapter):
 
 
 def _drain(channel):
-    """Pull every message off ``channel`` by reaching through to the
-    underlying ``queue.Queue``. ``ChannelQueue.get`` forwards blindly to
-    the queue's blocking ``get`` — fine in production, hostile in a
-    test — so we access ``channel_queue`` directly and stop on empty."""
+    """Pull every message off ``channel`` non-blockingly via the
+    public ``ChannelQueue.get_nowait`` API."""
     events = []
-    while not channel.channel_queue.empty():
-        events.append(channel.channel_queue.get_nowait())
+    while True:
+        try:
+            events.append(channel.get_nowait())
+        except queue.Empty:
+            break
     return events
 
 

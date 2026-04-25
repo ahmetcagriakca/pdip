@@ -31,8 +31,8 @@ class IntegrationAdapterFactory(IScoped):
                 raise IncompatibleAdapterException(
                     f"{self.target_integration} is incompatible with {IntegrationAdapter}")
         else:
-            if isinstance(self.source_integration, IntegrationAdapter):
+            if isinstance(self.source_to_target_integration, IntegrationAdapter):
                 return self.source_to_target_integration
             else:
                 raise IncompatibleAdapterException(
-                    f"{self.source_integration} is incompatible with {IntegrationAdapter}")
+                    f"{self.source_to_target_integration} is incompatible with {IntegrationAdapter}")

@@ -11,6 +11,15 @@
     <a href="https://github.com/ahmetcagriakca/pdip/actions/workflows/package-build-and-tests.yml" target="_blank">
         <img src="https://github.com/ahmetcagriakca/pdip/actions/workflows/package-build-and-tests.yml/badge.svg" alt="Build status">
     </a>
+    <a href="#testing-and-quality">
+        <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage 100%">
+    </a>
+    <a href="#testing-and-quality">
+        <img src="https://img.shields.io/badge/tests-664%20unit-blue" alt="664 unit tests">
+    </a>
+    <a href="docs/governance/adr/0027-tdd-with-diff-coverage.md">
+        <img src="https://img.shields.io/badge/workflow-TDD%20%2B%20diff--cover-informational" alt="TDD + diff-cover">
+    </a>
 </p>
 
 # pdip — Python Data Integrator
@@ -33,6 +42,7 @@ endpoint by adding one file — not by wiring plumbing.
 - [Example — a REST endpoint](#example--a-rest-endpoint)
 - [Example — an ETL integration](#example--an-etl-integration)
 - [Project layout](#project-layout)
+- [Testing and quality](#testing-and-quality)
 - [Development](#development)
 - [Documentation and governance](#documentation-and-governance)
 - [License](#license)
@@ -74,7 +84,7 @@ pip install "pdip[integrator]"
 pip install "pdip[api,integrator,cryptography]"
 ```
 
-Python **3.9+** is supported.
+Python **3.10+** is supported.
 
 The extras are defined in [`setup.py`](setup.py). See
 [ADR-0014](docs/governance/adr/0014-optional-extras-packaging.md) for
@@ -223,23 +233,113 @@ pdip/
 └── utils/              Small helpers
 ```
 
+## Testing and quality
+
+pdip is test-first with mechanically enforced quality gates. The
+numbers are not goals to aspire to — they are **hard gates that fail
+CI** the moment they regress.
+
+### The gates
+
+| Gate | What it enforces | Source of truth | Breaks CI on regression? |
+|---|---|---|---|
+| **`fail_under = 100`** | Line coverage of `pdip/` never drops below **100 %** | [`.coveragerc`](.coveragerc) | ✅ |
+| **`diff-cover --fail-under=100`** | Every newly added or modified `pdip/` line in a PR is covered | [ADR-0027](docs/governance/adr/0027-tdd-with-diff-coverage.md) | ✅ (PR-only) |
+| **`quality_guard` meta-tests** | Six [ADR-0026](docs/governance/adr/0026-test-quality-rules.md) / ADR-0027 rules (see below) | [`tests/unittests/quality_guard/test_conventions.py`](tests/unittests/quality_guard/test_conventions.py) | ✅ |
+| **15-cell CI matrix** | Python **3.10–3.14** × Linux/macOS/Windows | [`package-build-and-tests.yml`](.github/workflows/package-build-and-tests.yml) | ✅ |
+
+### Current measurement
+
+- **664 unit tests** under `tests/unittests/`
+- **3724 / 3724 statements covered** — `TOTAL 100%`
+- Integration adapters (`pdip/integrator/connection/types/{sql,bigdata,webservice,file,inmemory,queue}/*`) and the
+  parallel-strategy subprocess paths are excluded from unit-coverage
+  measurement ([ADR-0023 §1](docs/governance/adr/0023-coverage-floor-policy.md)); they are exercised by
+  `tests/integrationtests/` which is run locally against real backends.
+
+### The workflow: TDD, then diff-cover, then floor
+
+[**ADR-0027 — Test-first development with diff-coverage enforcement**](docs/governance/adr/0027-tdd-with-diff-coverage.md)
+pins the workflow:
+
+1. Write the failing test first. Watch it fail for the right reason.
+2. Write the smallest production change that makes it pass.
+3. `diff-cover` against the merge-base with `main` must be **100 %**.
+4. `fail_under = 100` (total coverage) must still hold.
+
+If you absolutely must exclude a line from coverage, use
+`# pragma: no cover — <reason>` **with an inline reason on the same
+line**; the `quality_guard` suite fails CI if the reason is missing
+(ADR-0027 §5).
+
+### The six machine-checked quality rules
+
+The meta-test suite under [`tests/unittests/quality_guard/`](tests/unittests/quality_guard/)
+is what makes [ADR-0026](docs/governance/adr/0026-test-quality-rules.md) real. It fails CI when any of these are violated:
+
+| Rule | What it rejects |
+|---|---|
+| **A.1** | Any `test_*` method that does not contain an `assert` / `self.assert*` call |
+| **A.2** | Tautological assertions (`assertEqual(x, x)`, `assertTrue(True)`, etc.) |
+| **D.1** | `time.sleep(>= 0.1)` in unit tests (keeps the suite deterministic and fast) |
+| **F.1** | `import pytest` anywhere under `tests/unittests/` — we are `unittest`-only per [ADR-0018](docs/governance/adr/0018-testing-strategy.md) |
+| **F.2** | `from X import *` in test files — star imports are rejected |
+| **ADR-0027 §5** | `# pragma: no cover` without an inline reason comment on the same line |
+
+Beyond these six, [ADR-0026](docs/governance/adr/0026-test-quality-rules.md) also requires AAA structure, mocks at
+boundaries only, and concrete behavioural assertions — enforced by
+review rather than mechanically.
+
+### Running the quality loop locally
+
+```bash
+# Full suite (same run command CI uses)
+coverage run run_tests.py
+
+# Absolute 100 % floor, same as the canonical CI cell
+coverage report -m --fail-under=100
+
+# Per-PR diff coverage: every line you added must be covered
+coverage xml
+diff-cover coverage.xml --compare-branch origin/main --fail-under=100
+
+# ADR-0026 / ADR-0027 machine-checked rules
+python -m unittest tests.unittests.quality_guard.test_conventions
+```
+
+The CI matrix in [`package-build-and-tests.yml`](.github/workflows/package-build-and-tests.yml) runs the suite on every
+combination of Python 3.10 / 3.11 / 3.12 / 3.13 / 3.14 × Linux /
+macOS / Windows (**15 cells**). The `fail_under=100` gate and
+`coverage xml` generation are scoped to the canonical 3.11 ubuntu
+cell per [ADR-0023 §5](docs/governance/adr/0023-coverage-floor-policy.md) — coverage is a scalar property of the
+codebase, not a per-Python-version property, and different versions
+legitimately skip different tests (e.g. the
+`@skipIf(sys.version_info >= (3, 14))` decorators on the
+`typing.Union`-representation tests). Other cells still run the
+full suite under `coverage run` so Python-version test regressions
+are caught.
+
+Detailed test commands — integration tests, database fixtures,
+single-file runs — are in [`readme.test.md`](readme.test.md).
+
 ## Development
 
 ```bash
-# Install development dependencies
+# Install pinned tooling (coverage, diff-cover, flake8, cryptography, etc.)
 pip install -r requirements.txt
 
-# Run the unit and integration test suite
+# Run the unit test suite
 python run_tests.py
 
-# Run with coverage (same as CI)
-coverage run --source=pdip run_tests.py
-coverage report -m --omit="*/tests/*,*/site-packages/*"
+# Verify locally what CI will enforce
+coverage run run_tests.py
+coverage report --fail-under=100
+python -m unittest tests.unittests.quality_guard.test_conventions
 ```
 
-Detailed test commands are in [`readme.test.md`](readme.test.md).
-CI runs `package-build-and-tests.yml` on Python 3.9–3.11 across Linux,
-macOS, and Windows.
+Python **3.10–3.14** are supported; see
+[ADR-0028](docs/governance/adr/0028-raise-python-floor-to-3-10.md)
+for why the floor is 3.10.
 
 ## Documentation and governance
 

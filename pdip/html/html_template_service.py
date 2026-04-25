@@ -208,8 +208,8 @@ ul.breadcrumb li a:hover {
                 if offset is None or offset <= 0:
                     offset = 0
                 query = query.offset(offset)
-            pagination_json = {'PageUrl': pagination.PageUrl, 'PageNumber': pagination.Page, 'Limit': pagination.Limit,
-                               'Count': total_count, 'TotalPage': total_page, 'Filter': pagination.Filter}
+            pagination_json = {'PageUrl': pagination.PageUrl, 'Page': pagination.Page, 'Limit': pagination.Limit,
+                               'TotalCount': total_count, 'TotalPage': total_page, 'Filter': pagination.Filter}
         rows = []
         for data in query:
             row = prepare_row(data)
@@ -251,7 +251,7 @@ ul.breadcrumb li a:hover {
             for page in range(1, pagination.TotalPage + 1):
                 filter = f'{pagination.Filter}' if pagination.Filter is not None and pagination.Filter != '' else ''
                 page_url = pagination.PageUrl.format(f'?PageNumber={page}&Limit={pagination.Limit}&Filter={filter}')
-                if page == pagination.PageNumber:
+                if page == pagination.Page:
                     page_data = f'{page_data}<a href="{page_url}" class="active">{page}</a>'
 
                 else:

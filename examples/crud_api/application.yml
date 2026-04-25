@@ -1,0 +1,9 @@
+APPLICATION:
+  NAME: NotesApp
+
+API:
+  IS_DEBUG: True
+
+DATABASE:
+  TYPE: SQLITE
+  HOST: "notes.db"

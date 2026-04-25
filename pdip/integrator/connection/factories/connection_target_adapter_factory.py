@@ -32,17 +32,11 @@ class ConnectionTargetAdapterFactory(IScoped):
                 raise IncompatibleAdapterException(
                     f"{self.sql_target_adapter} is incompatible with ConnectionTargetAdapter")
         elif connection_type == ConnectionTypes.File:
-            if isinstance(self.file_target_adapter, ConnectionTargetAdapter):
-                return self.file_target_adapter
-            else:
-                raise IncompatibleAdapterException(
-                    f"{self.file_target_adapter} is incompatible with ConnectionTargetAdapter")
+            raise NotSupportedFeatureException(
+                f"{connection_type.name} target adapter is not wired in this build")
         elif connection_type == ConnectionTypes.Queue:
-            if isinstance(self.queue_target_adapter, ConnectionTargetAdapter):
-                return self.queue_target_adapter
-            else:
-                raise IncompatibleAdapterException(
-                    f"{self.queue_target_adapter} is incompatible with ConnectionTargetAdapter")
+            raise NotSupportedFeatureException(
+                f"{connection_type.name} target adapter is not wired in this build")
         elif connection_type == ConnectionTypes.BigData:
             if isinstance(self.big_data_target_adapter, ConnectionTargetAdapter):
                 return self.big_data_target_adapter
@@ -56,10 +50,7 @@ class ConnectionTargetAdapterFactory(IScoped):
                 raise IncompatibleAdapterException(
                     f"{self.web_service_target_adapter} is incompatible with ConnectionTargetAdapter")
         elif connection_type == ConnectionTypes.InMemory:
-            if isinstance(self.in_memory_target_adapter, ConnectionTargetAdapter):
-                return self.in_memory_target_adapter
-            else:
-                raise IncompatibleAdapterException(
-                    f"{self.in_memory_target_adapter} is incompatible with ConnectionTargetAdapter")
+            raise NotSupportedFeatureException(
+                f"{connection_type.name} target adapter is not wired in this build")
         else:
             raise NotSupportedFeatureException(f"{connection_type.name}")

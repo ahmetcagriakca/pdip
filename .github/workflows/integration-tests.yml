@@ -1,0 +1,248 @@
+# Nightly + manual integration-test run against real database backends.
+#
+# The main CI workflow (``package-build-and-tests.yml``) only runs the
+# unit suite under ``tests/unittests/``. Adapter code under
+# ``pdip/integrator/connection/types/{sql,bigdata,webservice}/`` is
+# excluded from that run's coverage measurement per ADR-0023 §1 — it
+# cannot be exercised without a real backend.
+#
+# This workflow closes the loop. It boots the pinned Docker images
+# from ``tests/environments/<backend>/docker-compose.yml`` as
+# ``services:`` containers and runs the corresponding
+# ``tests/integrationtests/integrator/integration/sql/<backend>/``
+# module against them.
+#
+# Speed knobs (apply to every backend):
+# - ``--tmpfs=<datadir>:rw,size=<N>g`` puts the database data files on
+#   a RAM-backed mount, so test queries hit memory instead of the
+#   runner's spinning / SSD storage. Cuts I/O latency to near-zero
+#   and shaves seconds off table-create + insert + select cycles.
+# - ``--shm-size`` raised from the default 64 MB where the engine
+#   needs more shared memory (Oracle especially).
+# - ``--health-cmd`` + generous ``--health-start-period`` so the test
+#   step does not race the database listener.
+#
+# Why nightly (not per-push) — see ADR-0029 §2 for the full rationale.
+
+name: Integration tests (nightly)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every day at 04:00 UTC. Deliberately late in the European evening
+    # / early morning to avoid GitHub Actions queue pressure.
+    - cron: "0 4 * * *"
+  # Self-test trigger: a PR that touches the workflow itself or the
+  # docker-compose fixtures it consumes runs immediately so the author
+  # sees it work against real backends before merging — without this,
+  # every workflow edit would be "merge and hope the next nightly is
+  # green". Scoped narrowly to only the integration-test-specific
+  # paths, so the main CI feedback loop stays unchanged. See
+  # ADR-0029 §2 for the "no per-push on unrelated files" rule.
+  pull_request:
+    paths:
+      - ".github/workflows/integration-tests.yml"
+      - "tests/environments/**"
+      - "tests/integrationtests/**"
+
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------------------------------------------
+  postgres:
+    name: Postgres 16
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pdi
+          POSTGRES_PASSWORD: pdi!123456
+          POSTGRES_DB: test_pdi
+        ports:
+          # The integration tests hard-code 5434 on the host (matching
+          # the docker-compose fixture); map it through to the 5432
+          # inside the container.
+          - 5434:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+          --tmpfs=/var/lib/postgresql/data:rw,size=512m
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Provision ``test_pdi`` schema inside the ``test_pdi`` database
+        # The tests expect a schema named ``test_pdi``; ``POSTGRES_DB``
+        # only creates the database. Create the schema idempotently so
+        # a retried workflow does not fail on "schema exists".
+        env:
+          PGPASSWORD: "pdi!123456"
+        run: |
+          psql -h 127.0.0.1 -p 5434 -U pdi -d test_pdi \
+               -c "CREATE SCHEMA IF NOT EXISTS test_pdi;"
+
+      - name: Run postgres integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/postgresql \
+              -t . \
+              -v
+
+  # ------------------------------------------------------------------
+  mysql:
+    name: MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: test_pdi
+          MYSQL_USER: pdi
+          MYSQL_PASSWORD: pdi!123456
+          MYSQL_ROOT_PASSWORD: pdi!123456
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+          --tmpfs=/var/lib/mysql:rw,size=512m
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Run MySQL integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/mysql \
+              -t . \
+              -v
+
+  # ------------------------------------------------------------------
+  oracle:
+    name: Oracle XE 21c
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # Oracle XE boots in ~40 s with faststart;
+                         # generous timeout so a slow runner does not
+                         # produce false-negative nightlies.
+
+    services:
+      oracle:
+        # ``gvenzl/oracle-xe:21-slim-faststart`` ships a pre-created
+        # database in the image, so first boot just starts the
+        # listener (~40 s) instead of running CREATE DATABASE
+        # (10+ min). Same pin as
+        # ``tests/environments/oracle/docker-compose.yml``.
+        image: gvenzl/oracle-xe:21-slim-faststart
+        env:
+          ORACLE_PASSWORD: pdi!123456
+          ORACLE_DATABASE: test_pdi    # creates a PDB named test_pdi
+          # In Oracle, ``user name == schema name`` — so we name the
+          # app user ``test_pdi`` to land its tables under the
+          # ``TEST_PDI`` schema (Oracle uppercases unquoted
+          # identifiers). The integration test uses
+          # ``source_schema='TEST_PDI'`` / ``target_schema='TEST_PDI'``
+          # so this gives the connecting user ownership / CREATE
+          # rights on the exact schema the test writes to.
+          APP_USER: test_pdi
+          APP_USER_PASSWORD: pdi!123456
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd=healthcheck.sh
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+          --health-start-period=60s
+          --shm-size=1g
+        # No ``--tmpfs=/opt/oracle/oradata``! ``slim-faststart`` bakes
+        # the pre-created database files into the image at that path
+        # — mounting a fresh tmpfs there erases them and the
+        # entrypoint then fails with "tablespace not found" within
+        # ~40 s. The whole point of ``faststart`` is to avoid the
+        # 10-minute CREATE DATABASE on first boot, so the trade-off
+        # we want is "keep image-baked DB, accept disk-backed I/O"
+        # rather than "RAM-backed I/O, slow boot". Postgres and MySQL
+        # do not have this issue because they detect an empty data
+        # dir and initialise it themselves.
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Wait for Oracle to accept ``test_pdi`` user logins
+        # Belt-and-braces beyond the service health-check: the Oracle
+        # listener is up before the PDB is fully open and the APP_USER
+        # is granted. Connect through python-oracledb thin mode the
+        # same way the integration test will.
+        run: |
+          python - <<'PY'
+          import time
+          import oracledb
+
+          last_err = None
+          for attempt in range(1, 31):
+              try:
+                  conn = oracledb.connect(
+                      user="test_pdi",
+                      password="pdi!123456",
+                      dsn="localhost:1521/test_pdi",
+                  )
+                  conn.close()
+                  print(f"Oracle ready after attempt {attempt}")
+                  break
+              except Exception as ex:
+                  last_err = ex
+                  print(f"Attempt {attempt}: {ex}; sleeping 5 s")
+                  time.sleep(5)
+          else:
+              raise SystemExit(f"Oracle never became ready; last error: {last_err}")
+          PY
+
+      - name: Run Oracle integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/oracle \
+              -t . \
+              -v

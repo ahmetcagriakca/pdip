@@ -28,8 +28,14 @@ class SeedRunner(IScoped):
                     instance.seed()
                 except Exception as ex:
                     self.logger.exception(ex, "Class instance not found on container.")
-                    instance = seed_class()
-                    instance.seed()
+                    try:
+                        instance = seed_class()
+                        instance.seed()
+                    except Exception as fallback_ex:
+                        self.logger.exception(
+                            fallback_ex,
+                            "Seed fallback instantiation getting error.",
+                        )
 
         except OperationalError as opex:
             self.logger.exception(opex, "Database connection getting error on running seeds.")

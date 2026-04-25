@@ -32,17 +32,11 @@ class ConnectionSourceAdapterFactory(IScoped):
                 raise IncompatibleAdapterException(
                     f"{self.sql_source_adapter} is incompatible with ConnectionSourceAdapter")
         elif connection_type == ConnectionTypes.File:
-            if isinstance(self.file_source_adapter, ConnectionSourceAdapter):
-                return self.file_source_adapter
-            else:
-                raise IncompatibleAdapterException(
-                    f"{self.file_source_adapter} is incompatible with ConnectionSourceAdapter")
+            raise NotSupportedFeatureException(
+                f"{connection_type.name} source adapter is not wired in this build")
         elif connection_type == ConnectionTypes.Queue:
-            if isinstance(self.queue_source_adapter, ConnectionSourceAdapter):
-                return self.queue_source_adapter
-            else:
-                raise IncompatibleAdapterException(
-                    f"{self.queue_source_adapter} is incompatible with ConnectionSourceAdapter")
+            raise NotSupportedFeatureException(
+                f"{connection_type.name} source adapter is not wired in this build")
         elif connection_type == ConnectionTypes.BigData:
             if isinstance(self.big_data_source_adapter, ConnectionSourceAdapter):
                 return self.big_data_source_adapter

@@ -67,14 +67,32 @@ disagree, the ADR is the source of truth and the policy must be updated.
 
 ## Testing
 
-- Coverage floor is enforced by `.coveragerc`'s
-  `fail_under=20` ([ADR-0023](../adr/0023-coverage-floor-policy.md)).
-  New tests should hold or improve coverage; the floor is ratcheted
-  up by separate maintenance PRs, not edited on feature PRs.
+- Coverage floor is enforced by `.coveragerc`'s `fail_under`
+  ([ADR-0023](../adr/0023-coverage-floor-policy.md)). New tests should
+  hold or improve coverage; the floor is ratcheted up by separate
+  maintenance PRs, not edited on feature PRs.
 - Integration adapters under
   `pdip/integrator/connection/{sql,bigdata,webservice,file}/` are
   excluded from the unit-coverage score because they need external
   services to run.
+- **Test quality rules** are fixed in
+  [ADR-0026](../adr/0026-test-quality-rules.md). Every test asserts a
+  concrete behaviour; no tautologies; AAA structure; mocks at
+  boundaries only; `unittest` only; no star imports; deterministic.
+  Six of the rules are machine-enforced by
+  `tests/unittests/quality_guard/test_conventions.py` — CI fails
+  when they are violated. Reviewers enforce the rest with the ADR
+  as the reference.
+- **TDD is the default workflow** for new production code
+  ([ADR-0027](../adr/0027-tdd-with-diff-coverage.md)). Write the
+  failing test first, watch it fail for the right reason, then
+  write the smallest change that makes it pass. Reviewers check
+  the commit graph for that ordering.
+- **Diff-coverage gates every PR at 100 %.** New or modified
+  `pdip/` lines must be covered by the same PR's test changes, or
+  CI fails — independent of the overall `fail_under` floor.
+- `# pragma: no cover` requires an inline reason comment on the
+  same line (the `quality_guard` meta-test enforces this).
 
 ## Review expectations
 

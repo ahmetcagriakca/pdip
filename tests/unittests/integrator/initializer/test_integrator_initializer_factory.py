@@ -11,7 +11,7 @@ and resolves one via the ``ServiceProvider``. We verify:
 from tests.unittests.integrator import _stub_pandas  # noqa: F401, E402
 
 from unittest import TestCase  # noqa: E402
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 from pdip.integrator.initializer.integrator.default_integrator_initializer import (  # noqa: E402
     DefaultIntegratorInitializer,
@@ -31,13 +31,19 @@ class IntegratorInitializerFactoryChoosesSubclass(TestCase):
         provider.get.return_value = sentinel
 
         factory = IntegratorInitializerFactory(service_provider=provider)
-        # This test relies on the default being present in the subclass
-        # registry. If a custom subclass is registered elsewhere the
-        # factory would prefer it — which is covered separately below.
-        result = factory.get()
+        # Pin the subclass list to exactly one entry so the
+        # ``len(subclasses) == 1`` branch runs — other tests in this
+        # process may register ad-hoc subclasses whose weakrefs are
+        # still live.
+        with patch.object(
+            IntegratorInitializer,
+            "__subclasses__",
+            return_value=[DefaultIntegratorInitializer],
+        ):
+            result = factory.get()
 
         self.assertIs(result, sentinel)
-        provider.get.assert_called_once()
+        provider.get.assert_called_once_with(DefaultIntegratorInitializer)
 
     def test_prefers_custom_subclass_over_default(self):
         class _Custom(IntegratorInitializer):

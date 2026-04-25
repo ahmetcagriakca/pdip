@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 here = Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-env_version = getenv('PYPI_PACKAGE_VERSION', default='0.7.0')
+env_version = getenv('PYPI_PACKAGE_VERSION', default='0.8.0')
 version = env_version.replace('v', '')
 setup(
     name='pdip',
@@ -20,11 +20,15 @@ setup(
     author_email='ahmetcagriakca@gmail.com',
     license='MIT',
     packages=find_packages(
-        exclude=["tests", "tests*", "test_*", '__pycache__', '*.__pycache__', '__pycache.*', '*.__pycache__.*']),
+        exclude=[
+            "tests", "tests*", "test_*",
+            "examples", "examples.*", "examples*",
+            "__pycache__", "*.__pycache__", "__pycache.*", "*.__pycache__.*",
+        ]),
     zip_safe=False,
     keywords=['PDI', 'API', 'ETL', 'PROCESS', 'MULTIPROCESS', 'IO', 'CQRS', 'MSSQL', 'ORACLE', 'POSTGRES', 'MYSQL',
               'CSV'],
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=[
         "injector",
         "PyYAML",
@@ -33,11 +37,11 @@ setup(
     extras_require={
         "api": [
             "Flask==3.1.3",
-            "Flask_Cors==6.0.0",
+            "Flask_Cors==6.0.2",
             "Flask-Injector==0.15.0",
-            "flask-restx==1.3.0",
+            "flask-restx==1.3.2",
             "markupsafe==2.1.5",
-            "Werkzeug==3.1.6"
+            "Werkzeug==3.1.8"
         ],
         "cryptography": [
             "cryptography==46.0.7"
@@ -49,13 +53,13 @@ setup(
             "func-timeout==4.3.5",
             "mysql-connector-python>=9.1,<10",
             "pandas==2.2.3",
-            "psycopg2-binary==2.9.9",
+            "psycopg2-binary==2.9.12",
             "pyodbc==5.1.0"
         ],
         "preferred": [
-            "injector==0.22.0",
+            "injector==0.24.0",
             "PyYAML==6.0.3",
-            "SQLAlchemy==2.0.35"
+            "SQLAlchemy==2.0.49"
         ]
     },
     classifiers=[
@@ -63,7 +67,6 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
