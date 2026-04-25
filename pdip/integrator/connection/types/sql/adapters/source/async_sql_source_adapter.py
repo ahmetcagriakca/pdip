@@ -69,6 +69,21 @@ class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
                 AsyncPostgresqlConnector,
             )
             return AsyncPostgresqlConnector(config=config)
+        if config.ConnectorType == ConnectorTypes.MYSQL:
+            from pdip.integrator.connection.types.sql.connectors.mysql.async_mysql_connector import (
+                AsyncMysqlConnector,
+            )
+            return AsyncMysqlConnector(config=config)
+        if config.ConnectorType == ConnectorTypes.MSSQL:
+            from pdip.integrator.connection.types.sql.connectors.mssql.async_mssql_connector import (
+                AsyncMssqlConnector,
+            )
+            return AsyncMssqlConnector(config=config)
+        if config.ConnectorType == ConnectorTypes.ORACLE:
+            from pdip.integrator.connection.types.sql.connectors.oracle.async_oracle_connector import (
+                AsyncOracleConnector,
+            )
+            return AsyncOracleConnector(config=config)
         raise NotImplementedError(
             f"async connector for {config.ConnectorType.name} is not "
             f"yet wired in this build (see ADR-0032 follow-ups)"
