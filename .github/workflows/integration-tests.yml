@@ -167,8 +167,15 @@ jobs:
         image: gvenzl/oracle-xe:21-slim-faststart
         env:
           ORACLE_PASSWORD: pdi!123456
-          ORACLE_DATABASE: test_pdi   # creates a PDB named test_pdi
-          APP_USER: pdi               # creates user pdi inside test_pdi
+          ORACLE_DATABASE: test_pdi    # creates a PDB named test_pdi
+          # In Oracle, ``user name == schema name`` — so we name the
+          # app user ``test_pdi`` to land its tables under the
+          # ``TEST_PDI`` schema (Oracle uppercases unquoted
+          # identifiers). The integration test uses
+          # ``source_schema='TEST_PDI'`` / ``target_schema='TEST_PDI'``
+          # so this gives the connecting user ownership / CREATE
+          # rights on the exact schema the test writes to.
+          APP_USER: test_pdi
           APP_USER_PASSWORD: pdi!123456
         ports:
           - 1521:1521
@@ -204,7 +211,7 @@ jobs:
           pip install -r requirements.txt
           pip install -e ".[integrator]"
 
-      - name: Wait for Oracle to accept ``pdi`` user logins
+      - name: Wait for Oracle to accept ``test_pdi`` user logins
         # Belt-and-braces beyond the service health-check: the Oracle
         # listener is up before the PDB is fully open and the APP_USER
         # is granted. Connect through python-oracledb thin mode the
@@ -218,7 +225,7 @@ jobs:
           for attempt in range(1, 31):
               try:
                   conn = oracledb.connect(
-                      user="pdi",
+                      user="test_pdi",
                       password="pdi!123456",
                       dsn="localhost:1521/test_pdi",
                   )

@@ -24,8 +24,9 @@ docker compose up -d
 | Port | `1521` |
 | Service / PDB | `test_pdi` |
 | SYS / SYSTEM password | `pdi!123456` |
-| App user | `pdi` |
+| App user | `test_pdi` |
 | App user password | `pdi!123456` |
+| App user's schema (auto, Oracle uppercases unquoted ids) | `TEST_PDI` |
 
 `python-oracledb` (per
 [ADR-0021](../../../docs/governance/adr/0021-cx-oracle-to-python-oracledb.md))
@@ -38,7 +39,7 @@ once after first boot:
 
 ```bash
 docker compose exec oracle-xe \
-    bash -c "sqlplus pdi/pdi\!123456@//localhost:1521/test_pdi @/container-entrypoint-initdb.d/scripts.sql"
+    bash -c "sqlplus test_pdi/pdi\!123456@//localhost:1521/test_pdi @/container-entrypoint-initdb.d/scripts.sql"
 ```
 
 ## Tear down

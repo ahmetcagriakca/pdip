@@ -33,7 +33,13 @@ class TestOracleIntegration(TestCase):
                 # configuration.
                 ServiceName='test_pdi',
                 BasicAuthentication=ConnectionBasicAuthentication(
-                    User='pdi',
+                    # Oracle treats ``user name == schema name``, so
+                    # connecting as ``test_pdi`` lands writes under
+                    # the ``TEST_PDI`` schema below. The fixture's
+                    # APP_USER env in
+                    # ``tests/environments/oracle/docker-compose.yml``
+                    # creates this user inside the ``test_pdi`` PDB.
+                    User='test_pdi',
                     Password='pdi!123456'
                 )
             )
