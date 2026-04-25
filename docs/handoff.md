@@ -46,11 +46,13 @@ of this file. Most `claude/*` branches on the remote are post-merge
 artifacts from squash-merged PRs — safe to ignore unless a name below is
 listed. **Reserved (not yet pushed):**
 
-- No active reserved branches at the moment.
-  `claude/handoff-start-continue-OolIR` (post-merge artifact of
-  #116), `claude/handoff-post-merge-OolIR` (post-merge artifact of
-  #117), and `claude/handoff-asyncpg-sigguard-OolIR` (post-merge
-  artifact of #118) are safe to ignore.
+- No active reserved branches at the moment. Post-merge
+  artifacts safe to ignore:
+  `claude/handoff-start-continue-OolIR` (#116),
+  `claude/handoff-post-merge-OolIR` (#117),
+  `claude/handoff-asyncpg-sigguard-OolIR` (#118),
+  `claude/handoff-post-118-refresh-OolIR` (#119), and the
+  current branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -65,7 +67,7 @@ ADR if the answer changed.
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
 | Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
-| Async / OpenTelemetry / 1.0 cut | **All ADRs Accepted (0032 / 0033 / 0034 / 0035), foundation + seven follow-ups landed on `main` (the original eight via #116, plus follow-up (a) asyncpg Postgres sibling end-to-end + (e-2) ADR-0035 signature snapshot guard)**. What is now on `main`: every documented public package declares `__all__` mirrored in `docs/public-api.md`; `pdip.observability` exports `get_tracer` / `get_meter` / `inject_context` / `use_context` (lazy no-op-by-default, `PDIP_OBSERVABILITY_ENABLED` toggle, OTel-missing fallback); `pdip[observability]` and `pdip[async]` extras live in `setup.py`; `Dispatcher.dispatch` and `Integrator.integrate` emit `pdip.cqrs.{command,query}` and `pdip.integrator.job` spans with the documented attributes; `AsyncConnectionSourceAdapter` / `AsyncConnectionTargetAdapter` abstract bases + the `is_async` flag on the connection factories now route to a real `AsyncSqlSourceAdapter` / `AsyncSqlTargetAdapter` for `ConnectionTypes.Sql` (Postgres-only, asyncpg-backed via `AsyncPostgresqlConnector` with lazy `import asyncpg` — non-Sql types still raise `NotSupportedFeatureException`); `AsyncIntegrationExecute` ABC + strategy-factory `is_async` flag in place; cross-process W3C `traceparent` propagation through `ProcessManager` ↔ `Subprocess`; ADR-0034 §5 enforcement complete in three layers — drift contract test (`tests/unittests/public_api/`), `RuleADR0034NoUndocumentedTopLevelPackage` coverage rule, and the new ADR-0035 `RuleADR0035PublicApiSignatureSnapshotMatches` against `docs/public-api-signatures.json` (regen helper at `scripts/regenerate_public_api_signatures.py`). Pre-commit suite is now 8 rules. | **What is left on this work-stream**: (a-2) MySQL via `aiomysql`, MSSQL via `aioodbc`, Oracle via `oracledb` async — same pattern as the Postgres sibling (`AsyncSqlSourceAdapter._connector_for` already raises `NotImplementedError` with an ADR-0032 pointer for these). (a-3) Async iterator + paging support on `AsyncSqlSourceAdapter`; async `clear_data` / `write_data` / `do_target_operation` on `AsyncSqlTargetAdapter` — currently `NotImplementedError` stubs documenting the queued slice. (a-4) Bring up the `pdip.integrator.source.read` / `pdip.integrator.target.write` adapter-call-site spans (ADR-0033 §3) inside the strategy modules — `singleprocess/` is in unit coverage; `parallelthread/` and `parallelold/` are excluded by `.coveragerc`. (e-3) Optional ADR for automating the warning-bearing-prior-release check that ADR-0034 §3 currently enforces in review (mentioned at the end of ADR-0035 Follow-ups). TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 / ADR-0034 / ADR-0035 quality_guard rules (now 8 rules). |
+| Async / OpenTelemetry / 1.0 cut | **All ADRs Accepted (0032 / 0033 / 0034 / 0035), ADR-0036 Proposed; foundation + ten follow-ups landed on `main`**. What is now on `main`: every documented public package declares `__all__` mirrored in `docs/public-api.md`; `pdip.observability` exports `get_tracer` / `get_meter` / `inject_context` / `use_context` (lazy no-op-by-default, `PDIP_OBSERVABILITY_ENABLED` toggle, OTel-missing fallback); `pdip[observability]` and `pdip[async]` extras live in `setup.py`; `Dispatcher.dispatch`, `Integrator.integrate`, AND now `SingleProcessIntegrationExecute.execute` emit `pdip.cqrs.{command,query}` / `pdip.integrator.job` / `pdip.integrator.source.read` / `pdip.integrator.target.write` spans with their documented attributes (per-page `pdip.rows.written`, `pdip.batch.size`, etc.); `AsyncConnectionSourceAdapter` / `AsyncConnectionTargetAdapter` abstract bases + the `is_async` flag on the connection factories route to real async adapters for `ConnectionTypes.Sql`; the async Sql adapter chain dispatches via `_connector_for` to `AsyncPostgresqlConnector` (asyncpg) **plus the new `AsyncMysqlConnector` (aiomysql) / `AsyncMssqlConnector` (aioodbc) / `AsyncOracleConnector` (oracledb async)** — each with lazy import of its driver so module import never depends on the `pdip[async]` extra; `AsyncSqlConnector` ABC gained `execute(query)`, with a Postgres implementation that powers `AsyncSqlTargetAdapter.clear_data` (`TRUNCATE TABLE`) end-to-end; cross-process W3C `traceparent` propagation through `ProcessManager` ↔ `Subprocess`; ADR-0034 §5 enforcement complete in three layers (drift / coverage / signature) — `RuleADR0035PublicApiSignatureSnapshotMatches` against `docs/public-api-signatures.json` (regen helper at `scripts/regenerate_public_api_signatures.py`). Pre-commit suite is 8 rules. | **What is left on this work-stream**: (a-3 remaining) async iterator + paging support on `AsyncSqlSourceAdapter`; async `write_data` / `do_target_operation` on `AsyncSqlTargetAdapter` (currently `NotImplementedError` stubs with ADR-0032 pointers; `clear_data` is now Postgres-end-to-end). (a-4 remaining) Span instrumentation of `parallelthread/` and `parallelold/` strategies (both excluded from unit coverage by `.coveragerc` — same span vocabulary, lifted from `singleprocess/`). (a-5) Integration tests for MySQL / MSSQL / Oracle async smokes against their Docker fixtures (smoke scaffolds shipped, gated by their respective extras). (e-3) **ADR-0036 Proposed** — picks a checked-in `docs/public-api-deprecations.json` manifest as the baseline, plus two new quality_guard rules (`RuleADR0036DeprecationWarningHasManifestEntry` + `RuleADR0036RemovalRespectsDeprecationCycle`); implementation is the Follow-ups list, not yet shipped. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 / ADR-0034 / ADR-0035 quality_guard rules. |
 
 ## 5. Read this first
 
@@ -87,22 +89,25 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-post-118-refresh-OolIR`
-(post-merge refresh after #118 squash-merged the asyncpg Postgres
-end-to-end sibling and ADR-0035 signature-snapshot guard to `main`,
-closing the last two queued follow-ups from the post-#116 §4 row).
-`main` is at `b2a431f`; the Async / OTel / 1.0 readiness work-stream
-sits at three Accepted ADRs (0032 / 0033 / 0034), one Accepted
-follow-up ADR (0035), and a public surface that includes
-`pdip.observability` plus async adapter siblings wired through
-both connection factories for `ConnectionTypes.Sql`. ADR-0034 §5
-enforcement is complete in three layers (drift / coverage /
-signature). 100 % unit coverage on the canonical `run_tests.py`
-cell (736 tests); 8 quality_guard rules green. Remaining queued
-work — additional async backends (MySQL via aiomysql, MSSQL via
-aioodbc, Oracle via oracledb async), async iterator/paging
-implementation, source/target adapter call-site spans, optional
-ADR for the warning-bearing-prior-release check — recorded in §4
-Async/OTel/1.0 row. When you change anything above, bump this line
-with the date and the branch name so the next reader knows the
-freshness window at a glance.*
+*Last updated 2026-04-25 on `claude/handoff-async-backends-spans-OolIR`
+(after the post-#119 follow-ups landed: (a-2) async MySQL /
+MSSQL / Oracle connector skeletons + `_connector_for` dispatch +
+per-backend integration smoke scaffolds; (a-3 partial)
+`AsyncSqlConnector.execute` + `AsyncPostgresqlConnector.execute`
++ `AsyncSqlTargetAdapter.clear_data` end-to-end for Postgres
+(`TRUNCATE TABLE`); (a-4) `pdip.integrator.source.read` /
+`pdip.integrator.target.write` spans in
+`SingleProcessIntegrationExecute` with the documented
+`pdip.connection.{type,driver}` / `pdip.batch.size` /
+`pdip.rows.written` attributes; (e-3) ADR-0036 **Proposed** —
+checked-in deprecation manifest + two new quality_guard rules
+(implementation is the ADR Follow-ups list). 100 % unit coverage
+on the canonical `run_tests.py` cell (745 tests); 8
+quality_guard rules green; flake8 clean across `pdip/`,
+`tests/`, `scripts/`. Remaining queued items: async
+iterator/paging + async write_data; spans in
+`parallelthread/` + `parallelold/` strategies; integration tests
+for MySQL/MSSQL/Oracle async smokes when their fixtures + extras
+are present; ADR-0036 Accepted + landed. When you change
+anything above, bump this line with the date and the branch
+name so the next reader knows the freshness window at a glance.*

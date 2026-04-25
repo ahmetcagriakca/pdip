@@ -43,6 +43,7 @@ shapes how the framework is built and used. See the parent
 | [0033](./0033-opentelemetry-observability.md) | OpenTelemetry observability via `pdip[observability]` | Accepted | observability, telemetry, integrator, packaging |
 | [0034](./0034-one-zero-readiness-criteria.md) | 1.0 readiness criteria and deprecation policy | Accepted | release, packaging, process, governance, api |
 | [0035](./0035-public-api-signature-snapshot-guard.md) | Public-API signature-snapshot guard for the 1.0 contract | Accepted | testing, ci, quality, governance, api |
+| [0036](./0036-deprecation-warning-prior-release-check.md) | Automating the warning-bearing-prior-release check for public-API removals | Proposed | testing, ci, quality, governance, api, release |
 
 ## Status legend
 
