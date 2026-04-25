@@ -1,0 +1,182 @@
+# Auto-open / update / close a tracking issue when the nightly
+# integration workflow fails on two consecutive nights, then closes
+# it once a subsequent nightly is green again.
+#
+# Policy source: docs/governance/adr/0031-adaptive-nightly-failure-issue.md
+# (ADR-0031 — supersedes ADR-0029 §6 "no automatic issue" rule for
+# the two-consecutive-failure case only).
+#
+# Trigger: ``workflow_run`` for ``Integration tests (nightly)``,
+# completed event, ``main`` branch only. ``workflow_dispatch``
+# triggered runs are excluded — those are maintainer-initiated and
+# investigation lives with whoever pressed the button.
+#
+# Single open issue at a time, labelled ``nightly-red``. A second
+# consecutive failure appends a comment instead of opening a
+# duplicate; a green run after the issue exists closes it
+# automatically.
+
+name: Nightly failure tracker
+
+on:
+  workflow_run:
+    workflows: ["Integration tests (nightly)"]
+    types: [completed]
+    branches: [main]
+
+# Minimum needed to create / comment on / close issues. No write
+# access to code or releases. Sits below the ``contents: read``
+# default the rest of the repo's workflows declare per PR #104.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  track:
+    name: Open / update / close ``nightly-red`` issue
+    runs-on: ubuntu-latest
+    # Only react to scheduled cron runs; ignore manual dispatches.
+    # ``workflow_dispatch`` events have ``event == 'workflow_dispatch'``;
+    # the nightly cron arrives as ``schedule``. Pull-request self-test
+    # runs of the source workflow are also excluded so a PR fixing
+    # the workflow doesn't false-fire the tracker.
+    if: github.event.workflow_run.event == 'schedule'
+    timeout-minutes: 5
+
+    steps:
+      - name: Decide trigger condition (two consecutive failures, or recovery)
+        id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          THIS_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          THIS_RUN_ID: ${{ github.event.workflow_run.id }}
+          THIS_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+        run: |
+          set -euo pipefail
+
+          # Look at the *previous* completed scheduled run on main for
+          # this workflow. We need both runs' conclusions to decide
+          # whether to open / update / close the tracker issue.
+          previous_conclusion="$(
+            gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_ID}/runs?branch=main&event=schedule&status=completed&per_page=2" \
+              --jq '.workflow_runs[1].conclusion // "none"'
+          )"
+
+          echo "this_conclusion=${THIS_RUN_CONCLUSION}" >> "$GITHUB_OUTPUT"
+          echo "previous_conclusion=${previous_conclusion}" >> "$GITHUB_OUTPUT"
+          echo "this_run_url=${THIS_RUN_URL}" >> "$GITHUB_OUTPUT"
+          echo "this_run_id=${THIS_RUN_ID}" >> "$GITHUB_OUTPUT"
+
+          # ``failure`` here means at least one job in the matrix
+          # ended with conclusion=failure. ``cancelled`` and
+          # ``timed_out`` are not counted toward the two-failure
+          # trigger — those are infrastructure issues, not regressions.
+          if [[ "${THIS_RUN_CONCLUSION}" == "failure" && "${previous_conclusion}" == "failure" ]]; then
+            echo "action=open_or_comment" >> "$GITHUB_OUTPUT"
+          elif [[ "${THIS_RUN_CONCLUSION}" == "success" ]]; then
+            echo "action=close_if_open" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find the open ``nightly-red`` issue, if any
+        id: find
+        if: steps.decide.outputs.action != 'skip'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Single-issue-per-outage: search for an open issue that
+          # already carries the label. We accept the empty list case
+          # (no open issue yet) and the one-or-more case (use the
+          # first / oldest one as the tracker).
+          existing="$(
+            gh issue list \
+              --repo "${GITHUB_REPOSITORY}" \
+              --state open \
+              --label nightly-red \
+              --json number \
+              --jq '.[0].number // ""'
+          )"
+          echo "existing_number=${existing}" >> "$GITHUB_OUTPUT"
+
+      - name: Open or comment on the tracker issue
+        if: steps.decide.outputs.action == 'open_or_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          run_url="${{ steps.decide.outputs.this_run_url }}"
+          run_id="${{ steps.decide.outputs.this_run_id }}"
+
+          # Pull the failing job names so the issue body / comment
+          # names which backend(s) regressed instead of just the run
+          # URL. ``--jq`` filters to failure conclusions; the
+          # tracker is only interested in the matrix cells that
+          # actually broke.
+          failing_jobs="$(
+            gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs" \
+              --jq '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")'
+          )"
+
+          if [[ -z "${{ steps.find.outputs.existing_number }}" ]]; then
+            # No open tracker — open a fresh one. The label is
+            # created on first use; no maintainer setup required.
+            gh label create nightly-red \
+              --color "d73a4a" \
+              --description "Two or more consecutive nightly integration failures (ADR-0031)" \
+              --force \
+              --repo "${GITHUB_REPOSITORY}" || true
+
+            gh issue create \
+              --repo "${GITHUB_REPOSITORY}" \
+              --label nightly-red \
+              --title "Nightly integration tests have failed two nights in a row" \
+              --body "$(cat <<EOF
+Two consecutive scheduled runs of \`Integration tests (nightly)\` on \`main\` ended with \`conclusion: failure\`. Per [ADR-0031](docs/governance/adr/0031-adaptive-nightly-failure-issue.md) this issue is opened automatically as a single tracker for the outage.
+
+**Latest failed run:** ${run_url}
+**Failing job(s):** ${failing_jobs:-(none reported by API)}
+
+The tracker stays open until a subsequent scheduled nightly is green; the workflow will then comment "resolved" and close the issue automatically. A second consecutive failure during the outage adds a comment here instead of opening a duplicate.
+
+If a maintainer fixes the underlying regression by hand, please leave the issue open — the auto-close will still trigger on the first green nightly so the lifecycle stays consistent.
+
+References: [ADR-0029](docs/governance/adr/0029-integration-tests-in-ci.md), [ADR-0031](docs/governance/adr/0031-adaptive-nightly-failure-issue.md).
+EOF
+)"
+          else
+            # Existing tracker — append a comment with this run's
+            # URL and failing jobs. Do not edit the body; the
+            # original "started on day N" framing stays intact.
+            gh issue comment "${{ steps.find.outputs.existing_number }}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --body "$(cat <<EOF
+Another consecutive failure tonight.
+
+**Run:** ${run_url}
+**Failing job(s):** ${failing_jobs:-(none reported by API)}
+EOF
+)"
+          fi
+
+      - name: Close the tracker issue if a green nightly arrived
+        if: steps.decide.outputs.action == 'close_if_open' && steps.find.outputs.existing_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          run_url="${{ steps.decide.outputs.this_run_url }}"
+
+          # Resolve and close in one shot. ``gh issue close``'s
+          # ``--comment`` flag posts the comment then closes — same
+          # API as the GitHub UI's "close with comment" affordance.
+          gh issue close "${{ steps.find.outputs.existing_number }}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --reason completed \
+            --comment "Resolved by ${run_url} — closing automatically per ADR-0031."
