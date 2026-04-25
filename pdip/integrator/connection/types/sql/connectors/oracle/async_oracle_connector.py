@@ -46,3 +46,15 @@ class AsyncOracleConnector(AsyncSqlConnector):
         with self.connection.cursor() as cursor:
             await cursor.execute(query)
             await self.connection.commit()
+
+    async def fetch_all(self, query):
+        with self.connection.cursor() as cursor:
+            await cursor.execute(query)
+            columns = [d[0] for d in cursor.description]
+            rows = await cursor.fetchall()
+            return [dict(zip(columns, row)) for row in rows]
+
+    async def executemany(self, query, rows):
+        with self.connection.cursor() as cursor:
+            await cursor.executemany(query, rows)
+            await self.connection.commit()

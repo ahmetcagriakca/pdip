@@ -45,22 +45,66 @@ class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
             await connector.disconnect()
 
     async def get_iterator(self, integration: IntegrationBase, limit: int):
-        # Iterator semantics require streaming cursor support per
-        # backend; this is the next implementation slice once a
-        # second connector lands. Raising ``NotImplementedError`` is
-        # the documented interim contract per ADR-0032 §3.
-        raise NotImplementedError(
-            "async iterator support is queued for a follow-up slice "
-            "(ADR-0032)"
-        )
+        """First-cut iterator: fetches the full result set into
+        memory and chunks into batches of ``limit`` rows. Streaming
+        cursor support (asyncpg's per-transaction ``cursor()``) is
+        a future optimisation slice; the in-memory chunk preserves
+        the sync sibling's batch-iteration contract that the
+        ``SingleProcessIntegrationExecute`` strategy reads via
+        ``for results in iterator:``."""
+        config = integration.SourceConnections.Sql.Connection
+        connector = self._connector_for(config)
+        try:
+            await connector.connect()
+            query = self._select_query_for(integration)
+            rows = await connector.fetch_all(query)
+            if limit is None or limit <= 0:
+                # ``limit`` of None / 0 means "no chunking": the
+                # whole result set is one batch.
+                return [rows] if rows else []
+            return [rows[i:i + limit] for i in range(0, len(rows), limit)]
+        finally:
+            await connector.disconnect()
 
     async def get_source_data_with_paging(
             self, integration: IntegrationBase, start: int, end: int
     ):
-        raise NotImplementedError(
-            "async paging support is queued for a follow-up slice "
-            "(ADR-0032)"
-        )
+        """First-cut paging: ``LIMIT (end - start) OFFSET start`` on
+        the dialect's standard SELECT. Postgres / MySQL accept the
+        SQL-standard form directly; MSSQL needs ``OFFSET ... ROWS
+        FETCH NEXT ... ROWS ONLY`` which lands per-driver as the
+        target dialects' adapters mature."""
+        config = integration.SourceConnections.Sql.Connection
+        connector = self._connector_for(config)
+        try:
+            await connector.connect()
+            base_query = self._select_query_for(integration)
+            paged_query = (
+                f"{base_query} LIMIT {end - start} OFFSET {start}"
+            )
+            return await connector.fetch_all(paged_query)
+        finally:
+            await connector.disconnect()
+
+    @staticmethod
+    def _select_query_for(integration):
+        """Return either the explicit ``Sql.Query`` from the
+        descriptor, or a generated ``SELECT`` for the named
+        ``Schema.ObjectName`` with the documented column list (or
+        ``*`` when no columns are listed). Mirrors the sync
+        sibling's ``SqlSourceAdapter.get_source_data`` shape."""
+        if integration.SourceConnections.Sql.Query:
+            return integration.SourceConnections.Sql.Query
+        schema = integration.SourceConnections.Sql.Schema
+        table = integration.SourceConnections.Sql.ObjectName
+        columns = integration.SourceConnections.Columns
+        if columns:
+            column_list = ", ".join(
+                f'"{c.Name}"' for c in columns
+            )
+        else:
+            column_list = "*"
+        return f'SELECT {column_list} FROM "{schema}"."{table}"'
 
     @staticmethod
     def _connector_for(config):
