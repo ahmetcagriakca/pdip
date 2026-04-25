@@ -1,9 +1,17 @@
 # ADR-0007: Use `multiprocessing` (not `asyncio`) for ETL parallelism
 
-- **Status:** Accepted
+- **Status:** Accepted (partially superseded by [ADR-0032](./0032-hybrid-async-strategy.md))
 - **Date:** 2026-04-24
 - **Deciders:** pdip maintainers
 - **Tags:** integrator, concurrency
+
+> **Note (2026-04-25):** [ADR-0032](./0032-hybrid-async-strategy.md)
+> partially supersedes this ADR. Multiprocessing remains the default
+> ETL parallelism primitive and the pandas/CPU-bound rationale below
+> still holds. The "asyncio is rejected" conclusion in
+> *Alternatives considered → Option A* is replaced by "asyncio is
+> available as an additive, opt-in execution strategy under the
+> `pdip[async]` extra"; everything else in this ADR stands.
 
 ## Context
 

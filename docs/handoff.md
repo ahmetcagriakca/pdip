@@ -42,10 +42,10 @@ of this file. Most `claude/*` branches on the remote are post-merge
 artifacts from squash-merged PRs — safe to ignore unless a name below is
 listed. **Reserved (not yet pushed):**
 
-- No active reserved branches at the moment. (The previously-reserved
-  `claude/integration-tests-adaptive-schedule` name is no longer pinned
-  here — see §4 "Adaptive nightly-failure issue" for why that work is
-  deferred against ADR-0029 §6's current "manual review" policy.)
+- `claude/handoff-start-continue-OolIR` — Async / OTel / 1.0 ADR
+  drafts (ADR-0032, ADR-0033, ADR-0034). Pushed for review; not yet
+  merged to `main`. See §4 "Async / OpenTelemetry / 1.0 cut" for the
+  state and the queued first-implementation PRs.
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -60,7 +60,7 @@ ADR if the answer changed.
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
 | Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
-| Async / OpenTelemetry / 1.0 cut | **Active development authorized 2026-04-25** — three ADRs queued for drafting in the next session: **ADR-0032** (hybrid async strategy — additive `pdip[async]` extra parallel to sync API, supersedes ADR-0007 partially), **ADR-0033** (OpenTelemetry observability — optional `pdip[observability]` extra, span hierarchy + metric conventions), **ADR-0034** (1.0 readiness criteria + deprecation policy). Foundation package = 3 ADRs + 3 first-implementation PRs (one tractable slice each); subsequent sessions deepen each line (every connector → async, full instrumentation depth, full API audit + 1.0 cut). | TDD focus mandated by the authorising user — every new PR satisfies ADR-0027's diff-cover 100 % gate and ADR-0026's quality_guard rules. Implementation order: 1.0 audit → OTel → Async (smallest blast radius first, biggest API rewrite last). |
+| Async / OpenTelemetry / 1.0 cut | **In flight** — three ADRs drafted on `claude/handoff-start-continue-OolIR` and awaiting review/acceptance: [ADR-0032](governance/adr/0032-hybrid-async-strategy.md) (hybrid async via additive `pdip[async]` extra; partially supersedes ADR-0007 — multiprocessing stays the default, async is added as a parallel execution path with sibling adapter classes), [ADR-0033](governance/adr/0033-opentelemetry-observability.md) (OTel via optional `pdip[observability]` extra; lazy no-op-by-default tracer/meter helpers, fixed span and metric vocabulary, cross-process trace context propagated through `Subprocess`), [ADR-0034](governance/adr/0034-one-zero-readiness-criteria.md) (1.0 audit + SemVer + one-minor `DeprecationWarning` policy; the §1 public surface drives a `quality_guard` rule). ADR-0007 carries a header note pointing to ADR-0032. | After the ADRs are accepted, three queued first-implementation PRs (one tractable slice each, in implementation order — smallest blast radius first): (1) ADR-0034 — write `__all__` per public `__init__.py` + `docs/public-api.md` table + the `quality_guard` rule. (2) ADR-0033 — `pdip/observability/` lazy helpers + `pdip[observability]` extra + instrument `pdip/cqrs/dispatcher.py`. (3) ADR-0032 — `AsyncConnectionSourceAdapter` / `AsyncConnectionTargetAdapter` bases + `pdip[async]` extra + Postgres/asyncpg async sibling end-to-end + `async` strategy registered in `IntegrationSourceToTargetExecuteStrategyFactory`. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 quality_guard rules. Subsequent sessions then deepen each line (every connector → async, full instrumentation depth, full audit → 1.0 cut). |
 
 ## 5. Read this first
 
@@ -82,9 +82,10 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-pre-session-handover` (after
-PR #114 landed Stage 1 substantive — apache/impala fixture translation —
-and the authorising user explicitly green-lit Async + OpenTelemetry +
-1.0-cut work for the next session under TDD discipline). When you
-change anything above, bump this line with the date and the branch name
-so the next reader knows the freshness window at a glance.*
+*Last updated 2026-04-25 on `claude/handoff-start-continue-OolIR`
+(after the three Async / OpenTelemetry / 1.0-cut ADRs were drafted as
+**Proposed** — ADR-0032 hybrid async, ADR-0033 OTel observability,
+ADR-0034 1.0 readiness — and ADR-0007 was annotated as partially
+superseded by ADR-0032). When you change anything above, bump this
+line with the date and the branch name so the next reader knows the
+freshness window at a glance.*
