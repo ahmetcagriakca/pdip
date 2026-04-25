@@ -284,19 +284,27 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Microsoft ODBC Driver 18 for SQL Server
+      - name: Install Microsoft ODBC Driver 17 for SQL Server
         # The runner image ships ``unixodbc`` but no Microsoft ODBC
         # driver. ``pyodbc`` connects through whatever driver
-        # ``mssql_connector.py``'s ``find_driver_name`` discovers; the
-        # canonical "ODBC Driver 18 for SQL Server" is published in
-        # Microsoft's apt repo for Ubuntu.
+        # ``mssql_connector.py``'s ``find_driver_name`` discovers.
         #
-        # Use Microsoft's officially documented one-shot installer
-        # (``packages-microsoft-prod.deb``) instead of the older
-        # ``apt-key add`` + ``prod.list`` flow — ``apt-key`` was
-        # removed in Ubuntu 24.04 (which is what ``ubuntu-latest``
-        # currently resolves to), and the previous shape failed at
-        # ``apt-get update`` with exit code 2.
+        # Why 17, not 18: Driver 18 enforces TLS verification by
+        # default and refuses self-signed certificates without an
+        # explicit ``TrustServerCertificate=yes`` in the connection
+        # string. The integration tests construct their connection
+        # string in the adapter, not the test, so threading that
+        # parameter through every fixture would be intrusive. Driver
+        # 17 leaves TLS opt-in and connects to the test container
+        # cleanly. Driver 17 remains maintained by Microsoft for
+        # compatibility (CVE patches still ship; deprecation has not
+        # been announced).
+        #
+        # Microsoft's officially documented one-shot installer
+        # (``packages-microsoft-prod.deb``) wires up the apt repo —
+        # we avoid the older ``apt-key add`` flow because ``apt-key``
+        # was removed in Ubuntu 24.04, which is what ``ubuntu-latest``
+        # currently resolves to.
         run: |
           UBUNTU_VERSION="$(. /etc/os-release && echo "${VERSION_ID}")"
           curl -fsSL -o packages-microsoft-prod.deb \
@@ -304,7 +312,7 @@ jobs:
           sudo dpkg -i packages-microsoft-prod.deb
           rm -f packages-microsoft-prod.deb
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18
+          sudo ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17
 
       - name: Install dependencies (runtime + integrator extra)
         run: |
@@ -327,7 +335,7 @@ jobs:
           import pyodbc
 
           SA_CONN_STR = (
-              "DRIVER={ODBC Driver 18 for SQL Server};"
+              "DRIVER={ODBC Driver 17 for SQL Server};"
               "SERVER=localhost,1433;"
               "UID=sa;"
               "PWD=yourStrong(!)Password;"
