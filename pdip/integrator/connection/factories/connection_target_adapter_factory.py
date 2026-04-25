@@ -1,6 +1,7 @@
 from injector import inject
 
 from ..base import ConnectionTargetAdapter
+from ..base._async_extra import require_async_extra
 from ..domain.enums import ConnectionTypes
 from ..types.bigdata.adapters.target import BigDataTargetAdapter
 from ..types.sql.adapters.target import SqlTargetAdapter
@@ -24,7 +25,17 @@ class ConnectionTargetAdapterFactory(IScoped):
         self.big_data_target_adapter = big_data_target_adapter
         self.sql_target_adapter = sql_target_adapter
 
-    def get_adapter(self, connection_type: ConnectionTypes) -> ConnectionTargetAdapter:
+    def get_adapter(
+            self,
+            connection_type: ConnectionTypes,
+            is_async: bool = False,
+    ) -> ConnectionTargetAdapter:
+        if is_async:
+            require_async_extra()
+            raise NotSupportedFeatureException(
+                f"async {connection_type.name} target adapter is not yet "
+                f"wired in this build (see ADR-0032 follow-ups)"
+            )
         if connection_type == ConnectionTypes.Sql:
             if isinstance(self.sql_target_adapter, ConnectionTargetAdapter):
                 return self.sql_target_adapter

@@ -1,6 +1,7 @@
 from injector import inject
 
 from ..base import ConnectionSourceAdapter
+from ..base._async_extra import require_async_extra
 from ..domain.enums import ConnectionTypes
 from ..types.bigdata.adapters.source import BigDataSourceAdapter
 from ..types.sql.adapters.source import SqlSourceAdapter
@@ -24,7 +25,17 @@ class ConnectionSourceAdapterFactory(IScoped):
         self.big_data_source_adapter = big_data_source_adapter
         self.sql_source_adapter = sql_source_adapter
 
-    def get_adapter(self, connection_type: ConnectionTypes) -> ConnectionSourceAdapter:
+    def get_adapter(
+            self,
+            connection_type: ConnectionTypes,
+            is_async: bool = False,
+    ) -> ConnectionSourceAdapter:
+        if is_async:
+            require_async_extra()
+            raise NotSupportedFeatureException(
+                f"async {connection_type.name} source adapter is not yet "
+                f"wired in this build (see ADR-0032 follow-ups)"
+            )
         if connection_type == ConnectionTypes.Sql:
             if isinstance(self.sql_source_adapter, ConnectionSourceAdapter):
                 return self.sql_source_adapter
