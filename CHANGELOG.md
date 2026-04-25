@@ -17,13 +17,20 @@ for the public API surface described in
 
 - **ADR-0029 — Integration tests run nightly in CI.** New
   `.github/workflows/integration-tests.yml` boots the pinned
-  Postgres 16 and MySQL 8.4 images (from
-  `tests/environments/<backend>/docker-compose.yml`) as Actions
+  Postgres 16, MySQL 8.4, **and Oracle XE 21c**
+  (`gvenzl/oracle-xe:21-slim-faststart`) images from
+  `tests/environments/<backend>/docker-compose.yml` as Actions
   `services:` containers and runs the matching modules under
   `tests/integrationtests/integrator/integration/sql/<backend>/`.
-  Triggers: `workflow_dispatch` + daily cron at 04:00 UTC. **Not**
-  on `push` / `pull_request` — the main CI loop stays sub-2-min.
-  MSSQL / Oracle / Kafka jobs arrive as follow-up PRs.
+  Each backend mounts its data directory as a `--tmpfs` RAM-disk
+  (Postgres / MySQL 512 MB, Oracle 2 GB) so test query latency is
+  near-zero; Oracle additionally raises `--shm-size` to 1 GB.
+  Triggers: `workflow_dispatch` + daily cron at 04:00 UTC + a
+  narrow `pull_request` self-test trigger when the workflow
+  itself or any `tests/environments/**` /
+  `tests/integrationtests/**` file changes. The main CI loop
+  stays sub-2-min — integration runs do not fire on unrelated
+  pushes. MSSQL / Kafka jobs arrive as follow-up PRs.
 - New `examples/crud_api/` — runnable minimal CQRS + REST +
   SQLAlchemy "notes" service; boots via `python examples/crud_api/main.py`.
   Backed by `tests/unittests/examples/crud_api/test_crud_api_example.py`

@@ -20,7 +20,11 @@ services:
     environment:
       ORACLE_PASSWORD: pdi!123456
       ORACLE_DATABASE: test_pdi          # pluggable DB auto-created
-      APP_USER: pdi                       # creates a user + grants
+      # In Oracle ``user name == schema name``. Naming the app user
+      # ``test_pdi`` lands its tables under the ``TEST_PDI`` schema
+      # (Oracle uppercases unquoted identifiers), which is what the
+      # integration tests expect.
+      APP_USER: test_pdi
       APP_USER_PASSWORD: pdi!123456
     ports:
       - "1521:1521"
