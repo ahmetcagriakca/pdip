@@ -19,8 +19,7 @@ tracks the Docker ecosystem and opens weekly PRs when a new tag lands.
 | SQL Server | `mcr.microsoft.com/mssql/server:2022-latest` | 1433 | `sa / yourStrong(!)Password` | ✅ |
 | Oracle XE | `gvenzl/oracle-xe:21-slim-faststart` | 1521 | `pdi / pdi!123456 / test_pdi` | ✅ |
 | Kafka | `confluentinc/cp-kafka:7.7.1` + `cp-zookeeper:7.7.1` | 29092 (host), 9092 (inter-broker) | no auth | ✅ |
-| Hadoop | `bde2020/hadoop-*:2.0.0-hadoop3.2.1-java8` | 9000 / 9870 | no auth | ⚠ unmaintained since 2020; follow-up migration pending |
-| Impala + Kudu | `ibisproject/impala`, `parrotstream/kudu:latest` | 21050 (Impala), 7051 (Kudu master) | no auth | ⚠ unmaintained; same follow-up as Hadoop |
+| Impala + Kudu | `ibisproject/impala`, `parrotstream/kudu:latest` | 21050 (Impala), 7051 (Kudu master) | no auth | ⚠ unmaintained; ADR-0030 migration pending — see policy below |
 
 ## Boot + tear-down recipe
 
@@ -49,10 +48,21 @@ at your host / credentials before running.
 
 ## Unmaintained-image policy
 
-Two fixtures (`hadoop/`, `bigdata/impala/`) sit on third-party images
-that stopped receiving updates around 2020. We leave them pinned to
-their last-known-good tag with a `# unmaintained; see header` marker
-in-line. Any new big-data integration test should either (a) add its
-backend as a new subdirectory with a maintained image, or (b) wait
-for the migration PR that replaces Hadoop/Impala with Apache-official
-or modern alternatives.
+The `bigdata/impala/` fixture sits on third-party images
+(`ibisproject/impala` + `parrotstream/kudu`) that stopped receiving
+updates around 2020. We leave it pinned to its last-known-good tag
+with a `# unmaintained; see header` marker in-line. Any new big-data
+integration test should either (a) add its backend as a new
+subdirectory with a maintained image, or (b) wait for the Stage 1
+migration PR planned in
+[ADR-0030](../../docs/governance/adr/0030-hadoop-impala-fixture-migration.md)
+which replaces it with the Apache-official `apache/impala:4.5.0-*`
+quickstart cluster.
+
+The previously-listed `hadoop/` fixture
+(`bde2020/hadoop-*:2.0.0-hadoop3.2.1-java8`) was deleted in the
+Stage 1 mechanical-cleanup PR — no test under `tests/integrationtests/`
+referenced it (the bigdata tests target Impala only, and Apache
+Impala 4.x's local-fs storage mode removes the external HDFS
+dependency the old fixture provided). Reviving an HDFS-only fixture
+would open its own ADR.
