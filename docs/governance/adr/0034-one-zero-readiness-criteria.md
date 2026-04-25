@@ -125,7 +125,7 @@ A `1.0.0` release is cut only when **all** the following hold on
 
 ### 5. Enforcement
 
-The contract is enforced in three layers, two already shipped:
+The contract is enforced in three layers, all shipped:
 
 - **Drift guard (shipped)** —
   `tests/unittests/public_api/test_public_api_contract.py` walks
@@ -143,11 +143,13 @@ The contract is enforced in three layers, two already shipped:
   one-line reason comment per ADR-0026 §G.3). A new top-level
   package cannot be added without an explicit public/internal
   decision.
-- **Signature guard (deferred to a follow-up ADR)** — comparing the
-  public signature against the previous minor needs an external
-  baseline (PyPI sdist, git tag artefact, or a checked-in snapshot)
-  and is its own design decision; tracked as a §Follow-ups item
-  below.
+- **Signature guard (shipped — see [ADR-0035](./0035-public-api-signature-snapshot-guard.md))** —
+  quality_guard rule `RuleADR0035PublicApiSignatureSnapshotMatches`
+  reads `docs/public-api-signatures.json` and re-introspects the
+  live public surface, failing CI on any addition, removal, or
+  signature change. The snapshot is the contract; the regen helper
+  at `scripts/regenerate_public_api_signatures.py` is a developer
+  convenience for legitimate updates.
 
 Adjacent process steps:
 
@@ -224,12 +226,15 @@ Adjacent process steps:
   *(Landed.)*
 - ✅ quality_guard "coverage" rule for §5
   (`RuleADR0034NoUndocumentedTopLevelPackage`). *(Landed.)*
-- Signature-baseline guard: compare each public symbol's signature
-  against the previous minor's release artefact and fail CI on a
-  break that is not preceded by a `DeprecationWarning`. Needs a
-  separate design ADR to pick the baseline source (PyPI sdist /
-  git-tag introspection / checked-in snapshot) and the diff
-  algorithm.
+- ✅ Signature-baseline guard for §5 — see
+  [ADR-0035](./0035-public-api-signature-snapshot-guard.md);
+  picks a checked-in JSON snapshot as the baseline source, defines
+  the canonical rendered format, and adds
+  `RuleADR0035PublicApiSignatureSnapshotMatches` to fail CI on
+  any addition / removal / signature change. *(Landed.)* The
+  warning-bearing-prior-release check ADR-0034 §3 mandates is
+  still review-enforced; an ADR for automating it is left as the
+  remaining open follow-up.
 - Release-PR template update for §4.
 - Coordinate with ADR-0032 and ADR-0033 so the new public symbols
   introduced by Async / OTel land *with* their `__all__` entries, not
