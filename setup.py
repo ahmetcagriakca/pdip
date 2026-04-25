@@ -43,6 +43,12 @@ setup(
             "markupsafe==3.0.3",
             "Werkzeug==3.1.8"
         ],
+        "async": [
+            "asyncpg>=0.29,<1",
+            "aiomysql>=0.2,<1",
+            "aioodbc>=0.5,<1",
+            "aiokafka>=0.10,<1"
+        ],
         "cryptography": [
             "cryptography==46.0.7"
         ],

@@ -43,9 +43,15 @@ artifacts from squash-merged PRs — safe to ignore unless a name below is
 listed. **Reserved (not yet pushed):**
 
 - `claude/handoff-start-continue-OolIR` — Async / OTel / 1.0 ADR
-  drafts (ADR-0032, ADR-0033, ADR-0034). Pushed for review; not yet
-  merged to `main`. See §4 "Async / OpenTelemetry / 1.0 cut" for the
-  state and the queued first-implementation PRs.
+  trio (ADR-0032 / 0033 / 0034 — all three Accepted) **plus the
+  three foundation first-implementation slices** (ADR-0034 public-
+  API audit, ADR-0033 observability lazy helpers + Dispatcher
+  spans, ADR-0032 async adapter bases + `pdip[async]` extra).
+  Pushed for review; not yet merged to `main`. See §4 "Async /
+  OpenTelemetry / 1.0 cut" for what landed and the queued follow-up
+  PRs (asyncpg connector, factory `is_async` flag, async strategy,
+  Integrator/adapter OTel instrumentation, cross-process trace
+  context, ADR-0034 quality_guard rule expansion).
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -60,7 +66,7 @@ ADR if the answer changed.
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
 | Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
-| Async / OpenTelemetry / 1.0 cut | **In flight** — three ADRs drafted on `claude/handoff-start-continue-OolIR` and awaiting review/acceptance: [ADR-0032](governance/adr/0032-hybrid-async-strategy.md) (hybrid async via additive `pdip[async]` extra; partially supersedes ADR-0007 — multiprocessing stays the default, async is added as a parallel execution path with sibling adapter classes), [ADR-0033](governance/adr/0033-opentelemetry-observability.md) (OTel via optional `pdip[observability]` extra; lazy no-op-by-default tracer/meter helpers, fixed span and metric vocabulary, cross-process trace context propagated through `Subprocess`), [ADR-0034](governance/adr/0034-one-zero-readiness-criteria.md) (1.0 audit + SemVer + one-minor `DeprecationWarning` policy; the §1 public surface drives a `quality_guard` rule). ADR-0007 carries a header note pointing to ADR-0032. | After the ADRs are accepted, three queued first-implementation PRs (one tractable slice each, in implementation order — smallest blast radius first): (1) ADR-0034 — write `__all__` per public `__init__.py` + `docs/public-api.md` table + the `quality_guard` rule. (2) ADR-0033 — `pdip/observability/` lazy helpers + `pdip[observability]` extra + instrument `pdip/cqrs/dispatcher.py`. (3) ADR-0032 — `AsyncConnectionSourceAdapter` / `AsyncConnectionTargetAdapter` bases + `pdip[async]` extra + Postgres/asyncpg async sibling end-to-end + `async` strategy registered in `IntegrationSourceToTargetExecuteStrategyFactory`. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 quality_guard rules. Subsequent sessions then deepen each line (every connector → async, full instrumentation depth, full audit → 1.0 cut). |
+| Async / OpenTelemetry / 1.0 cut | **All three ADRs Accepted, foundation slices landed on `claude/handoff-start-continue-OolIR`** ([ADR-0032](governance/adr/0032-hybrid-async-strategy.md) hybrid async / [ADR-0033](governance/adr/0033-opentelemetry-observability.md) OTel / [ADR-0034](governance/adr/0034-one-zero-readiness-criteria.md) 1.0 readiness; ADR-0007 carries a header note pointing to ADR-0032). What landed in this session: (1) **ADR-0034 slice 1** — every documented public package declares `__all__`, `docs/public-api.md` mirrors the contract, and `tests/unittests/public_api/test_public_api_contract.py` machine-checks drift. (2) **ADR-0033 slice 2** — `pdip/observability/` lazy `get_tracer` / `get_meter` (no-op-by-default, `PDIP_OBSERVABILITY_ENABLED` toggle, OTel-missing fallback), the `pdip[observability]` extra, and `pdip/cqrs/dispatcher.py` instrumented with `pdip.cqrs.command` / `pdip.cqrs.query` spans carrying the `pdip.cqrs.handler` attribute. (3) **ADR-0032 slice 3 (foundation only)** — `AsyncConnectionSourceAdapter` / `AsyncConnectionTargetAdapter` abstract bases + the `pdip[async]` extra (asyncpg / aiomysql / aioodbc / aiokafka). All three slices ship at 100 % unit coverage on the canonical `run_tests.py` cell with ADR-0026 quality_guard green. | **Slice 3 deliberately did NOT include** the asyncpg Postgres connector, the `is_async` flag on `ConnectionSourceAdapterFactory`, or registration of the async strategy in `IntegrationSourceToTargetExecuteStrategyFactory` — those are integration-test territory (real Postgres, asyncpg dependency) and outside one tractable unit-test-driven slice. **Queued follow-ups** (each one a separate PR): (a) async Postgres sibling end-to-end via `asyncpg` under `pdip/integrator/connection/types/sql/connectors/postgresql/`, gated by integration tests; (b) `is_async` flag on the source/target adapter factories with clean `ImportError` when the `pdip[async]` extra is missing; (c) `AsyncIntegrationExecute` strategy under `pdip/integrator/integration/types/sourcetotarget/strategies/async_/` and its registration in the strategy factory; (d) ADR-0033 follow-ups — instrument `Integrator.run`, the source/target adapter call sites, then cross-process W3C `traceparent` propagation through `Subprocess`; (e) ADR-0034 follow-ups — broaden the public-API contract test into a full quality_guard rule that catches signature breaks against the previous minor and add a release-PR template item per §4. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 quality_guard rules. |
 
 ## 5. Read this first
 
@@ -83,9 +89,13 @@ rest.
 ---
 
 *Last updated 2026-04-25 on `claude/handoff-start-continue-OolIR`
-(after the three Async / OpenTelemetry / 1.0-cut ADRs were drafted as
-**Proposed** — ADR-0032 hybrid async, ADR-0033 OTel observability,
-ADR-0034 1.0 readiness — and ADR-0007 was annotated as partially
-superseded by ADR-0032). When you change anything above, bump this
-line with the date and the branch name so the next reader knows the
-freshness window at a glance.*
+(after the three Async / OTel / 1.0-cut ADRs were Accepted and
+their foundation first-implementation slices landed: ADR-0034
+public-API audit + drift contract test, ADR-0033 lazy
+observability helpers + Dispatcher spans + `pdip[observability]`
+extra, ADR-0032 async adapter bases + `pdip[async]` extra. ADR-0007
+carries a header note pointing to ADR-0032. Branch sits at 100 %
+unit coverage with ADR-0026 quality_guard green; queued follow-ups
+recorded in §4 Async/OTel/1.0 row.). When you change anything
+above, bump this line with the date and the branch name so the
+next reader knows the freshness window at a glance.*
