@@ -37,6 +37,7 @@ shapes how the framework is built and used. See the parent
 | [0027](./0027-tdd-with-diff-coverage.md) | Test-first development (TDD) with diff-coverage enforcement | Accepted | testing, ci, quality, process |
 | [0028](./0028-raise-python-floor-to-3-10.md) | Raise `python_requires` floor from 3.9 to 3.10 | Accepted | packaging, compatibility, python, ci |
 | [0029](./0029-integration-tests-in-ci.md) | Integration tests run nightly in CI | Accepted | testing, ci, quality, integration |
+| [0030](./0030-hadoop-impala-fixture-migration.md) | Migrate the Hadoop / Impala / Kudu fixtures off unmaintained images | Proposed | testing, ci, fixtures, bigdata |
 
 ## Status legend
 
