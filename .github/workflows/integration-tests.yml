@@ -250,7 +250,16 @@ jobs:
   # ------------------------------------------------------------------
   mssql:
     name: SQL Server 2022
-    runs-on: ubuntu-latest
+    # Pinned to 22.04, not ``ubuntu-latest``: Microsoft stopped
+    # publishing ``msodbcsql17`` for Ubuntu 24.04 (only 18 is in
+    # the 24.04 repo). 18 enforces TLS verification by default and
+    # rejects the test container's self-signed certificate without
+    # ``TrustServerCertificate=yes`` in the connection string —
+    # which the adapter under ``mssql_connector.py`` builds without
+    # that parameter. Driver 17 is still maintained for 22.04 and
+    # leaves TLS opt-in, so we use the older runner only for this
+    # one job. Other backends keep running on ``ubuntu-latest``.
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
 
     services:
