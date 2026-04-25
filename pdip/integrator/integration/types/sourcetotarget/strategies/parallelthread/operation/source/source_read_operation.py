@@ -7,10 +7,15 @@ from pdip.dependency import IScoped
 from pdip.integrator.connection.domain.task import DataQueueTask
 from pdip.integrator.connection.factories import ConnectionSourceAdapterFactory
 from pdip.integrator.domain.enums.events import EVENT_LOG
+from pdip.integrator.integration.types.sourcetotarget.strategies.base.span_helpers import (
+    attr_name,
+    resolve_driver,
+)
 from pdip.integrator.operation.domain import OperationIntegrationBase
 from pdip.integrator.pubsub.base import ChannelQueue
 from pdip.integrator.pubsub.domain import TaskMessage
 from pdip.integrator.pubsub.publisher import Publisher
+from pdip.observability import get_tracer
 
 
 class SourceReadOperation(IScoped):
@@ -41,11 +46,34 @@ class SourceReadOperation(IScoped):
         )
         try:
 
+            source_connection_type = operation_integration.Integration.SourceConnections.ConnectionType
             source_adapter = self.connection_source_adapter_factory.get_adapter(
-                connection_type=operation_integration.Integration.SourceConnections.ConnectionType
+                connection_type=source_connection_type
             )
 
-            data_count = source_adapter.get_source_data_count(integration=operation_integration.Integration)
+            tracer = get_tracer("pdip.integrator")
+            with tracer.start_as_current_span(
+                    "pdip.integrator.source.read"
+            ) as read_span:
+                read_span.set_attribute(
+                    "pdip.connection.type",
+                    attr_name(source_connection_type),
+                )
+                read_span.set_attribute(
+                    "pdip.connection.driver",
+                    resolve_driver(
+                        operation_integration.Integration.SourceConnections
+                    ),
+                )
+                read_span.set_attribute(
+                    "pdip.batch.size",
+                    operation_integration.Limit
+                    if operation_integration.Limit is not None
+                    else 0,
+                )
+                data_count = source_adapter.get_source_data_count(
+                    integration=operation_integration.Integration
+                )
             if data_count > 0:
                 transmitted_data_count = 0
                 limit = operation_integration.Limit
