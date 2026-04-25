@@ -58,12 +58,9 @@ ADR if the answer changed.
 
 | Topic | Status | Pointer |
 |---|---|---|
-| `oracledb` 4.x adoption | `setup.py` now allows `oracledb>=2,<4`, so 3.x lands automatically; 4.x is not yet released upstream. The adapter only uses `makedsn` + `connect` (DB-API 2.0 surface), which has been stable across the 2.x/3.x line per [ADR-0021](governance/adr/0021-cx-oracle-to-python-oracledb.md). | When Dependabot opens a `<4 → <5` PR, re-run the same surface audit before bumping the upper bound. |
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
-| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) records the three-stage migration plan (Status: Proposed). Stage 1 — collapse to a single `apache/impala` fixture + delete `tests/environments/hadoop/`. Stage 2 — re-introduce `apache/kudu:1.17.0` only if existing tests reach Kudu code paths. Stage 3 — wire the `impala:` nightly job. | Stage 1 PR carries the audit (does `apache/impala:4.x` boot inside Actions `services:` 15-min timeout?). |
-| Adaptive nightly-failure issue (auto-open issue on two red nights) | [ADR-0029 §6](governance/adr/0029-integration-tests-in-ci.md) currently mandates *manual* review via the Actions tab; the auto-open behaviour is listed under §Follow-ups with the explicit pre-condition "if failures pile up". Today there is no failure backlog to justify it. | When two consecutive nightly failures are observed without a same-day fix landing, open ADR-0031 superseding §6. |
-| `examples/etl` + pub/sub observer demo | Listed in [`examples/README.md`](../examples/README.md) as planned follow-ups to `examples/crud_api`. | None — pick up when the next end-to-end story needs an executable reference. |
-| Async / OpenTelemetry / 1.0 cut | No ADR drafted. Mentioned as long-horizon items in conversation; not on any milestone. | Open as ADR-0031+ when an actual driver appears. |
+| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1's mechanical part landed in PR #110 (deleted `tests/environments/hadoop/`, updated environments README). Stage 1's substantive part (translate the upstream `apache/impala/docker/quickstart.yml` into a 5-service fixture: postgres + impala_quickstart_hms + statestored + catalogd + impalad_coord_exec) and Stage 3 (`impala:` nightly job) still pending. | Open one PR carrying the new compose + the workflow job; the integration-tests self-test trigger fires on the PR, so the Actions matrix validates the boot end-to-end. |
+| Async / OpenTelemetry / 1.0 cut | No ADR drafted. Mentioned as long-horizon items in conversation; not on any milestone. | Open as ADR-0032+ when an actual driver appears. |
 
 ## 5. Read this first
 
@@ -85,8 +82,10 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-update-batch-2` (after the
-MSSQL nightly job, ADR-0030 Hadoop migration plan, and Kafka test
-scaffold landed; Kafka nightly job and adaptive-schedule deferred).
-When you change anything above, bump this line with the date and the
-branch name so the next reader knows the freshness window at a glance.*
+*Last updated 2026-04-25 on `claude/handoff-clear-deferred-zero` (after
+PRs #110–#112: hadoop fixture deleted, ADR-0031 + nightly-failure-tracker
+workflow landed, examples/etl + pubsub_observer landed; oracledb 4.x and
+the now-implemented adaptive-schedule rows removed from §4 since they no
+longer reflect deferred work). When you change anything above, bump this
+line with the date and the branch name so the next reader knows the
+freshness window at a glance.*
