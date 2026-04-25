@@ -48,14 +48,24 @@ def _aioodbc_available() -> bool:
 )
 class TestAsyncMssqlConnection(TestCase):
     def setUp(self):
+        # Match the credentials the sync MSSQL integration tests run
+        # against in nightly CI (per
+        # ``tests/integrationtests/integrator/integration/sql/mssql/test_integrator.py``)
+        # so the async smoke jobs hit the same workflow-provisioned
+        # ``pdi`` login + ``test_pdi`` database + ``TEST_PDI`` schema
+        # the green sync nightly already exercises. Connecting as
+        # ``sa`` to ``master`` (the original smoke pattern) does not
+        # match the integration-tests workflow's password / database
+        # set-up, so the smoke jobs failed even before the adapter
+        # cases below were added.
         self.connection = SqlConnectionConfiguration(
             Name='TestAsyncMssqlConnection',
             ConnectionType=ConnectionTypes.Sql,
             ConnectorType=ConnectorTypes.MSSQL,
-            Server=ConnectionServer(Host='localhost', Port=None),
-            Database='master',
+            Server=ConnectionServer(Host='localhost', Port='1433'),
+            Database='test_pdi',
             BasicAuthentication=ConnectionBasicAuthentication(
-                User='sa', Password='Pdi!123456'
+                User='pdi', Password='pdi!123456'
             ),
         )
 
@@ -148,7 +158,7 @@ class TestAsyncMssqlConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "dbo"
+        schema = "TEST_PDI"
         table = "test_async_iterator_pages"
         adapter = AsyncSqlSourceAdapter()
         integration = IntegrationBase(
@@ -214,7 +224,7 @@ class TestAsyncMssqlConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "dbo"
+        schema = "TEST_PDI"
         table = "test_async_paging"
         adapter = AsyncSqlSourceAdapter()
         integration = IntegrationBase(
@@ -290,7 +300,7 @@ class TestAsyncMssqlConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "dbo"
+        schema = "TEST_PDI"
         table = "test_async_write_data"
         adapter = AsyncSqlTargetAdapter()
         integration = IntegrationBase(
@@ -368,7 +378,7 @@ class TestAsyncMssqlConnection(TestCase):
             IntegrationConnectionBase,
         )
 
-        schema = "dbo"
+        schema = "TEST_PDI"
         table = "test_async_do_target_op"
         adapter = AsyncSqlTargetAdapter()
 
@@ -451,7 +461,7 @@ class TestAsyncMssqlConnection(TestCase):
         )
 
         adapter = AsyncSqlTargetAdapter()
-        schema = "dbo"
+        schema = "TEST_PDI"
         table = "test_async_clear_data"
         integration = IntegrationBase(
             TargetConnections=IntegrationConnectionBase(
