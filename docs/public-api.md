@@ -16,7 +16,7 @@ without warning. Open an issue if you need it promoted.
 
 | Package | Public symbols | Source |
 |---|---|---|
-| `pdip` | *(empty — use submodules)* | [`pdip/__init__.py`](../pdip/__init__.py) |
+| `pdip` | `__version__` (single source of truth for the runtime package version; read by ADR-0036 §2's `RuleADR0036RemovalRespectsDeprecationCycle` to gate removals against the manifest) | [`pdip/__init__.py`](../pdip/__init__.py) |
 | `pdip.api` | *(empty — Flask-Restx layer is composed by the host)* | [`pdip/api/__init__.py`](../pdip/api/__init__.py) |
 | `pdip.configuration` | `ConfigManager` | [`pdip/configuration/__init__.py`](../pdip/configuration/__init__.py) |
 | `pdip.cqrs` | `CommandQueryBase`, `CommandQueryHandlerBase`, `Dispatcher`, `ICommand`, `ICommandHandler`, `IQuery`, `IQueryHandler` | [`pdip/cqrs/__init__.py`](../pdip/cqrs/__init__.py) |

@@ -47,6 +47,64 @@ Before proposing architecturally significant changes, read the relevant
   its newly added or modified `pdip/` lines at 100 % line coverage,
   measured against the merge-base with `main`. CI fails otherwise.
 
+### Deprecating a public symbol
+
+The 1.0 contract defined by
+[ADR-0034](docs/governance/adr/0034-one-zero-readiness-criteria.md)
+guarantees that a public symbol cannot be removed without a
+prior-minor `DeprecationWarning`. The check is automated by
+[ADR-0036](docs/governance/adr/0036-deprecation-warning-prior-release-check.md)'s
+two `quality_guard` rules, so the workflow is:
+
+1. **Emit the warning from the symbol body.** A typical site
+   looks like:
+
+   ```python
+   import warnings
+
+
+   def old_thing():
+       warnings.warn(
+           "old_thing is deprecated since 1.3, use new_thing "
+           "instead; removable in 2.0",
+           DeprecationWarning,
+           stacklevel=2,
+       )
+       ...
+   ```
+
+2. **Register the symbol in
+   [`docs/public-api-deprecations.json`](docs/public-api-deprecations.json).**
+   Add a key whose qualified name matches the symbol's
+   enclosing scope (e.g. `pdip.legacy.OldThing` for a class,
+   `pdip.legacy.OldThing.do_x` for a method) and the value
+   object documented in ADR-0036 §1:
+
+   ```json
+   {
+     "pdip.legacy.old_thing": {
+       "deprecated_in": "1.3.0",
+       "removable_in": "2.0.0",
+       "replacement": "pdip.modern.new_thing",
+       "reason": "Renamed for the verb-noun convention adopted in 1.3."
+     }
+   }
+   ```
+
+3. **Ship the minor.** Both `quality_guard` rules now stay
+   green: `RuleADR0036DeprecationWarningHasManifestEntry`
+   passes because the warning's enclosing key is in the
+   manifest, and `RuleADR0036RemovalRespectsDeprecationCycle`
+   passes because the symbol is still part of the live
+   surface (no diff against the
+   [signature snapshot](docs/public-api-signatures.json)).
+
+4. **Remove the source + the manifest entry together** in the
+   major release where `removable_in` lands. Both rules go quiet
+   in lockstep — the warning AST-walk no longer finds the call,
+   and the snapshot diff shows the REMOVED key paired with a
+   manifest entry whose `removable_in` is `<= pdip.__version__`.
+
 ## How Can I Contribute?
 
 ### Reporting Bugs
