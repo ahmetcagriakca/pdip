@@ -246,3 +246,150 @@ jobs:
               -s tests/integrationtests/integrator/integration/sql/oracle \
               -t . \
               -v
+
+  # ------------------------------------------------------------------
+  mssql:
+    name: SQL Server 2022
+    # Pinned to 22.04, not ``ubuntu-latest``: Microsoft stopped
+    # publishing ``msodbcsql17`` for Ubuntu 24.04 (only 18 is in
+    # the 24.04 repo). 18 enforces TLS verification by default and
+    # rejects the test container's self-signed certificate without
+    # ``TrustServerCertificate=yes`` in the connection string —
+    # which the adapter under ``mssql_connector.py`` builds without
+    # that parameter. Driver 17 is still maintained for 22.04 and
+    # leaves TLS opt-in, so we use the older runner only for this
+    # one job. Other backends keep running on ``ubuntu-latest``.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    services:
+      mssql:
+        # Same pin as ``tests/environments/mssql/docker-compose.yml``
+        # (Developer edition; free for non-prod). Mainstream support
+        # window through 2028-01.
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          # Must satisfy SQL Server's default password policy
+          # (uppercase + lowercase + digit + symbol, ≥ 8 chars).
+          MSSQL_SA_PASSWORD: "yourStrong(!)Password"
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --tmpfs=/var/opt/mssql/data:rw,size=512m
+        # No docker-level ``--health-cmd`` here. The 2022 image puts
+        # ``sqlcmd`` at ``/opt/mssql-tools18/bin/sqlcmd`` but escaping
+        # the SA password through ``options:`` is brittle, and we
+        # already need a Python wait loop below to provision the
+        # ``pdi`` login + ``test_pdi`` database before the tests can
+        # run. The wait loop doubles as the readiness probe.
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.11"
+
+      - name: Install Microsoft ODBC Driver 17 for SQL Server
+        # The runner image ships ``unixodbc`` but no Microsoft ODBC
+        # driver. ``pyodbc`` connects through whatever driver
+        # ``mssql_connector.py``'s ``find_driver_name`` discovers.
+        #
+        # Why 17, not 18: Driver 18 enforces TLS verification by
+        # default and refuses self-signed certificates without an
+        # explicit ``TrustServerCertificate=yes`` in the connection
+        # string. The integration tests construct their connection
+        # string in the adapter, not the test, so threading that
+        # parameter through every fixture would be intrusive. Driver
+        # 17 leaves TLS opt-in and connects to the test container
+        # cleanly. Driver 17 remains maintained by Microsoft for
+        # compatibility (CVE patches still ship; deprecation has not
+        # been announced).
+        #
+        # Microsoft's officially documented one-shot installer
+        # (``packages-microsoft-prod.deb``) wires up the apt repo —
+        # we avoid the older ``apt-key add`` flow because ``apt-key``
+        # was removed in Ubuntu 24.04, which is what ``ubuntu-latest``
+        # currently resolves to.
+        run: |
+          UBUNTU_VERSION="$(. /etc/os-release && echo "${VERSION_ID}")"
+          curl -fsSL -o packages-microsoft-prod.deb \
+              "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          rm -f packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17
+
+      - name: Install dependencies (runtime + integrator extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[integrator]"
+
+      - name: Wait for SQL Server, provision login + database + schema
+        # Belt-and-braces: connect as ``sa`` first to verify the
+        # listener is up, then create the ``pdi`` login, the
+        # ``test_pdi`` database, the ``pdi`` user mapping, and the
+        # ``TEST_PDI`` schema the integration tests reference.
+        # ``CHECK_POLICY=OFF`` is needed because ``pdi!123456`` has
+        # no uppercase letter and would fail SQL Server's default
+        # password complexity check.
+        run: |
+          python - <<'PY'
+          import time
+
+          import pyodbc
+
+          SA_CONN_STR = (
+              "DRIVER={ODBC Driver 17 for SQL Server};"
+              "SERVER=localhost,1433;"
+              "UID=sa;"
+              "PWD=yourStrong(!)Password;"
+              "TrustServerCertificate=yes"
+          )
+
+          last_err = None
+          for attempt in range(1, 31):
+              try:
+                  conn = pyodbc.connect(SA_CONN_STR, autocommit=True, timeout=5)
+                  conn.close()
+                  print(f"SQL Server ready after attempt {attempt}")
+                  break
+              except Exception as ex:
+                  last_err = ex
+                  print(f"Attempt {attempt}: {ex}; sleeping 5 s")
+                  time.sleep(5)
+          else:
+              raise SystemExit(f"SQL Server never became ready; last error: {last_err}")
+
+          conn = pyodbc.connect(SA_CONN_STR, autocommit=True)
+          cur = conn.cursor()
+          cur.execute(
+              "IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'pdi') "
+              "CREATE LOGIN pdi WITH PASSWORD = 'pdi!123456', CHECK_POLICY = OFF"
+          )
+          cur.execute("IF DB_ID('test_pdi') IS NULL CREATE DATABASE test_pdi")
+          cur.execute("USE test_pdi")
+          cur.execute(
+              "IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'pdi') "
+              "CREATE USER pdi FOR LOGIN pdi"
+          )
+          cur.execute("EXEC sp_addrolemember 'db_owner', 'pdi'")
+          # CREATE SCHEMA must be the only statement in its batch — wrap in EXEC.
+          cur.execute(
+              "IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'TEST_PDI') "
+              "EXEC('CREATE SCHEMA TEST_PDI AUTHORIZATION pdi')"
+          )
+          conn.close()
+          print("Provisioned: pdi login, test_pdi database, TEST_PDI schema")
+          PY
+
+      - name: Run MSSQL integration tests
+        run: |
+          python -m unittest discover \
+              -s tests/integrationtests/integrator/integration/sql/mssql \
+              -t . \
+              -v
