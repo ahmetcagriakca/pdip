@@ -12,6 +12,9 @@ below **with a comment explaining why** — ADR-0026 §G.3.
 """
 
 import ast
+import importlib
+import inspect
+import json
 import pathlib
 import re
 from unittest import TestCase
@@ -369,4 +372,93 @@ class RuleADR0034NoUndocumentedTopLevelPackage(TestCase):
             "_ADR0034_INTERNAL_PACKAGES allowlist with a one-line "
             "reason comment. New packages are not silently public. "
             "Offenders:\n  " + "\n  ".join(offenders),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Rule ADR-0035 §3 — every public symbol's rendered signature must match
+# the checked-in snapshot at ``docs/public-api-signatures.json``. The
+# snapshot is the third (signature) enforcement layer described by
+# ADR-0034 §5; ADR-0035 picks the baseline source (checked-in JSON) and
+# the rendered format (``"class X" + str(inspect.signature(X.__init__))``
+# / ``"def f" + str(inspect.signature(f))`` / ``repr(value)``).
+#
+# A change of any kind — addition, removal, or signature edit — fails
+# CI. To land an intentional public-signature change, run
+# ``python scripts/regenerate_public_api_signatures.py
+# > docs/public-api-signatures.json`` in the same PR, and follow the
+# ADR-0034 §3 deprecation policy for removals.
+# ---------------------------------------------------------------------------
+
+
+_PUBLIC_API_SIGNATURE_SNAPSHOT_PATH = (
+    _REPO_ROOT / "docs" / "public-api-signatures.json"
+)
+
+
+def _render_public_signature(symbol_name: str, value: object) -> str:
+    """Canonical signature text per ADR-0035 §2. Identical formatting
+    to ``scripts/regenerate_public_api_signatures.py`` so the guard
+    and the regen helper round-trip 1:1."""
+    if inspect.isclass(value):
+        try:
+            sig = inspect.signature(value.__init__)
+        except (ValueError, TypeError):
+            return f"class {symbol_name}"
+        return f"class {symbol_name}{sig}"
+    if callable(value):
+        try:
+            sig = inspect.signature(value)
+        except (ValueError, TypeError):
+            return f"def {symbol_name}"
+        return f"def {symbol_name}{sig}"
+    return repr(value)
+
+
+class RuleADR0035PublicApiSignatureSnapshotMatches(TestCase):
+    def test_public_signatures_match_the_checked_in_snapshot(self):
+        from tests.unittests.public_api.test_public_api_contract import (
+            EXPECTED_PUBLIC_SURFACE,
+        )
+        snapshot = json.loads(
+            _PUBLIC_API_SIGNATURE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+        )
+
+        actual = {}
+        for package_name, names in EXPECTED_PUBLIC_SURFACE.items():
+            if not names:
+                continue
+            module = importlib.import_module(package_name)
+            for symbol_name in names:
+                value = getattr(module, symbol_name)
+                key = f"{package_name}.{symbol_name}"
+                actual[key] = _render_public_signature(symbol_name, value)
+
+        diffs = []
+        for key in sorted(set(snapshot) | set(actual)):
+            if key in snapshot and key in actual:
+                if snapshot[key] != actual[key]:
+                    diffs.append(
+                        f"{key}: CHANGED\n      "
+                        f"snapshot: {snapshot[key]}\n      "
+                        f"actual:   {actual[key]}"
+                    )
+            elif key in snapshot:
+                diffs.append(
+                    f"{key}: REMOVED — was {snapshot[key]!r}"
+                )
+            else:
+                diffs.append(
+                    f"{key}: ADDED — now {actual[key]!r}"
+                )
+
+        self.assertEqual(
+            diffs,
+            [],
+            "ADR-0035 §3: public-API signature drift detected. "
+            "If this change is intentional, regenerate the snapshot "
+            "with `python scripts/regenerate_public_api_signatures.py "
+            "> docs/public-api-signatures.json` and follow the "
+            "ADR-0034 §3 deprecation policy for any removals. "
+            "Drift:\n  " + "\n  ".join(diffs),
         )

@@ -43,8 +43,8 @@ repos:
   - repo: local
     hooks:
       - id: quality-guard
-        name: ADR-0026 / ADR-0027 §5 / ADR-0034 §5 quality rules
-        # Runs the seven machine-enforced rules from
+        name: ADR-0026 / ADR-0027 §5 / ADR-0034 §5 / ADR-0035 §3 quality rules
+        # Runs the eight machine-enforced rules from
         # tests/unittests/quality_guard/test_conventions.py:
         #   A.1 every test_* method has an assertion,
         #   A.2 no tautological assertions,
@@ -55,7 +55,10 @@ repos:
         #     inline reason comment on the same line,
         #   ADR-0034 §5 every directory directly under ``pdip/`` is
         #     either documented in the public-API contract or in the
-        #     internal-package allowlist with a reason comment.
+        #     internal-package allowlist with a reason comment,
+        #   ADR-0035 §3 the rendered signature of every public symbol
+        #     matches the checked-in snapshot at
+        #     ``docs/public-api-signatures.json``.
         # The suite runs in ~300 ms locally — well within budget
         # for pre-commit.
         entry: python -m unittest tests.unittests.quality_guard.test_conventions

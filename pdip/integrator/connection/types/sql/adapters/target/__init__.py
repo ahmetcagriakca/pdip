@@ -1,1 +1,2 @@
+from .async_sql_target_adapter import AsyncSqlTargetAdapter
 from .sql_target_adapter import SqlTargetAdapter

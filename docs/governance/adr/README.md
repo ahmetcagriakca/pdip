@@ -42,6 +42,7 @@ shapes how the framework is built and used. See the parent
 | [0032](./0032-hybrid-async-strategy.md) | Hybrid async strategy via additive `pdip[async]` extra | Accepted | integrator, concurrency, packaging, async |
 | [0033](./0033-opentelemetry-observability.md) | OpenTelemetry observability via `pdip[observability]` | Accepted | observability, telemetry, integrator, packaging |
 | [0034](./0034-one-zero-readiness-criteria.md) | 1.0 readiness criteria and deprecation policy | Accepted | release, packaging, process, governance, api |
+| [0035](./0035-public-api-signature-snapshot-guard.md) | Public-API signature-snapshot guard for the 1.0 contract | Accepted | testing, ci, quality, governance, api |
 
 ## Status legend
 
