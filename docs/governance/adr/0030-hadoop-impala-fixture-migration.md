@@ -1,6 +1,8 @@
 # ADR-0030: Migrate the Hadoop / Impala / Kudu fixtures off unmaintained images
 
-- **Status:** Proposed
+- **Status:** Proposed (revised 2026-04-25 after a Docker Hub audit
+  reframed Stage 1 — see *Decision §Stage 1* and the *Revision
+  history* footer)
 - **Date:** 2026-04-25
 - **Deciders:** pdip maintainers
 - **Tags:** testing, ci, fixtures, bigdata
@@ -66,16 +68,39 @@ We migrate the bigdata fixtures in three sequenced PRs, each
 independently mergeable, none required by the others to keep `main`
 green:
 
-### Stage 1 — collapse to a single Impala fixture
+### Stage 1 — translate Apache Impala's `quickstart.yml` into the fixture
 
 Replace `tests/environments/bigdata/impala/docker-compose.yml` with a
-two-service compose that runs the Apache-official `apache/impala`
-image (released 4.x; tags published since 2024) against the same
-`postgres:16-alpine` metastore the current fixture already uses.
-Rationale: Apache Impala 4.x ships an embedded local-fs storage
-mode for development clusters, so the daemon no longer needs an
-external HDFS to start. The `bde2020/hadoop-*` services become
-obsolete.
+**multi-component compose** modelled on the upstream
+[`apache/impala/docker/quickstart.yml`](https://github.com/apache/impala/tree/master/docker).
+The Apache project does **not** ship a single all-in-one Impala
+image; the `apache/impala:4.5.0-*` family on Docker Hub is
+componentised. A minimal cluster needs roughly the following
+service set, all pinned to `4.5.0`:
+
+| Service | Image | Purpose |
+|---|---|---|
+| `postgres` | `postgres:16-alpine` (already pinned in the existing fixture) | Hive Metastore Service backing store |
+| `hive-metastore` | `apache/impala:4.5.0-impala_quickstart_hms` | Hive Metastore daemon (~1.82 GB image) |
+| `statestored` | `apache/impala:4.5.0-statestored` | Cluster membership / state |
+| `catalogd` | `apache/impala:4.5.0-catalogd` | Metadata cache |
+| `impala` | `apache/impala:4.5.0-impalad_coord_exec` | Combined coordinator + executor; exposes the SQL endpoint on `21050` |
+
+Rationale: Apache Impala 4.x exposes a **local-filesystem storage
+mode** that removes the external HDFS dependency the current
+`bde2020/hadoop-*` cluster carries. The 5-component split is
+heavier than this ADR's first revision claimed (which incorrectly
+assumed a single all-in-one image), but it is still a strict win
+on three axes:
+
+- All five images are **maintained** by Apache and version-pinned.
+- No external Hadoop substrate — the fixture goes from `5 Hadoop +
+  1 Impala + 2 Kudu = 8 containers` to `1 Postgres + 4 Impala = 5
+  containers`.
+- Boot ordering is fully described by the upstream `quickstart.yml`
+  (HMS depends on Postgres, statestored runs first, catalogd reads
+  HMS, impalad reads catalogd) — translating it to GitHub Actions
+  `services:` is mechanical, not a research project.
 
 `tests/environments/hadoop/` is deleted in the same PR — once
 nothing depends on it, leaving it around is dead weight that
@@ -83,7 +108,10 @@ Dependabot keeps trying to update.
 
 `tests/environments/README.md`'s "Backends and pins" table loses
 the Hadoop row and changes the Impala row's `Maintained?` column
-from `⚠` to `✅`.
+from `⚠` to `✅`. The maintainer running the audit should also
+verify against the upstream `quickstart.yml` whether any newer
+`4.5.x` patch tag has shipped — Dependabot will then track it from
+the next bump.
 
 ### Stage 2 — replace the Kudu fixture if still needed
 
@@ -120,28 +148,34 @@ This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
   nightly CI. Driver-bump regressions surface within 24 hours rather
   than at the next downstream bug report.
 - Dependabot's Docker ecosystem (added in PR #95) starts tracking
-  meaningful targets — `apache/impala`, `apache/kudu`, the
+  meaningful targets — `apache/impala:4.5.0-*`, `apache/kudu`, the
   `postgres:16-alpine` metastore — instead of effectively pinned
   zombies.
-- One compose file replaces six (one Impala + zero–one Kudu vs. five
-  Hadoop + one Impala + two Kudu). Less surface, less drift.
+- Container count drops from `5 Hadoop + 1 Impala + 2 Kudu = 8` to
+  `1 Postgres + 4 Impala (+ 0–2 Kudu) = 5–7`. Less surface, less
+  drift, all images on a maintained release line.
 - `tests/environments/README.md`'s "Maintained?" column becomes a
   monotone ✅, removing the open-ended footnote.
 
 ### Negative
 
-- **Audit required up-front.** We do not yet *know* that
-  `apache/impala:4.x` runs standalone on a single Actions runner
-  within the 15-minute timeout that frames the SQL backends. The
-  Stage 1 PR carries that audit; if the image needs a beefier
-  runner or a longer warm-up than `services:` allows, the plan
-  forks to "use a self-hosted runner" or "scope down to a unit-only
-  bigdata adapter test", neither of which is in scope for this ADR.
-- **Existing tests may need to declare a bigdata-only flag.** If
-  Impala 4.x's local-fs mode boots slower than the SQL backends
-  (~minutes rather than seconds), the bigdata job's timeout grows
-  proportionally. The job is nightly, not per-PR, so the impact is
-  bounded.
+- **5-service Actions block, not a single one.** The fixture is
+  more lines of YAML than any other backend in
+  `.github/workflows/integration-tests.yml`. Each service needs the
+  right env vars, port mappings, and (where relevant) a
+  `--health-cmd`; mistakes show up as silent broker-style boot
+  loops. The Stage 3 PR is correspondingly larger than the
+  Postgres / MySQL / Oracle / MSSQL ones.
+- **HMS image weight.** `apache/impala:4.5.0-impala_quickstart_hms`
+  is ~1.82 GB. Service-container pull on a cold runner adds ~30–60 s
+  per nightly. The cost is bounded (it's nightly, not per-PR) but
+  not free.
+- **Boot ordering is real.** The Apache `quickstart.yml` declares
+  `depends_on` between postgres → HMS → statestored → catalogd →
+  impalad. GitHub Actions `services:` does not honour `depends_on`
+  — services boot in parallel. Stage 3 has to either wait through a
+  Python readiness probe (the pattern Oracle / MSSQL already use)
+  or emulate the depends-on chain with `--health-cmd` per service.
 - **Cloudera ODBC driver licensing.** The ODBC driver Stage 3 needs
   is shipped under a Cloudera EULA (free for use; not redistributable).
   The runner step downloads it from Cloudera's public URL with the
@@ -218,4 +252,23 @@ This is the bullet ADR-0029's Follow-ups list defers to *this* ADR.
   `tests/environments/bigdata/impala/docker-compose.yml`
 - ADR-0029 §Follow-ups bullet: `docs/governance/adr/0029-integration-tests-in-ci.md`
 - Apache Impala project: <https://impala.apache.org/>
+- Apache Impala Docker quickstart: <https://github.com/apache/impala/tree/master/docker>
 - Apache Kudu project: <https://kudu.apache.org/>
+
+## Revision history
+
+- **2026-04-25** (initial proposal). Stage 1 framed as "collapse to
+  a *single* Apache-official Impala fixture" against `apache/impala`
+  + `postgres:16-alpine`. Implementation prerequisite check skipped.
+- **2026-04-25** (Docker Hub audit, same day). Stage 1 reframed:
+  Apache does not ship a single all-in-one Impala image; the
+  `apache/impala:4.5.0-*` family is componentised
+  (HMS / statestored / catalogd / impalad). The minimal fixture is
+  4–5 services modelled on upstream `quickstart.yml`, not the
+  two-service compose the initial wording suggested. The win is
+  smaller than first claimed (5–7 maintained containers vs. 8
+  unmaintained ones, not "one fixture replaces six"), but the
+  direction holds: maintained images, no external HDFS, version
+  pins Dependabot can track. Stage 3's Negative consequences
+  expanded with the realities of multi-service boot ordering on
+  Actions and the HMS image's ~1.82 GB pull cost.
