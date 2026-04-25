@@ -19,7 +19,7 @@ tracks the Docker ecosystem and opens weekly PRs when a new tag lands.
 | SQL Server | `mcr.microsoft.com/mssql/server:2022-latest` | 1433 | `sa / yourStrong(!)Password` | ✅ |
 | Oracle XE | `gvenzl/oracle-xe:21-slim-faststart` | 1521 | `pdi / pdi!123456 / test_pdi` | ✅ |
 | Kafka | `confluentinc/cp-kafka:7.7.1` + `cp-zookeeper:7.7.1` | 29092 (host), 9092 (inter-broker) | no auth | ✅ |
-| Impala + Kudu | `ibisproject/impala`, `parrotstream/kudu:latest` | 21050 (Impala), 7051 (Kudu master) | no auth | ⚠ unmaintained; ADR-0030 migration pending — see policy below |
+| Impala | `apache/impala:4.5.0-impala_quickstart_hms` + `-statestored` + `-catalogd` + `-impalad_coord_exec` | 21050 (HS2), 25000 (debug UI) | no auth | ⚠ compose translated from upstream `apache/impala/docker/quickstart.yml`, **not yet locally validated** — see ADR-0030 |
 
 ## Boot + tear-down recipe
 
@@ -48,16 +48,21 @@ at your host / credentials before running.
 
 ## Unmaintained-image policy
 
-The `bigdata/impala/` fixture sits on third-party images
-(`ibisproject/impala` + `parrotstream/kudu`) that stopped receiving
-updates around 2020. We leave it pinned to its last-known-good tag
-with a `# unmaintained; see header` marker in-line. Any new big-data
-integration test should either (a) add its backend as a new
-subdirectory with a maintained image, or (b) wait for the Stage 1
-migration PR planned in
-[ADR-0030](../../docs/governance/adr/0030-hadoop-impala-fixture-migration.md)
-which replaces it with the Apache-official `apache/impala:4.5.0-*`
-quickstart cluster.
+The `bigdata/impala/` fixture has been **migrated to Apache-official
+`apache/impala:4.5.0-*` images** as part of [ADR-0030](../../docs/governance/adr/0030-hadoop-impala-fixture-migration.md)
+Stage 1. The compose is a faithful translation of the upstream
+[`apache/impala/docker/quickstart.yml`](https://github.com/apache/impala/tree/master/docker)
+(HMS + statestored + catalogd + impalad_coord_exec) with the
+single config file (`hive-site.xml`) vendored under `quickstart_conf/`.
+The `parrotstream/kudu` services were dropped — no Impala test today
+exercises Kudu code paths; ADR-0030 Stage 2 re-introduces a
+maintained `apache/kudu:1.17.0` if a future test needs it.
+
+**The new compose has not yet been booted locally** by the session
+that wrote it (no Docker daemon was available); the next contributor
+running `docker compose up` should confirm `localhost:21050` accepts
+a pyodbc connection before merging anything that depends on the
+fixture. Until that validation lands, treat the fixture as draft.
 
 The previously-listed `hadoop/` fixture
 (`bde2020/hadoop-*:2.0.0-hadoop3.2.1-java8`) was deleted in the

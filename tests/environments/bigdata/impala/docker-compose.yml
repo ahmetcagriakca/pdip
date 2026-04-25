@@ -1,85 +1,118 @@
-# Impala + Kudu cluster for the ``[integrator]`` bigdata tests.
+# Impala fixture — Apache-official ``apache/impala:4.5.0-*`` images,
+# modelled on the upstream
+# https://github.com/apache/impala/blob/master/docker/quickstart.yml
+# layout (HMS + statestored + catalogd + impalad_coord_exec).
 #
-# ⚠ LEGACY — the Impala and Kudu images (``ibisproject/impala``,
-# ``parrotstream/kudu:latest``) are third-party and no longer
-# updated. Same caveat as ``../hadoop/docker-compose.yml``: the
-# bigdata fixture as a whole is staged for a follow-up migration
-# to Apache-official or community-maintained replacements.
+# Why these images: ADR-0030 (Stage 1) replaces the previous
+# unmaintained ``ibisproject/impala`` + ``parrotstream/kudu:latest``
+# fixture. Apache Impala 4.5.0 ships its quickstart cluster as five
+# componentised images on Docker Hub — there is no all-in-one
+# variant, so the compose has more services than the SQL fixtures
+# but every image is on a maintained release line that Dependabot
+# (Docker ecosystem, ADR-0025) can track.
 #
-# In the meantime we still pin the one image we control — the
-# metastore backend ``postgres`` — to match the main postgres
-# fixture. The third-party images stay on their historical tags.
+# What's left out vs upstream quickstart.yml:
+#
+# - Kudu (``apache/kudu``) — the upstream ``-kudu_master_hosts``
+#   flag in the impalad command stays for parity, but no Kudu
+#   service is started here. The pdip Impala adapter does not
+#   exercise Kudu code paths in any test under
+#   ``tests/integrationtests/integrator/integration/bigdata/impala/``
+#   today, so booting Kudu would be wasted runner time. ADR-0030
+#   Stage 2 adds it conditionally if a future test needs it.
+#
+# - The ``QUICKSTART_LISTEN_ADDR`` / ``QUICKSTART_IP`` / external
+#   ``quickstart-network`` plumbing — those exist in the upstream
+#   quickstart so an interactive user can reach the cluster from
+#   other hosts. The CI fixture doesn't need them; a default
+#   compose-managed bridge network and host port publishes are
+#   enough.
+#
+# Vendored config: ``./quickstart_conf/hive-site.xml`` is copied
+# verbatim from the upstream
+# ``apache/impala/docker/quickstart_conf/`` directory. It is the
+# only config file the upstream quickstart mounts; the impala
+# images use their built-in defaults for everything else.
+#
+# Boot ordering: ``depends_on`` here matches the upstream quickstart
+# (postgres skipped because we use the embedded Derby HMS backing
+# store from the upstream config). GitHub Actions ``services:``
+# blocks ignore ``depends_on``, so the matching workflow job (when
+# Stage 3 lands) will need a Python-based readiness probe that
+# polls the impalad's HS2 endpoint on ``localhost:21050``.
 
 services:
-  postgres:
-    image: postgres:16-alpine  # pinned, matches ../../postgresql/
+  hms:
+    image: apache/impala:4.5.0-impala_quickstart_hms  # pinned major.minor
+    container_name: quickstart-hive-metastore
+    command: ["hms"]
+    volumes:
+      # Apache Derby database files (HMS metadata).
+      - impala-quickstart-warehouse:/var/lib/hive
+      # Warehouse directory shared with catalogd / impalad.
+      - impala-quickstart-warehouse:/user/hive/warehouse
+      - ./quickstart_conf:/opt/hive/conf:ro
     networks:
       - impala-nw
+
+  statestored:
+    image: apache/impala:4.5.0-statestored  # pinned major.minor
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: postgres
-  impala:
-    build: .
-    cap_add:
-      - SYS_TIME
-    image: ibisproject/impala  # unmaintained; see header
-    hostname: localhost
+      - "25010:25010"  # web debug UI
+    command: ["-redirect_stdout_stderr=false", "-logtostderr", "-v=1"]
+    volumes:
+      - ./quickstart_conf:/opt/impala/conf:ro
     networks:
       - impala-nw
-    external_links:
-      - postgres
-    environment:
-      PGPASSWORD: postgres
+
+  catalogd:
+    depends_on:
+      - statestored
+      - hms
+    image: apache/impala:4.5.0-catalogd  # pinned major.minor
     ports:
-      # HDFS
-      - 9020:9020
-      - 50070:50070
-      - 50075:50075
-      - 8020:8020
-      - 8042:8042
-      # Hive
-      - 9083:9083
-      # Impala
-      - 21000:21000
-      - 21050:21050
-      - 25000:25000
-      - 25010:25010
-      - 25020:25020
-  kudu-master:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: parrotstream/kudu:latest  # unmaintained; see header
-    networks:
-      impala-nw:
-        aliases:
-          - kudu
-    cap_add:
-      - SYS_TIME
-    ports:
-      - 7051:7051
-      - 8051:8051
-    environment:
-      KUDU_MASTER: "true"
-  kudu-tserver:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: parrotstream/kudu:latest  # unmaintained; see header
+      - "25020:25020"  # web debug UI
+    command: ["-redirect_stdout_stderr=false", "-logtostderr", "-v=1",
+              "-hms_event_polling_interval_s=1",
+              "-invalidate_tables_timeout_s=999999"]
+    volumes:
+      - impala-quickstart-warehouse:/user/hive/warehouse
+      - ./quickstart_conf:/opt/impala/conf:ro
     networks:
       - impala-nw
-    cap_add:
-      - SYS_TIME
+
+  impalad:
+    image: apache/impala:4.5.0-impalad_coord_exec  # pinned major.minor
+    depends_on:
+      - statestored
+      - catalogd
     ports:
-      - 7050:7050
-      - 8050:8050
+      - "21000:21000"  # Beeswax (legacy)
+      - "21050:21050"  # HS2 endpoint — what pyodbc connects to
+      - "25000:25000"  # web debug UI
+      - "28000:28000"  # HS2 over HTTP
+    command: ["-v=1",
+              "-redirect_stdout_stderr=false", "-logtostderr",
+              # Kudu master flag stays for upstream parity; no Kudu
+              # service is started in this fixture (see header).
+              # Non-Kudu queries are unaffected.
+              "-kudu_master_hosts=kudu-master-1:7051",
+              "-mt_dop_auto_fallback=true",
+              "-default_query_options=mt_dop=4,default_file_format=parquet,default_transactional_type=insert_only",
+              "-mem_limit=4gb"]
     environment:
-      KUDU_MASTER: "false"
+      # Cap the JVM so the runner has memory left for the query
+      # backend.
+      JAVA_TOOL_OPTIONS: "-Xmx1g"
+    volumes:
+      - impala-quickstart-warehouse:/user/hive/warehouse
+      - ./quickstart_conf:/opt/impala/conf:ro
+    networks:
+      - impala-nw
+
+volumes:
+  impala-quickstart-warehouse:
 
 networks:
-  default:
-    external:
-      name: impala-nw
   impala-nw:
     driver: bridge
