@@ -30,9 +30,9 @@ five follow-ups), **#117** (post-merge handoff refresh), **#118**
 **#119** (post-#118 handoff refresh), **#120** (async
 MySQL/MSSQL/Oracle skeletons + Postgres `clear_data` end-to-end +
 `SingleProcessIntegrationExecute` adapter-call-site spans + ADR-0036
-Proposed), **#121** (post-#120 handoff refresh), and the
-finishing PR that lands `pdip.__version__` + ADR-0036 Accepted with
-both quality_guard rules + Postgres `write_data` /
+Proposed), **#121** (post-#120 handoff refresh), and **#122** —
+the finishing slice that lands `pdip.__version__` + ADR-0036
+Accepted with both quality_guard rules + Postgres `write_data` /
 `do_target_operation` / iterator / paging end-to-end +
 `parallelthread/` adapter-call-site spans + the integration-tests
 CI nightly installing `pdip[async]` and running the per-backend
@@ -62,8 +62,9 @@ listed. **Reserved (not yet pushed):**
   `claude/handoff-asyncpg-sigguard-OolIR` (#118),
   `claude/handoff-post-118-refresh-OolIR` (#119),
   `claude/handoff-async-backends-spans-OolIR` (#120),
-  `claude/handoff-post-120-refresh-OolIR` (#121), and the
-  current branch once its PR squash-merges.
+  `claude/handoff-post-120-refresh-OolIR` (#121),
+  `claude/handoff-finish-stream-OolIR` (#122), and the current
+  branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -100,36 +101,26 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/handoff-finish-stream-OolIR`
-(the finishing slice of the Async / OTel / 1.0 readiness
-work-stream). What landed: ADR-0036 Accepted with both
-quality_guard rules
-(`RuleADR0036DeprecationWarningHasManifestEntry` +
-`RuleADR0036RemovalRespectsDeprecationCycle`) reading the new
-`docs/public-api-deprecations.json` manifest; `pdip.__version__`
-exported as a public symbol so the removal-cycle rule can read
-the live version; ADR-0034 §5 grew the fourth (deprecation-cycle)
-bullet — enforcement is now complete in **four layers, all
-shipped**. `AsyncSqlSourceAdapter` (Postgres) gained
-`get_iterator` (in-memory chunked batches) and
-`get_source_data_with_paging` (LIMIT/OFFSET);
-`AsyncSqlTargetAdapter` (Postgres) gained `write_data`
-(`executemany INSERT` with column inference from the descriptor
-or the first dict row) and `do_target_operation`
-(truncate-when-flag-set). `parallelthread/operation/{source,target}`
-strategy modules now emit `pdip.integrator.source.read` /
-`pdip.integrator.target.write` spans via the new shared
-`strategies/base/span_helpers.py`. Integration-tests CI workflow
-installs `pdip[integrator,async]` and runs per-backend
-`connection/sql/<backend>/test_async_connection.py` smoke jobs
-alongside the existing sync integration suites.
-`CONTRIBUTING.md` gained a "Deprecating a public symbol" section
-walking the four-step process. 100 % unit coverage on the
-canonical `run_tests.py` cell (747 tests); 10 quality_guard
-rules green; flake8 clean across `pdip/`, `tests/`, `scripts/`.
-The work-stream is **architecturally complete** — what remains
-is breadth (non-Postgres async iterator/paging/write_data
-implementations) and the `parallelold/` multiprocessing path,
-both recorded in §4. When you change anything above, bump this
+*Last updated 2026-04-25 on `claude/handoff-post-122-refresh-OolIR`
+(post-merge refresh after #122 squash-merged the finishing slice
+of the Async / OTel / 1.0 readiness work-stream to `main`).
+`main` is at `582f35d`; the work-stream is now contractually +
+architecturally complete with five Accepted ADRs (0032 / 0033 /
+0034 / 0035 / 0036), a public surface that includes
+`pdip.__version__` + `pdip.observability` + the async adapter
+chain wired Postgres-end-to-end through both connection
+factories, ADR-0034 §5 enforcement complete in **four layers,
+all shipped** (drift / coverage / signature / deprecation-cycle),
+the `singleprocess/` AND `parallelthread/` strategies emitting
+the documented adapter-call-site spans via the shared
+`strategies/base/span_helpers.py`, and the integration-tests CI
+nightly installing `pdip[integrator,async]` + running the
+per-backend async smoke suites alongside the sync integration
+suites. 100 % unit coverage on the canonical `run_tests.py`
+cell (747 tests); 10 quality_guard rules green. Remaining queued
+work — the non-Postgres async write_data/iterator
+implementations and the `parallelold/` multiprocessing strategy
+spans — is breadth, not foundation. Recorded in §4
+Async/OTel/1.0 row. When you change anything above, bump this
 line with the date and the branch name so the next reader knows
 the freshness window at a glance.*
