@@ -114,13 +114,17 @@ class MysqlConnectorUsesDbApiCallShape(TestCase):
 
 
 class MysqlConnectorBuildsSqlAlchemyUrl(TestCase):
-    def test_get_engine_connection_url_has_mysql_scheme(self):
+    def test_get_engine_connection_url_has_mysql_connector_scheme(self):
         connector = MysqlConnector(_build_config())
         url = connector.get_engine_connection_url()
-        # SQLAlchemy's URL.render_as_string masks the password unless
-        # hide_password is False.
-        self.assertIn("mysql://", str(url))
+        # The connector pins the ``mysql+mysqlconnector`` driver
+        # suffix so SQLAlchemy routes through ``mysql-connector-python``
+        # (the same driver the cursor side imports) rather than
+        # defaulting to the un-installed ``MySQLdb`` C extension.
+        # ``URL.render_as_string`` masks the password.
+        self.assertIn("mysql+mysqlconnector://", str(url))
         self.assertIn("scott", str(url))
+        self.assertEqual(url.drivername, "mysql+mysqlconnector")
         self.assertEqual(url.host, "db")
         self.assertEqual(url.port, 3306)
         self.assertEqual(url.database, "appdb")
