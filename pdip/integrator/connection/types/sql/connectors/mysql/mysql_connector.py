@@ -34,8 +34,16 @@ class MysqlConnector(SqlConnector):
         return self.connection
 
     def get_engine_connection_url(self):
+        # Use the ``mysql+mysqlconnector`` driver suffix so SQLAlchemy
+        # routes through the ``mysql-connector-python`` package this
+        # connector already imports — without the suffix SQLAlchemy
+        # defaults to the ``MySQLdb`` driver (the C ``mysqlclient``
+        # binding), which is **not** in ``setup.py``'s ``integrator``
+        # extra and so is not installed in the integration-tests CI
+        # runner. Aligns the engine surface with the cursor surface
+        # so a single driver dependency covers both code paths.
         connection_url = URL.create(
-            "mysql",
+            "mysql+mysqlconnector",
             username=self.config.BasicAuthentication.User,
             password=self.config.BasicAuthentication.Password,
             host=self.config.Server.Host,
