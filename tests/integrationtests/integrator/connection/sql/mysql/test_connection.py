@@ -94,9 +94,26 @@ class TestMysqlConnection(TestCase):
             )
 
     def test_check_schema_and_tables(self):
+        # Skip MySQL's built-in system schemas — they expose internal
+        # views (e.g. ``information_schema.FILES``) whose
+        # ``SHOW CREATE TABLE`` requires the global ``PROCESS``
+        # privilege that the workflow-provisioned ``pdi`` user does
+        # not have. The test's intent is to verify the dialect's
+        # schema-listing surface works against user-owned schemas;
+        # iterating system schemas added accidental coverage that
+        # depended on ``PROCESS`` and made the suite fail under the
+        # default MySQL 8.x grant model.
+        system_schemas = {
+            "information_schema",
+            "mysql",
+            "performance_schema",
+            "sys",
+        }
         try:
             schemas = self.context.dialect.get_schemas()
             for schema in schemas:
+                if schema in system_schemas:
+                    continue
                 print("schema: %s" % schema)
                 for table_name in self.context.dialect.get_tables(schema=schema):
                     print("\tTable: %s" % table_name)
