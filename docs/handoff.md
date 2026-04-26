@@ -52,7 +52,8 @@ hardcoded `AsyncMssqlConnector`, bare-`mysql://` SQLAlchemy URL,
 bare-path Oracle URL → `?service_name=` for PDB lookup, MSSQL /
 Oracle smoke + sync setUps aligned to workflow credentials,
 MySQL `test_check_schema_and_tables` skipping system schemas
-that need `PROCESS`). See §4 for the full breakdown. Earlier
+that need `PROCESS`), and **#126** (post-#125 handoff refresh).
+See §4 for the full breakdown. Earlier
 Dependabot bumps (#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64
 oracledb upper-bound to allow 3.x) merged after a surface-area
 audit against the adapter call sites — see commits `cdd1bb5`,
@@ -82,7 +83,8 @@ listed. **Reserved (not yet pushed):**
   `claude/handoff-finish-stream-OolIR` (#122),
   `claude/handoff-post-122-refresh-OolIR` (#123),
   `claude/handoff-post-123-refresh-OolIR` (#124),
-  `claude/review-handoff-async-50eob` (#125), and the current
+  `claude/review-handoff-async-50eob` (#125),
+  `claude/handoff-post-125-refresh-OolIR` (#126), and the current
   branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
@@ -120,12 +122,11 @@ rest.
 
 ---
 
-*Last updated 2026-04-26 on `claude/handoff-post-125-refresh-OolIR`
-(post-merge bookkeeping refresh — adds #125 to §2's PR chain,
-`claude/review-handoff-async-50eob` to §3's post-merge artifact
-list, and rolls the freshness line forward so the trail stays
-complete after the a-3 + a-5 slice landed). `main` is at
-`e4a9c28` (#125 squash-merge tip).
+*Last updated 2026-04-26 on `claude/handoff-post-126-refresh-OolIR`
+(bookkeeping refresh — adds #126 to §2's PR chain and
+`claude/handoff-post-125-refresh-OolIR` to §3's post-merge
+artifact list so the trail stays complete after the post-#125
+docs PR landed). `main` is at `4c93c9e`.
 The Async / OTel / 1.0 readiness work-stream remains
 contractually complete with five Accepted ADRs (0032 / 0033 /
 0034 / 0035 / 0036), and the SQL-backend matrix is now
