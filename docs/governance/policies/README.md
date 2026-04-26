@@ -19,6 +19,19 @@ disagree, the ADR is the source of truth and the policy must be updated.
 - Handlers placed next to their `ICommand` / `IQuery` follow the
   convention in [ADR-0003](../adr/0003-cqrs-dispatcher.md). Do not add a
   central handler registry.
+- **Commit per completed logical step; push as work completes.** Each
+  completed unit — a green test cycle that proves a behaviour, a
+  refactor that finishes its job, a docs / CHANGELOG / handoff bump —
+  lands as its own commit and is pushed once the unit is done. Finished
+  work belongs on the remote, not in the local working tree of a
+  still-open session. Do not batch unrelated work into a "session-end"
+  blob; "logical step" is judged by what shares a revert target, not by
+  line count, so trivial fix-ups (typo + its inline doc) stay together
+  but a refactor + its CHANGELOG entry + a per-backend integration
+  suite are three commits, not one. ADR-0027 already mandates the
+  test-then-impl ordering; this rule extends it across the whole task
+  graph so the commit history matches the way the work actually
+  happened.
 
 ## Data
 

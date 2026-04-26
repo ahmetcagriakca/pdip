@@ -4,16 +4,21 @@ from injector import inject
 
 from pdip.integrator.connection.base import AsyncConnectionTargetAdapter
 from pdip.integrator.connection.domain.enums import ConnectorTypes
+from pdip.integrator.connection.types.sql.base.async_sql_dialect import (
+    async_dialect_for,
+)
 from pdip.integrator.integration.domain.base import IntegrationBase
 
 
 class AsyncSqlTargetAdapter(AsyncConnectionTargetAdapter):
-    """First-cut async target adapter (ADR-0032 §3 + §4 follow-up).
+    """Async target adapter for the SQL connector family
+    (ADR-0032 §3 + §4 follow-up (a-3)).
 
-    Symmetric with :class:`AsyncSqlSourceAdapter` — provider/context
-    abstraction is deferred. Postgres is the only wired backend in
-    this build; other ``ConnectorTypes`` raise ``NotImplementedError``
-    from :meth:`_connector_for` until their async siblings land.
+    Per-driver behaviour (placeholder ladder, identifier quoting,
+    paging clause, TRUNCATE wording) is delegated to
+    :func:`async_dialect_for`; this adapter only owns the
+    orchestration: open connector → render dialect-aware SQL →
+    drive ``executemany`` / ``execute`` → close connector.
     """
 
     @inject
@@ -21,24 +26,21 @@ class AsyncSqlTargetAdapter(AsyncConnectionTargetAdapter):
         pass
 
     async def clear_data(self, integration: IntegrationBase) -> int:
-        # First-cut clear_data implementation for Postgres only via
-        # ``TRUNCATE TABLE``. Other backends still raise
-        # ``NotImplementedError`` from ``_connector_for`` because the
-        # quoting (backticks for MySQL, brackets for MSSQL) and
-        # commit semantics differ — they land per-driver as the
-        # connectors mature. Postgres ``TRUNCATE`` returns no row
-        # count, so we report ``0`` per the sync sibling's contract
-        # (``truncate_affected_rowcount`` from ``SqlContext``).
-        connector = self._connector_for(
-            integration.TargetConnections.Sql.Connection
-        )
+        # ``TRUNCATE TABLE`` is portable across all four async
+        # backends, but the identifier quoting differs (``"`` for
+        # Postgres / Oracle, backtick for MySQL, ``[ ]`` for MSSQL);
+        # the dialect renders the right form. Postgres / MSSQL
+        # ``TRUNCATE`` returns no row count so we report ``0`` per
+        # the sync sibling's contract (``truncate_affected_rowcount``
+        # from ``SqlContext``).
+        config = integration.TargetConnections.Sql.Connection
+        connector = self._connector_for(config)
+        dialect = async_dialect_for(config)
         try:
             await connector.connect()
             schema = integration.TargetConnections.Sql.Schema
             table = integration.TargetConnections.Sql.ObjectName
-            await connector.execute(
-                f'TRUNCATE TABLE "{schema}"."{table}"'
-            )
+            await connector.execute(dialect.truncate_query(schema, table))
             return 0
         finally:
             await connector.disconnect()
@@ -46,20 +48,22 @@ class AsyncSqlTargetAdapter(AsyncConnectionTargetAdapter):
     async def write_data(
             self, integration: IntegrationBase, source_data: List[any]
     ) -> int:
-        """First-cut write_data: bulk-insert ``source_data`` into the
-        configured target schema/table via ``executemany``. Column
-        list is taken from the integration descriptor when present,
-        otherwise inferred from the keys of the first source row
-        (mirrors the sync sibling's ``SqlTargetAdapter.prepare_data``
+        """Bulk-insert ``source_data`` into the configured target
+        schema / table via ``executemany``. Column list is taken
+        from the integration descriptor when present, otherwise
+        inferred from the keys of the first source row (mirrors
+        the sync sibling's ``SqlTargetAdapter.prepare_data``
         behaviour). Returns the row count actually shipped.
 
-        Postgres uses asyncpg's ``$1, $2, ...`` placeholder style;
-        the dialect-specific placeholder ladder for MySQL / MSSQL /
-        Oracle lands per-driver in subsequent slices."""
+        Each backend's placeholder syntax differs (asyncpg ``$N``,
+        aiomysql ``%s``, aioodbc ``?``, oracledb ``:N``); the
+        dialect renders the matching ladder for the column count
+        and the connector's ``executemany`` does the bind."""
         if not source_data:
             return 0
         config = integration.TargetConnections.Sql.Connection
         connector = self._connector_for(config)
+        dialect = async_dialect_for(config)
         try:
             await connector.connect()
             schema = integration.TargetConnections.Sql.Schema
@@ -67,13 +71,13 @@ class AsyncSqlTargetAdapter(AsyncConnectionTargetAdapter):
             column_names = self._target_column_names(
                 integration, source_data
             )
-            column_list = ", ".join(f'"{n}"' for n in column_names)
-            placeholders = ", ".join(
-                f"${i + 1}" for i in range(len(column_names))
+            column_list = ", ".join(
+                dialect.quote_identifier(n) for n in column_names
             )
+            placeholders = dialect.insert_placeholders(len(column_names))
             query = (
-                f'INSERT INTO "{schema}"."{table}" '
-                f'({column_list}) VALUES ({placeholders})'
+                f"INSERT INTO {dialect.quote_table(schema, table)} "
+                f"({column_list}) VALUES ({placeholders})"
             )
             rows = [
                 tuple(self._extract(row, name, idx)

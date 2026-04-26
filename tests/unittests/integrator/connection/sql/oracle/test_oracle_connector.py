@@ -123,9 +123,14 @@ class OracleConnectorBuildsSqlAlchemyUrl(TestCase):
             "oracle+oracledb://scott:tiger@db:1521/ORCL",
         )
 
-    def test_service_name_url_uses_oracledb_scheme(self):
+    def test_service_name_url_uses_oracledb_scheme_with_service_name_query(self):
+        # When ``ServiceName`` is set (no ``Sid``), the URL must
+        # carry ``?service_name=`` — the bare-path form is
+        # interpreted as SID resolution by python-oracledb and
+        # fails with DPY-6003 against PDB-only fixtures (Oracle
+        # 12c+ registers PDBs as services, not SIDs).
         connector = OracleConnector(_build_config(sid=None, service_name="svc.local"))
         self.assertEqual(
             connector.get_engine_connection_url(),
-            "oracle+oracledb://scott:tiger@db:1521/svc.local",
+            "oracle+oracledb://scott:tiger@db:1521/?service_name=svc.local",
         )

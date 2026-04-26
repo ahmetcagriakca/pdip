@@ -7,9 +7,13 @@ class AsyncMssqlConnector(AsyncSqlConnector):
 
     Mirrors :class:`AsyncPostgresqlConnector` — ``aioodbc`` is
     imported lazily inside :meth:`connect` so the class can be
-    constructed even when ``pdip[async]`` is not installed. Uses
-    the same ODBC Driver 18 configuration the sync MSSQL connector
-    relies on at the host level.
+    constructed even when ``pdip[async]`` is not installed. The
+    ODBC driver name is **discovered** via ``pyodbc.drivers()``
+    (mirroring ``MssqlConnector.find_driver_name``) so the
+    connector works against whichever ``ODBC Driver NN for SQL
+    Server`` is installed on the host — the integration-tests CI
+    runner uses Driver 17, the local docker-compose fixture
+    typically has Driver 18; both must work without code changes.
     """
 
     def __init__(self, config: SqlConnectionConfiguration):
@@ -18,8 +22,9 @@ class AsyncMssqlConnector(AsyncSqlConnector):
 
     async def connect(self):
         import aioodbc
+        driver_name = self._driver_name()
         dsn = (
-            f"Driver={{ODBC Driver 18 for SQL Server}};"
+            f"Driver={{{driver_name}}};"
             f"Server={self.config.Server.Host},{self.config.Server.Port};"
             f"Database={self.config.Database};"
             f"UID={self.config.BasicAuthentication.User};"
@@ -27,6 +32,26 @@ class AsyncMssqlConnector(AsyncSqlConnector):
             "TrustServerCertificate=yes;"
         )
         self.connection = await aioodbc.connect(dsn=dsn)
+
+    @staticmethod
+    def _driver_name():
+        # Mirrors ``MssqlConnector.find_driver_name`` — pick the
+        # newest ``... for SQL Server`` driver pyodbc reports, fall
+        # back to anything mentioning ``SQL Server`` / ``FreeTDS``,
+        # then to the first installed driver. Lazy-imports
+        # ``pyodbc`` (a transitive dep of ``aioodbc`` so it is
+        # always available when the async-extra is installed).
+        import pyodbc
+        drivers = pyodbc.drivers()
+        for_sql_server = [d for d in drivers if "for SQL Server" in d]
+        if for_sql_server:
+            return list(reversed(for_sql_server))[0]
+        sql_server_or_freetds = [
+            d for d in drivers if "SQL Server" in d or "FreeTDS" in d
+        ]
+        if sql_server_or_freetds:
+            return list(reversed(sql_server_or_freetds))[0]
+        return drivers[0]
 
     async def disconnect(self):
         if self.connection is not None:

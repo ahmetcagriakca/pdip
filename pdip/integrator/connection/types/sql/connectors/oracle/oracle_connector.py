@@ -50,7 +50,17 @@ class OracleConnector(SqlConnector):
         if self.config.Sid is not None and self.config.Sid != '':
             connection_url = f'oracle+oracledb://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.Sid}'
         else:
-            connection_url = f'oracle+oracledb://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/{self.config.ServiceName}'
+            # Modern Oracle (12c+) PDBs are registered with the
+            # listener as a *service name*, not a SID — using the
+            # bare-path URL form (``host:port/X``) makes
+            # python-oracledb attempt SID resolution on ``X`` and
+            # fail with DPY-6003 (similar to ORA-12505) against any
+            # PDB-only fixture (the workflow's
+            # ``ORACLE_DATABASE: test_pdi`` registers ``test_pdi``
+            # as a service, not a SID). The ``?service_name=``
+            # query parameter is the SQLAlchemy + python-oracledb
+            # contract for service-name resolution.
+            connection_url = f'oracle+oracledb://{self.config.BasicAuthentication.User}:{self.config.BasicAuthentication.Password}@{self.config.Server.Host}:{self.config.Server.Port}/?service_name={self.config.ServiceName}'
         return connection_url
 
     def get_engine(self):

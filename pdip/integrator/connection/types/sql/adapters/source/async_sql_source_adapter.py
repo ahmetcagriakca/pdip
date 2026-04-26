@@ -2,23 +2,21 @@ from injector import inject
 
 from pdip.integrator.connection.base import AsyncConnectionSourceAdapter
 from pdip.integrator.connection.domain.enums import ConnectorTypes
+from pdip.integrator.connection.types.sql.base.async_sql_dialect import (
+    async_dialect_for,
+)
 from pdip.integrator.integration.domain.base import IntegrationBase
 
 
 class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
-    """First-cut async source adapter (ADR-0032 §3 + §4 follow-up).
+    """Async source adapter for the SQL connector family
+    (ADR-0032 §3 + §4 follow-up (a-3)).
 
-    The full provider/context chain that the sync :class:`SqlSourceAdapter`
-    rides on is intentionally NOT mirrored yet — the first
-    implementation reads the connection config straight from the
-    integration descriptor and instantiates the matching async
-    connector inline. Subsequent connectors (MySQL via aiomysql,
-    MSSQL via aioodbc, Oracle via oracledb async) follow the same
-    pattern; the abstraction layer is a deliberate later refactor.
-
-    Postgres is the only wired backend in this build. Other
-    ``ConnectorTypes`` raise :class:`NotImplementedError` from
-    :meth:`_connector_for` until their async siblings land.
+    Per-driver behaviour (identifier quoting, paging clause) is
+    delegated to :func:`async_dialect_for`; this adapter only
+    owns the orchestration: open connector → render dialect-aware
+    SELECT → drive ``fetch_count`` / ``fetch_all`` → close
+    connector.
     """
 
     @inject
@@ -47,16 +45,16 @@ class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
     async def get_iterator(self, integration: IntegrationBase, limit: int):
         """First-cut iterator: fetches the full result set into
         memory and chunks into batches of ``limit`` rows. Streaming
-        cursor support (asyncpg's per-transaction ``cursor()``) is
-        a future optimisation slice; the in-memory chunk preserves
-        the sync sibling's batch-iteration contract that the
-        ``SingleProcessIntegrationExecute`` strategy reads via
-        ``for results in iterator:``."""
+        cursor support is a future optimisation slice; the
+        in-memory chunk preserves the sync sibling's batch-iteration
+        contract that the ``SingleProcessIntegrationExecute``
+        strategy reads via ``for results in iterator:``."""
         config = integration.SourceConnections.Sql.Connection
         connector = self._connector_for(config)
+        dialect = async_dialect_for(config)
         try:
             await connector.connect()
-            query = self._select_query_for(integration)
+            query = self._select_query_for(integration, dialect)
             rows = await connector.fetch_all(query)
             if limit is None or limit <= 0:
                 # ``limit`` of None / 0 means "no chunking": the
@@ -69,27 +67,29 @@ class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
     async def get_source_data_with_paging(
             self, integration: IntegrationBase, start: int, end: int
     ):
-        """First-cut paging: ``LIMIT (end - start) OFFSET start`` on
-        the dialect's standard SELECT. Postgres / MySQL accept the
-        SQL-standard form directly; MSSQL needs ``OFFSET ... ROWS
-        FETCH NEXT ... ROWS ONLY`` which lands per-driver as the
-        target dialects' adapters mature."""
+        """Per-dialect paging: ``LIMIT (end - start) OFFSET start``
+        for Postgres / MySQL; ``OFFSET start ROWS FETCH NEXT
+        (end - start) ROWS ONLY`` for MSSQL / Oracle 12c+. The
+        ANSI form requires the source query to carry an
+        ``ORDER BY`` clause for a deterministic page — when the
+        descriptor's ``Sql.Query`` is empty and the integration
+        has no column ordering, callers driving MSSQL / Oracle
+        paging must supply an explicit query."""
         config = integration.SourceConnections.Sql.Connection
         connector = self._connector_for(config)
+        dialect = async_dialect_for(config)
         try:
             await connector.connect()
-            base_query = self._select_query_for(integration)
-            paged_query = (
-                f"{base_query} LIMIT {end - start} OFFSET {start}"
-            )
+            base_query = self._select_query_for(integration, dialect)
+            paged_query = dialect.paging_clause(base_query, start, end)
             return await connector.fetch_all(paged_query)
         finally:
             await connector.disconnect()
 
     @staticmethod
-    def _select_query_for(integration):
+    def _select_query_for(integration, dialect):
         """Return either the explicit ``Sql.Query`` from the
-        descriptor, or a generated ``SELECT`` for the named
+        descriptor, or a dialect-quoted ``SELECT`` for the named
         ``Schema.ObjectName`` with the documented column list (or
         ``*`` when no columns are listed). Mirrors the sync
         sibling's ``SqlSourceAdapter.get_source_data`` shape."""
@@ -100,11 +100,14 @@ class AsyncSqlSourceAdapter(AsyncConnectionSourceAdapter):
         columns = integration.SourceConnections.Columns
         if columns:
             column_list = ", ".join(
-                f'"{c.Name}"' for c in columns
+                dialect.quote_identifier(c.Name) for c in columns
             )
         else:
             column_list = "*"
-        return f'SELECT {column_list} FROM "{schema}"."{table}"'
+        return (
+            f"SELECT {column_list} FROM "
+            f"{dialect.quote_table(schema, table)}"
+        )
 
     @staticmethod
     def _connector_for(config):
