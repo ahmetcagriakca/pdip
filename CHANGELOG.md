@@ -15,6 +15,35 @@ for the public API surface described in
 
 ### Added
 
+- **Apache Impala fixture has runnable test bodies (ADR-0030
+  Stage 3 prerequisite (b)).** Both
+  `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_single_process.py`
+  and `.../test_integration_limit_off.py` were 170 lines of
+  commented-out stubs (every line `# from unittest …`); they
+  now hold real `TestImpalaIntegration{SingleProcess,LimitOff}`
+  cases modelled on the
+  `tests/integrationtests/integrator/integration/sql/postgresql/test_integrator.py`
+  shape, targeting the Apache Impala 4.5.0 fixture's HS2
+  endpoint at `localhost:21050` with
+  `MechanismTypes.NoAuthentication` + the default Hive
+  `default` database (the fixture is auth-less by construction
+  per ADR-0030 Stage 1). New
+  `tests/integrationtests/integrator/integration/bigdata/utils/`
+  package introduces `TestBigDataUtils` — the bigdata mirror of
+  `TestSqlUtils` — routing through `BigDataProvider` /
+  `BigDataContext` for `prepare_test_data_with_info` /
+  `get_operation` (create-table → load-data → drop-table
+  three-step operation chain). Both files import-load cleanly
+  under the current pdip API
+  (`Integrator.integrate`, `BigDataProvider`,
+  `ConnectionBigDataBase`, `ConnectionServer`,
+  `ConnectorTypes.Impala`); the unit suite stays at 781 / 781
+  green. The remaining open prerequisite before ADR-0030
+  Stage 3 (`impala:` job in
+  `.github/workflows/integration-tests.yml`) lands is (a) — a
+  maintainer with Docker access boots the new fixture and
+  confirms `localhost:21050` accepts pyodbc + the new test
+  bodies pass against the live cluster.
 - **`parallelold/` multiprocessing strategy emits ADR-0033 §3
   adapter-call-site spans (ADR-0032 §3 follow-up (a-4) — the last
   foundation item on the Async / OTel / 1.0 work-stream).**

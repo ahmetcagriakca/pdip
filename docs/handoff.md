@@ -24,10 +24,9 @@
 ## 2. Open PRs
 
 No tracked open PRs as of 2026-04-26 (other than this branch's
-PR itself, which extends the Async / OTel / 1.0 work-stream by
-landing the last foundation item — span instrumentation of the
-`parallelold/` multiprocessing strategy (a-4) — and refreshes
-this handoff alongside it). The Async / OTel / 1.0 cut work-stream
+PR itself, which closes ADR-0030 Stage 3 prerequisite (b) by
+filling in real test bodies for the Apache Impala fixture and
+refreshes this handoff alongside it). The Async / OTel / 1.0 cut work-stream
 landed on `main` across **#116** (foundation + first five follow-ups),
 **#117** (post-merge handoff refresh), **#118** (asyncpg Postgres
 end-to-end + ADR-0035 signature-snapshot guard), **#119**
@@ -55,9 +54,12 @@ hardcoded `AsyncMssqlConnector`, bare-`mysql://` SQLAlchemy URL,
 bare-path Oracle URL → `?service_name=` for PDB lookup, MSSQL /
 Oracle smoke + sync setUps aligned to workflow credentials,
 MySQL `test_check_schema_and_tables` skipping system schemas
-that need `PROCESS`), **#126** (post-#125 handoff refresh), and
+that need `PROCESS`), **#126** (post-#125 handoff refresh),
 **#127** (bookkeeping refresh adding #126 to the chain and
-`claude/handoff-post-125-refresh-OolIR` to §3's artifact list).
+`claude/handoff-post-125-refresh-OolIR` to §3's artifact list),
+and **#128** (`parallelold/` adapter-call-site spans — last
+foundation item (a-4) on the Async / OTel / 1.0 work-stream;
++8 unit tests; 781/781 green).
 See §4 for the full breakdown. Earlier
 Dependabot bumps (#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64
 oracledb upper-bound to allow 3.x) merged after a surface-area
@@ -77,10 +79,11 @@ of this file. Most `claude/*` branches on the remote are post-merge
 artifacts from squash-merged PRs — safe to ignore unless a name below is
 listed. **Reserved (not yet pushed):**
 
-- **Active:** `claude/handoff-state-management-p13Rm` — lands the
-  `parallelold/` span instrumentation (a-4) and refreshes this
-  handoff. PR not yet open at refresh time. Post-merge artifacts
-  safe to ignore:
+- **Active:** `claude/impala-test-bodies-Iz4XK` — fills in real
+  test bodies for the Apache Impala fixture
+  (ADR-0030 Stage 3 prerequisite (b)) and refreshes this handoff.
+  PR not yet open at refresh time. Post-merge artifacts safe to
+  ignore:
   `claude/handoff-start-continue-OolIR` (#116),
   `claude/handoff-post-merge-OolIR` (#117),
   `claude/handoff-asyncpg-sigguard-OolIR` (#118),
@@ -92,7 +95,8 @@ listed. **Reserved (not yet pushed):**
   `claude/handoff-post-123-refresh-OolIR` (#124),
   `claude/review-handoff-async-50eob` (#125),
   `claude/handoff-post-125-refresh-OolIR` (#126),
-  `claude/handoff-post-126-refresh-OolIR` (#127), and the current
+  `claude/handoff-post-126-refresh-OolIR` (#127),
+  `claude/handoff-state-management-p13Rm` (#128), and the current
   branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
@@ -107,7 +111,7 @@ ADR if the answer changed.
 | Topic | Status | Pointer |
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
-| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
+| Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). **Stage 3 prerequisite (b) DONE on this branch** — both `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_{single_process,limit_off}.py` now carry real test bodies modelled on `tests/integrationtests/integrator/integration/sql/postgresql/test_integrator.py`, routing through a new `tests/integrationtests/integrator/integration/bigdata/utils/TestBigDataUtils` helper (mirrors `TestSqlUtils` for the bigdata adapter), targeting the fixture's `localhost:21050` HS2 endpoint with `MechanismTypes.NoAuthentication` + the `default` Hive database. Both files import-load cleanly under the current pdip API (`Integrator.integrate`, `BigDataProvider`, `ConnectionBigDataBase`, `ConnectionServer`, `ConnectionBasicAuthentication`, `ConnectorTypes.Impala`); the unit suite stays at 781 / 781 green with no regression. | One open prerequisite remains before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated, and the new test bodies have not been live-validated either. |
 | Async / OpenTelemetry / 1.0 cut | **All five ADRs Accepted (0032 / 0033 / 0034 / 0035 / 0036); the work-stream is contractually complete on `main` AND foundation-complete across every execution strategy**. ADR-0034 §5 enforcement is now 4 layers, all shipped: drift contract test, `RuleADR0034NoUndocumentedTopLevelPackage` coverage rule, `RuleADR0035PublicApiSignatureSnapshotMatches` signature guard, and the new pair `RuleADR0036DeprecationWarningHasManifestEntry` + `RuleADR0036RemovalRespectsDeprecationCycle` deprecation-cycle guard reading `docs/public-api-deprecations.json`. `pdip.__version__` is exported as the single source of truth for the runtime version (read by the removal-cycle rule). `pdip.observability` exports `get_tracer` / `get_meter` / `inject_context` / `use_context`; `pdip[observability]` and `pdip[async]` extras live in `setup.py`; `Dispatcher.dispatch`, `Integrator.integrate`, `SingleProcessIntegrationExecute`, `parallelthread/operation/{source,target}`, AND now **`parallelold/base/parallel_integration_execute.py`** emit `pdip.cqrs.{command,query}` / `pdip.integrator.job` / `pdip.integrator.source.read` / `pdip.integrator.target.write` spans with their documented attributes via the shared `strategies/base/span_helpers.py`; the async Sql chain dispatches via `_connector_for` to `AsyncPostgresqlConnector` / `AsyncMysqlConnector` / `AsyncMssqlConnector` / `AsyncOracleConnector` (lazy driver imports throughout); `AsyncSqlConnector` ABC has `connect`/`disconnect`/`fetch_count`/`execute`/`fetch_all`/`executemany`; **`AsyncSqlTargetAdapter` and `AsyncSqlSourceAdapter` are fully wired for ALL FOUR backends** — `clear_data` (TRUNCATE), `write_data` (executemany INSERT with column inference + dialect-specific placeholder ladder), `do_target_operation` (truncate-when-flag-set), `get_iterator` (in-memory chunked batches), `get_source_data_with_paging` (LIMIT/OFFSET on Postgres + MySQL, ANSI OFFSET/FETCH NEXT on MSSQL + Oracle), `get_source_data_count`. The dialect helper at `pdip/integrator/connection/types/sql/base/async_sql_dialect.py` centralises identifier quoting, placeholder rendering, paging-clause shape, and TRUNCATE wording per backend; both adapters route through `async_dialect_for(config)` instead of hard-coding Postgres syntax. Cross-process W3C `traceparent` propagation through `ProcessManager` ↔ `Subprocess`. Integration-tests CI nightly installs `pdip[integrator,async]` and runs per-backend `connection/sql/<backend>/test_async_connection.py` smoke jobs alongside the existing sync integration suites — every backend exercises the full 8-test adapter shape (connector smoke + 6 adapter methods) instead of just connect/fetch_count, and the workflow is **verified green end-to-end** for all four backends (Postgres 16, MySQL 8.4, SQL Server 2022, Oracle XE 21c). Pre-commit suite is 10 rules. | **What is left on this work-stream**: nothing on the foundation. (a-4) **DONE — `parallelold/base/parallel_integration_execute.py` now wraps `start_source_data_operation`'s `get_source_data_count` in `pdip.integrator.source.read`, `start_execute_integration_with_source_data`'s `write_data` in `pdip.integrator.target.write`, and `start_execute_integration_with_paging`'s read+write pair in source.read+target.write spans with the documented `pdip.connection.{type,driver}` / `pdip.batch.size` / `pdip.rows.written` attributes via `strategies/base/span_helpers.py`. Pinned by 8 new unit tests under `tests/unittests/integrator/integration/parallelold/test_parallel_integration_execute_spans.py`.** (a-5 verification) DONE on PR #125. With (a-4) landed, the Async / OTel / 1.0-readiness work is **foundation-complete across every execution strategy** (single-process, parallel-thread, parallel-process/old, async). TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 / ADR-0034 / ADR-0035 / ADR-0036 quality_guard rules (10 rules). |
 
 ## 5. Read this first
@@ -130,51 +134,43 @@ rest.
 
 ---
 
-*Last updated 2026-04-26 on `claude/handoff-state-management-p13Rm`
-(lands the `parallelold/` multiprocessing strategy's ADR-0033 §3
-adapter-call-site spans — the last foundation item on the
-Async / OTel / 1.0 work-stream (a-4) — and refreshes this handoff).
-`main` is at `90debf2`.
-With this branch landed, the Async / OTel / 1.0 readiness
-work-stream is **foundation-complete across every execution
-strategy** (single-process, parallel-thread, parallel-process /
-"old", and async); the five ADRs (0032 / 0033 / 0034 / 0035 /
-0036) all stay Accepted and contractually complete on `main`.
-Concretely:
-`pdip/integrator/integration/types/sourcetotarget/strategies/parallelold/base/parallel_integration_execute.py`
-now wraps `start_source_data_operation` (`get_source_data_count`),
-`start_execute_integration_with_source_data` (`write_data`), and
-`start_execute_integration_with_paging` (paged read + write) in
-the documented `pdip.integrator.source.read` /
-`pdip.integrator.target.write` spans with
-`pdip.connection.{type,driver}` + `pdip.batch.size`
-(+ `pdip.rows.written` on writes) attributes, reusing the shared
-`strategies/base/span_helpers.py::attr_name` / `resolve_driver`
-resolvers so the SQL/BigData/WebService sub-payload walking stays
-consistent with the singleprocess and parallelthread strategies.
-Pinned by 8 new unit tests under
-`tests/unittests/integrator/integration/parallelold/test_parallel_integration_execute_spans.py`
-covering span name + ordering + attributes (including
-`Limit=None → batch.size=0` and connector-type-driven driver
-resolution) + the `transactionhandler`-decorated
-`start_source_data_operation` entry point (patched
-`DependencyContainer.Instance` so the decorator's
-commit/rollback/close path resolves without a live DI graph).
-SQL-backend async matrix unchanged from #125 — still
-**breadth-complete + CI-verified**: new
-`pdip/integrator/connection/types/sql/base/async_sql_dialect.py`
-centralises per-backend identifier quoting + placeholder ladder
-+ paging clause + TRUNCATE wording (asyncpg `$N` / aiomysql
-`%s` / aioodbc `?` / oracledb `:N`; LIMIT/OFFSET vs ANSI
-OFFSET/FETCH NEXT). Public surface unchanged (no top-level
-changes; `pdip.__version__` + `pdip.observability` exports
-stable). ADR-0034 §5 enforcement complete in **four layers, all
-shipped** (drift / coverage / signature / deprecation-cycle);
-100 % unit coverage on the canonical `run_tests.py` cell
-(**781 tests**, +8 parallelold span tests on top of the
-post-#125 baseline of 773); 10 quality_guard rules green.
-**Remaining queued work on the work-stream: none on the
-foundation.** §4 Async/OTel/1.0 row updated to reflect (a-4)
-DONE. When you change anything above, bump this line with the
-date and the branch name so the next reader knows the freshness
-window at a glance.*
+*Last updated 2026-04-26 on `claude/impala-test-bodies-Iz4XK`
+(closes ADR-0030 Stage 3 prerequisite (b) — the
+`tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`
+files were 170 lines of commented-out stubs; this branch fills
+in real test bodies modelled on the `postgresql/test_integrator.py`
+shape and refreshes this handoff). `main` is at `467b3b5` (#128
+landed, so the `parallelold/` adapter-call-site spans (a-4) are
+on `main`; the Async / OTel / 1.0 readiness work-stream remains
+**foundation-complete across every execution strategy** with
+five Accepted ADRs (0032 / 0033 / 0034 / 0035 / 0036)).
+Concretely on this branch:
+`tests/integrationtests/integrator/integration/bigdata/impala/test_integration_single_process.py`
+and `.../test_integration_limit_off.py` now hold real
+`TestImpalaIntegration{SingleProcess,LimitOff}` cases that
+target the Apache Impala 4.5.0 fixture's HS2 endpoint at
+`localhost:21050` with `MechanismTypes.NoAuthentication` + the
+default Hive `default` database (the fixture is auth-less by
+construction). A new
+`tests/integrationtests/integrator/integration/bigdata/utils/`
+package introduces `TestBigDataUtils` — the bigdata mirror of
+`TestSqlUtils` — routing through `BigDataProvider` /
+`BigDataContext` for `prepare_test_data_with_info` +
+`get_operation`. Both test files import-load cleanly under the
+current pdip API
+(`Integrator.integrate`, `BigDataProvider`, `ConnectionBigDataBase`,
+`ConnectionServer`, `ConnectorTypes.Impala`); the unit suite stays
+at 781 / 781 green. Public surface unchanged (no `pdip/` source
+edits, only `tests/integrationtests/`). ADR-0034 §5 enforcement
+unchanged (4 layers: drift / coverage / signature /
+deprecation-cycle); 10 quality_guard rules green.
+**Remaining queued work on §4 Hadoop/Impala row:** prerequisite
+(a) — maintainer with Docker access boots the fixture once and
+confirms `localhost:21050` accepts pyodbc + the new test bodies
+pass against the live cluster. Once (a) is done, ADR-0030 Stage 3
+(`impala:` job in the integration-tests workflow) is unblocked.
+**Other §4 deferred items unchanged:** Kafka nightly CI job is
+still the only foundation gap left for 1.0 readiness across the
+adapter matrix. When you change anything above, bump this line
+with the date and the branch name so the next reader knows the
+freshness window at a glance.*
