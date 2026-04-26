@@ -23,30 +23,40 @@
 
 ## 2. Open PRs
 
-**#125** is open as of 2026-04-26 — extends the async adapter
-chain from Postgres-only to all four backends (a-3) and verifies
-the per-backend async smoke jobs run green end-to-end (a-5);
-also fixes a chain of pre-existing bugs in the sync connectors
-and smoke setUps that the green-run verification surfaced (see
-§4 Async/OTel/1.0 row for the inventory). The Async / OTel / 1.0
-work-stream's prior history landed on `main` across **#116**
-(foundation + first five follow-ups), **#117** (post-merge
-handoff refresh), **#118** (asyncpg Postgres end-to-end +
-ADR-0035 signature-snapshot guard), **#119** (post-#118 handoff
-refresh), **#120** (async MySQL/MSSQL/Oracle skeletons + Postgres
-`clear_data` end-to-end + `SingleProcessIntegrationExecute`
-adapter-call-site spans + ADR-0036 Proposed), **#121**
-(post-#120 handoff refresh), **#122** — the finishing slice that
-lands `pdip.__version__` + ADR-0036 Accepted with both
-quality_guard rules + Postgres `write_data` /
-`do_target_operation` / iterator / paging end-to-end +
-`parallelthread/` adapter-call-site spans + the integration-tests
-CI nightly installing `pdip[async]` and running the per-backend
-async smoke suites — and **#123** (post-#122 handoff refresh).
-See §4 for the full breakdown. Earlier Dependabot bumps
-(#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64 oracledb upper-bound
-to allow 3.x) merged after a surface-area audit against the
-adapter call sites — see commits `cdd1bb5`, `ead2013`, `a799d7d`.
+No tracked open PRs as of 2026-04-26 (other than this handoff
+refresh itself). The Async / OTel / 1.0 cut work-stream landed
+on `main` across **#116** (foundation + first five follow-ups),
+**#117** (post-merge handoff refresh), **#118** (asyncpg Postgres
+end-to-end + ADR-0035 signature-snapshot guard), **#119**
+(post-#118 handoff refresh), **#120** (async MySQL/MSSQL/Oracle
+skeletons + Postgres `clear_data` end-to-end +
+`SingleProcessIntegrationExecute` adapter-call-site spans +
+ADR-0036 Proposed), **#121** (post-#120 handoff refresh),
+**#122** — the finishing slice that lands `pdip.__version__` +
+ADR-0036 Accepted with both quality_guard rules + Postgres
+`write_data` / `do_target_operation` / iterator / paging
+end-to-end + `parallelthread/` adapter-call-site spans + the
+integration-tests CI nightly installing `pdip[async]` and running
+the per-backend async smoke suites — **#123** (post-#122 handoff
+refresh), **#124** (bookkeeping refresh adding #123 to the chain
+and `claude/handoff-post-122-refresh-OolIR` to §3's artifact
+list), and **#125** — extends the async adapter chain from
+Postgres-only to all four backends (a-3) via a new
+`async_sql_dialect` helper, brings each backend's integration
+suite from 2 connector smoke tests to the full 8-test adapter
+shape, **verifies the per-backend async smoke jobs run green
+end-to-end on the integration-tests workflow (a-5 DONE)** and
+fixes a chain of pre-existing bugs in the sync connectors and
+smoke setUps that the green-run verification surfaced (Driver-18
+hardcoded `AsyncMssqlConnector`, bare-`mysql://` SQLAlchemy URL,
+bare-path Oracle URL → `?service_name=` for PDB lookup, MSSQL /
+Oracle smoke + sync setUps aligned to workflow credentials,
+MySQL `test_check_schema_and_tables` skipping system schemas
+that need `PROCESS`). See §4 for the full breakdown. Earlier
+Dependabot bumps (#61 pyodbc 5.3.0, #63 markupsafe 3.0.3, #64
+oracledb upper-bound to allow 3.x) merged after a surface-area
+audit against the adapter call sites — see commits `cdd1bb5`,
+`ead2013`, `a799d7d`.
 
 When new PRs come in, list them here with the same four columns
 (`#`, `What`, `Next action`, `Why deferred`) so the next reader can act
@@ -70,8 +80,10 @@ listed. **Reserved (not yet pushed):**
   `claude/handoff-async-backends-spans-OolIR` (#120),
   `claude/handoff-post-120-refresh-OolIR` (#121),
   `claude/handoff-finish-stream-OolIR` (#122),
-  `claude/handoff-post-122-refresh-OolIR` (#123), and the
-  current branch once its PR squash-merges.
+  `claude/handoff-post-122-refresh-OolIR` (#123),
+  `claude/handoff-post-123-refresh-OolIR` (#124),
+  `claude/review-handoff-async-50eob` (#125), and the current
+  branch once its PR squash-merges.
 
 If you find a `claude/*` branch not listed here and not associated with an
 open PR, it is almost certainly stale — confirm with `git log
@@ -108,12 +120,12 @@ rest.
 
 ---
 
-*Last updated 2026-04-26 on `claude/review-handoff-async-50eob`
-(picks up §4 Async/OTel/1.0 row's **a-3 + a-5** residuals —
-extends the async adapter chain from Postgres-only to all four
-async-extra backends, and verifies the per-backend async smoke
-jobs run green end-to-end on the integration-tests workflow).
-`main` is at `7f36829`; PR #125 is open with this branch's slice.
+*Last updated 2026-04-26 on `claude/handoff-post-125-refresh-OolIR`
+(post-merge bookkeeping refresh — adds #125 to §2's PR chain,
+`claude/review-handoff-async-50eob` to §3's post-merge artifact
+list, and rolls the freshness line forward so the trail stays
+complete after the a-3 + a-5 slice landed). `main` is at
+`e4a9c28` (#125 squash-merge tip).
 The Async / OTel / 1.0 readiness work-stream remains
 contractually complete with five Accepted ADRs (0032 / 0033 /
 0034 / 0035 / 0036), and the SQL-backend matrix is now
