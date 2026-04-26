@@ -15,6 +15,31 @@ for the public API surface described in
 
 ### Added
 
+- **`parallelold/` multiprocessing strategy emits ADR-0033 §3
+  adapter-call-site spans (ADR-0032 §3 follow-up (a-4) — the last
+  foundation item on the Async / OTel / 1.0 work-stream).**
+  `ParallelIntegrationExecute` now wraps its three
+  `ConnectionSourceAdapter` / `ConnectionTargetAdapter` call sites
+  in the documented spans:
+  `start_source_data_operation` opens
+  `pdip.integrator.source.read` around `get_source_data_count`;
+  `start_execute_integration_with_source_data` opens
+  `pdip.integrator.target.write` around `write_data`; and
+  `start_execute_integration_with_paging` opens
+  `pdip.integrator.source.read` around the paged read followed by
+  `pdip.integrator.target.write` around the subsequent write. Each
+  span carries the documented `pdip.connection.{type,driver}` plus
+  `pdip.batch.size` (and `pdip.rows.written` on writes) attributes
+  and reuses the shared
+  `strategies/base/span_helpers.py::attr_name` /
+  `resolve_driver` resolvers so the SQL/BigData/WebService
+  sub-payload walking stays consistent with the singleprocess and
+  parallelthread strategies. Pinned by eight new unit tests under
+  `tests/unittests/integrator/integration/parallelold/test_parallel_integration_execute_spans.py`
+  exercising span name, ordering, attributes (including the
+  `Limit=None → batch.size=0` guard and the connector-type-driven
+  driver resolution), and the `transactionhandler`-decorated
+  `start_source_data_operation` entry point.
 - **Async SQL adapter chain wired end-to-end across all four
   backends (ADR-0032 §3 follow-up (a-3)).** New
   `pdip/integrator/connection/types/sql/base/async_sql_dialect.py`
