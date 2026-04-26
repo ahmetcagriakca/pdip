@@ -23,9 +23,18 @@ class TestOracleConnection(TestCase):
                 Host='localhost',
                 Port=1521
             ),
-            Sid='xe',
+            # Modern Oracle (12c+) is a CDB containing pluggable
+            # databases (PDBs); the ``gvenzl/oracle-xe:21-*`` image
+            # creates a PDB named after ``ORACLE_DATABASE`` and
+            # creates ``APP_USER`` inside it. Connect via the PDB
+            # service name rather than the legacy ``xe`` SID — the
+            # workflow's ``ORACLE_DATABASE: test_pdi`` provisions a
+            # ``test_pdi`` PDB and ``APP_USER: test_pdi`` creates the
+            # matching user inside it. Aligns this test with
+            # ``tests/integrationtests/integrator/integration/sql/oracle/test_integrator.py``.
+            ServiceName='test_pdi',
             BasicAuthentication=ConnectionBasicAuthentication(
-                User='pdi',
+                User='test_pdi',
                 Password='pdi!123456'
             )
         )
