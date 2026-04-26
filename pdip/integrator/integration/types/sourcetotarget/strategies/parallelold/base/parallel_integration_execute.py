@@ -9,6 +9,7 @@ from injector import inject
 from pandas import DataFrame, notnull
 
 from ...base import IntegrationSourceToTargetExecuteStrategy
+from ...base.span_helpers import attr_name as _attr_name, resolve_driver as _resolve_driver
 from ......domain.base import IntegrationBase
 from .......connection.domain.task import DataQueueTask
 from .......connection.factories import ConnectionSourceAdapterFactory, ConnectionTargetAdapterFactory
@@ -20,6 +21,7 @@ from .......pubsub.publisher import Publisher
 from ........data.decorators import transactionhandler
 from ........dependency import IScoped
 from ........dependency.container import DependencyContainer
+from ........observability import get_tracer
 from ........processing import ProcessManager
 from ........processing.factories import ProcessManagerFactory
 
@@ -209,11 +211,34 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
         )
         try:
 
+            source_connection_type = operation_integration.Integration.SourceConnections.ConnectionType
             source_adapter = self.connection_source_adapter_factory.get_adapter(
-                connection_type=operation_integration.Integration.SourceConnections.ConnectionType
+                connection_type=source_connection_type
             )
 
-            data_count = source_adapter.get_source_data_count(integration=operation_integration.Integration)
+            tracer = get_tracer("pdip.integrator")
+            with tracer.start_as_current_span(
+                    "pdip.integrator.source.read"
+            ) as read_span:
+                read_span.set_attribute(
+                    "pdip.connection.type",
+                    _attr_name(source_connection_type),
+                )
+                read_span.set_attribute(
+                    "pdip.connection.driver",
+                    _resolve_driver(
+                        operation_integration.Integration.SourceConnections
+                    ),
+                )
+                read_span.set_attribute(
+                    "pdip.batch.size",
+                    operation_integration.Limit
+                    if operation_integration.Limit is not None
+                    else 0,
+                )
+                data_count = source_adapter.get_source_data_count(
+                    integration=operation_integration.Integration
+                )
             if data_count > 0:
                 transmitted_data_count = 0
                 limit = operation_integration.Limit
@@ -413,13 +438,33 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
                                                    integration: IntegrationBase,
                                                    source_data: any
                                                    ):
+        target_connection_type = integration.TargetConnections.ConnectionType
         target_adapter = self.connection_target_adapter_factory.get_adapter(
-            connection_type=integration.TargetConnections.ConnectionType
+            connection_type=target_connection_type
         )
-        target_adapter.write_data(
-            integration=integration,
-            source_data=source_data
-        )
+        tracer = get_tracer("pdip.integrator")
+        with tracer.start_as_current_span(
+                "pdip.integrator.target.write"
+        ) as write_span:
+            write_span.set_attribute(
+                "pdip.connection.type", _attr_name(target_connection_type)
+            )
+            write_span.set_attribute(
+                "pdip.connection.driver",
+                _resolve_driver(integration.TargetConnections),
+            )
+            write_span.set_attribute(
+                "pdip.batch.size",
+                len(source_data) if source_data is not None else 0,
+            )
+            write_span.set_attribute(
+                "pdip.rows.written",
+                len(source_data) if source_data is not None else 0,
+            )
+            target_adapter.write_data(
+                integration=integration,
+                source_data=source_data
+            )
         return len(source_data)
 
     @func_set_timeout(1800)
@@ -428,19 +473,51 @@ class ParallelIntegrationExecute(IntegrationSourceToTargetExecuteStrategy, IScop
                                               start,
                                               end
                                               ):
+        source_connection_type = integration.SourceConnections.ConnectionType
+        target_connection_type = integration.TargetConnections.ConnectionType
         source_adapter = self.connection_source_adapter_factory.get_adapter(
-            connection_type=integration.SourceConnections.ConnectionType
+            connection_type=source_connection_type
         )
         target_adapter = self.connection_target_adapter_factory.get_adapter(
-            connection_type=integration.TargetConnections.ConnectionType
+            connection_type=target_connection_type
         )
-        source_data = source_adapter.get_source_data_with_paging(
-            integration=integration,
-            start=start,
-            end=end
-        )
-        target_adapter.write_data(
-            integration=integration,
-            source_data=source_data
-        )
+        tracer = get_tracer("pdip.integrator")
+        with tracer.start_as_current_span(
+                "pdip.integrator.source.read"
+        ) as read_span:
+            read_span.set_attribute(
+                "pdip.connection.type", _attr_name(source_connection_type)
+            )
+            read_span.set_attribute(
+                "pdip.connection.driver",
+                _resolve_driver(integration.SourceConnections),
+            )
+            read_span.set_attribute("pdip.batch.size", end - start)
+            source_data = source_adapter.get_source_data_with_paging(
+                integration=integration,
+                start=start,
+                end=end
+            )
+        with tracer.start_as_current_span(
+                "pdip.integrator.target.write"
+        ) as write_span:
+            write_span.set_attribute(
+                "pdip.connection.type", _attr_name(target_connection_type)
+            )
+            write_span.set_attribute(
+                "pdip.connection.driver",
+                _resolve_driver(integration.TargetConnections),
+            )
+            write_span.set_attribute(
+                "pdip.batch.size",
+                len(source_data) if source_data is not None else 0,
+            )
+            write_span.set_attribute(
+                "pdip.rows.written",
+                len(source_data) if source_data is not None else 0,
+            )
+            target_adapter.write_data(
+                integration=integration,
+                source_data=source_data
+            )
         return len(source_data)
