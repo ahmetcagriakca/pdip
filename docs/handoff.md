@@ -23,16 +23,22 @@
 
 ## 2. Open PRs
 
-No tracked open PRs as of 2026-04-25. The Async / OTel / 1.0 cut
-work-stream landed on `main` across **#116** (foundation + first
-five follow-ups), **#117** (post-merge handoff refresh), **#118**
-(asyncpg Postgres end-to-end + ADR-0035 signature-snapshot guard),
-**#119** (post-#118 handoff refresh), **#120** (async
-MySQL/MSSQL/Oracle skeletons + Postgres `clear_data` end-to-end +
-`SingleProcessIntegrationExecute` adapter-call-site spans + ADR-0036
-Proposed), **#121** (post-#120 handoff refresh), **#122** — the
-finishing slice that lands `pdip.__version__` + ADR-0036 Accepted
-with both quality_guard rules + Postgres `write_data` /
+**#125** is open as of 2026-04-26 — extends the async adapter
+chain from Postgres-only to all four backends (a-3) and verifies
+the per-backend async smoke jobs run green end-to-end (a-5);
+also fixes a chain of pre-existing bugs in the sync connectors
+and smoke setUps that the green-run verification surfaced (see
+§4 Async/OTel/1.0 row for the inventory). The Async / OTel / 1.0
+work-stream's prior history landed on `main` across **#116**
+(foundation + first five follow-ups), **#117** (post-merge
+handoff refresh), **#118** (asyncpg Postgres end-to-end +
+ADR-0035 signature-snapshot guard), **#119** (post-#118 handoff
+refresh), **#120** (async MySQL/MSSQL/Oracle skeletons + Postgres
+`clear_data` end-to-end + `SingleProcessIntegrationExecute`
+adapter-call-site spans + ADR-0036 Proposed), **#121**
+(post-#120 handoff refresh), **#122** — the finishing slice that
+lands `pdip.__version__` + ADR-0036 Accepted with both
+quality_guard rules + Postgres `write_data` /
 `do_target_operation` / iterator / paging end-to-end +
 `parallelthread/` adapter-call-site spans + the integration-tests
 CI nightly installing `pdip[async]` and running the per-backend
@@ -80,7 +86,7 @@ ADR if the answer changed.
 |---|---|---|
 | Kafka nightly integration job | Smoke-test scaffold for `KafkaConnector` lives at `tests/integrationtests/integrator/connection/queue/kafka/` and runs locally against `tests/environments/kafka/docker-compose.yml`. The matching nightly CI job did *not* land — four image / config combinations failed (cp-kafka + cp-zookeeper, apache/kafka 3.7 KRaft, bitnami/kafka 3.7 KRaft, plus a debug log-dump variant) and the Actions logs are auth-walled to non-collaborators. | A maintainer with collaborator access reads the actual job log to identify the broker-exit cause, then opens one targeted fix PR adding the `kafka:` job to `.github/workflows/integration-tests.yml`. |
 | Hadoop / Impala fixtures + bigdata nightly | [ADR-0030](governance/adr/0030-hadoop-impala-fixture-migration.md) (Status: Proposed). Stage 1 fully landed: mechanical part in #110 (deleted `tests/environments/hadoop/`), substantive part in #114 (translated upstream `apache/impala/docker/quickstart.yml` into a 4-service fixture under `tests/environments/bigdata/impala/` + vendored `quickstart_conf/hive-site.xml`). | Two open prerequisites before Stage 3 (`impala:` nightly job) lands: (a) maintainer with Docker access boots the new fixture and confirms `localhost:21050` accepts pyodbc — fixture has not been locally validated; (b) somebody uncomments / rewrites the test bodies under `tests/integrationtests/integrator/integration/bigdata/impala/test_integration_*.py`, which today are stub files (every line is `# from unittest …`). |
-| Async / OpenTelemetry / 1.0 cut | **All five ADRs Accepted (0032 / 0033 / 0034 / 0035 / 0036); the work-stream is contractually complete on `main`**. ADR-0034 §5 enforcement is now 4 layers, all shipped: drift contract test, `RuleADR0034NoUndocumentedTopLevelPackage` coverage rule, `RuleADR0035PublicApiSignatureSnapshotMatches` signature guard, and the new pair `RuleADR0036DeprecationWarningHasManifestEntry` + `RuleADR0036RemovalRespectsDeprecationCycle` deprecation-cycle guard reading `docs/public-api-deprecations.json`. `pdip.__version__` is exported as the single source of truth for the runtime version (read by the removal-cycle rule). `pdip.observability` exports `get_tracer` / `get_meter` / `inject_context` / `use_context`; `pdip[observability]` and `pdip[async]` extras live in `setup.py`; `Dispatcher.dispatch`, `Integrator.integrate`, `SingleProcessIntegrationExecute`, AND `parallelthread/operation/{source,target}` now emit `pdip.cqrs.{command,query}` / `pdip.integrator.job` / `pdip.integrator.source.read` / `pdip.integrator.target.write` spans with their documented attributes via the shared `strategies/base/span_helpers.py`; the async Sql chain dispatches via `_connector_for` to `AsyncPostgresqlConnector` / `AsyncMysqlConnector` / `AsyncMssqlConnector` / `AsyncOracleConnector` (lazy driver imports throughout); `AsyncSqlConnector` ABC has `connect`/`disconnect`/`fetch_count`/`execute`/`fetch_all`/`executemany`; **`AsyncSqlTargetAdapter` and `AsyncSqlSourceAdapter` are fully wired for ALL FOUR backends** — `clear_data` (TRUNCATE), `write_data` (executemany INSERT with column inference + dialect-specific placeholder ladder), `do_target_operation` (truncate-when-flag-set), `get_iterator` (in-memory chunked batches), `get_source_data_with_paging` (LIMIT/OFFSET on Postgres + MySQL, ANSI OFFSET/FETCH NEXT on MSSQL + Oracle), `get_source_data_count`. The dialect helper at `pdip/integrator/connection/types/sql/base/async_sql_dialect.py` centralises identifier quoting, placeholder rendering, paging-clause shape, and TRUNCATE wording per backend; both adapters route through `async_dialect_for(config)` instead of hard-coding Postgres syntax. Cross-process W3C `traceparent` propagation through `ProcessManager` ↔ `Subprocess`. Integration-tests CI nightly now installs `pdip[integrator,async]` and runs per-backend `connection/sql/<backend>/test_async_connection.py` smoke jobs alongside the existing sync integration suites — every backend now exercises the full 8-test adapter shape (connector smoke + 6 adapter methods) instead of just connect/fetch_count. Pre-commit suite is 10 rules. | **What is left on this work-stream**: (a-4 remaining) Span instrumentation of `parallelold/` (multiprocessing) strategy — same span vocabulary already extracted into `strategies/base/span_helpers.py`, only the call-site weaving remains. (a-5 verification) Confirm the per-backend async smoke jobs go green on the integration-tests nightly once the workflow actually runs (the YAML change is shipped; the green run is the verification). The Async / OTel / 1.0-readiness work is **architecturally + breadth-complete on the SQL backend matrix** — what remains is the parallelold multiprocessing path's spans and the nightly-green confirmation. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 / ADR-0034 / ADR-0035 / ADR-0036 quality_guard rules (now 10 rules). |
+| Async / OpenTelemetry / 1.0 cut | **All five ADRs Accepted (0032 / 0033 / 0034 / 0035 / 0036); the work-stream is contractually complete on `main`**. ADR-0034 §5 enforcement is now 4 layers, all shipped: drift contract test, `RuleADR0034NoUndocumentedTopLevelPackage` coverage rule, `RuleADR0035PublicApiSignatureSnapshotMatches` signature guard, and the new pair `RuleADR0036DeprecationWarningHasManifestEntry` + `RuleADR0036RemovalRespectsDeprecationCycle` deprecation-cycle guard reading `docs/public-api-deprecations.json`. `pdip.__version__` is exported as the single source of truth for the runtime version (read by the removal-cycle rule). `pdip.observability` exports `get_tracer` / `get_meter` / `inject_context` / `use_context`; `pdip[observability]` and `pdip[async]` extras live in `setup.py`; `Dispatcher.dispatch`, `Integrator.integrate`, `SingleProcessIntegrationExecute`, AND `parallelthread/operation/{source,target}` now emit `pdip.cqrs.{command,query}` / `pdip.integrator.job` / `pdip.integrator.source.read` / `pdip.integrator.target.write` spans with their documented attributes via the shared `strategies/base/span_helpers.py`; the async Sql chain dispatches via `_connector_for` to `AsyncPostgresqlConnector` / `AsyncMysqlConnector` / `AsyncMssqlConnector` / `AsyncOracleConnector` (lazy driver imports throughout); `AsyncSqlConnector` ABC has `connect`/`disconnect`/`fetch_count`/`execute`/`fetch_all`/`executemany`; **`AsyncSqlTargetAdapter` and `AsyncSqlSourceAdapter` are fully wired for ALL FOUR backends** — `clear_data` (TRUNCATE), `write_data` (executemany INSERT with column inference + dialect-specific placeholder ladder), `do_target_operation` (truncate-when-flag-set), `get_iterator` (in-memory chunked batches), `get_source_data_with_paging` (LIMIT/OFFSET on Postgres + MySQL, ANSI OFFSET/FETCH NEXT on MSSQL + Oracle), `get_source_data_count`. The dialect helper at `pdip/integrator/connection/types/sql/base/async_sql_dialect.py` centralises identifier quoting, placeholder rendering, paging-clause shape, and TRUNCATE wording per backend; both adapters route through `async_dialect_for(config)` instead of hard-coding Postgres syntax. Cross-process W3C `traceparent` propagation through `ProcessManager` ↔ `Subprocess`. Integration-tests CI nightly installs `pdip[integrator,async]` and runs per-backend `connection/sql/<backend>/test_async_connection.py` smoke jobs alongside the existing sync integration suites — every backend exercises the full 8-test adapter shape (connector smoke + 6 adapter methods) instead of just connect/fetch_count, and the workflow is now **verified green end-to-end** for all four backends (Postgres 16, MySQL 8.4, SQL Server 2022, Oracle XE 21c) — running the workflow uncovered a chain of pre-existing bugs in the sync connectors and smoke setUps that this PR also fixes (Driver-18-hardcoded `AsyncMssqlConnector` → discovery; bare-`mysql://` SQLAlchemy URL → `mysql+mysqlconnector://`; bare-path Oracle URL → `?service_name=` for PDB resolution; `sa`/`master`/`Pdi!123456` MSSQL smoke → workflow-provisioned `pdi`/`test_pdi`/`pdi!123456`; `xe`/`pdi` Oracle smoke + sync setUps → workflow-provisioned `test_pdi` PDB + `test_pdi` user; `test_check_schema_and_tables` skips MySQL system schemas that need `PROCESS`). Pre-commit suite is 10 rules. | **What is left on this work-stream**: (a-4 remaining) Span instrumentation of `parallelold/` (multiprocessing) strategy — same span vocabulary already extracted into `strategies/base/span_helpers.py`, only the call-site weaving remains. (a-5 verification) **DONE — green CI run on PR #125 confirms it**. The Async / OTel / 1.0-readiness work is **architecturally + breadth-complete on the SQL backend matrix and CI-verified**; only the parallelold multiprocessing path's spans remain. TDD focus still mandated — ADR-0027 diff-cover 100 % gate + ADR-0026 / ADR-0034 / ADR-0035 / ADR-0036 quality_guard rules (now 10 rules). |
 
 ## 5. Read this first
 
@@ -102,14 +108,17 @@ rest.
 
 ---
 
-*Last updated 2026-04-25 on `claude/review-handoff-async-50eob`
-(picks up §4 Async/OTel/1.0 row's a-3 residual — extends the
-async adapter chain from Postgres-only to all four async-extra
-backends). `main` is at `7f36829` plus this branch's slice. The
-Async / OTel / 1.0 readiness work-stream remains contractually
-complete with five Accepted ADRs (0032 / 0033 / 0034 / 0035 /
-0036), and the SQL-backend matrix is now **breadth-complete**:
-new `pdip/integrator/connection/types/sql/base/async_sql_dialect.py`
+*Last updated 2026-04-26 on `claude/review-handoff-async-50eob`
+(picks up §4 Async/OTel/1.0 row's **a-3 + a-5** residuals —
+extends the async adapter chain from Postgres-only to all four
+async-extra backends, and verifies the per-backend async smoke
+jobs run green end-to-end on the integration-tests workflow).
+`main` is at `7f36829`; PR #125 is open with this branch's slice.
+The Async / OTel / 1.0 readiness work-stream remains
+contractually complete with five Accepted ADRs (0032 / 0033 /
+0034 / 0035 / 0036), and the SQL-backend matrix is now
+**breadth-complete + CI-verified**: new
+`pdip/integrator/connection/types/sql/base/async_sql_dialect.py`
 centralises per-backend identifier quoting + placeholder ladder
 + paging clause + TRUNCATE wording (asyncpg `$N` / aiomysql
 `%s` / aioodbc `?` / oracledb `:N`; LIMIT/OFFSET vs ANSI
@@ -121,16 +130,25 @@ so `write_data` / `clear_data` / `do_target_operation` /
 alongside Postgres. Per-backend integration suites
 (`tests/integrationtests/integrator/connection/sql/<backend>/test_async_connection.py`)
 expand from 2 connector smoke tests to the full 8-test shape
-matching the existing asyncpg Postgres test layout. Public
-surface unchanged (no top-level changes; `pdip.__version__` +
-`pdip.observability` exports stable). ADR-0034 §5 enforcement
-complete in **four layers, all shipped** (drift / coverage /
-signature / deprecation-cycle); 100 % unit coverage on the
-canonical `run_tests.py` cell (773 tests, +26 dialect unit
-tests); 10 quality_guard rules green. Remaining queued work —
-the `parallelold/` multiprocessing strategy spans and
-nightly-green verification of the now-real adapter smokes — is
-breadth, not foundation. Recorded in §4 Async/OTel/1.0 row.
-When you change anything above, bump this line with the date
-and the branch name so the next reader knows the freshness
-window at a glance.*
+matching the existing asyncpg Postgres test layout, and the
+integration-tests workflow runs all four backends green on the
+PR's self-test trigger. The green-run verification (a-5) also
+surfaced a chain of pre-existing bugs in the sync connectors
+and smoke setUps that this PR fixes — see CHANGELOG `[Unreleased]
+/ Fixed` for the inventory (Driver-18-hardcoded
+`AsyncMssqlConnector`; bare-`mysql://` SQLAlchemy URL;
+bare-path Oracle URL → `?service_name=` for PDB resolution;
+MSSQL / Oracle smoke setUps + sync `test_connection.py` setUps
+aligned to the workflow's provisioned credentials; MySQL
+`test_check_schema_and_tables` skips system schemas that need
+`PROCESS`). Public surface unchanged (no top-level changes;
+`pdip.__version__` + `pdip.observability` exports stable).
+ADR-0034 §5 enforcement complete in **four layers, all shipped**
+(drift / coverage / signature / deprecation-cycle); 100 % unit
+coverage on the canonical `run_tests.py` cell (773 tests, +26
+dialect unit tests); 10 quality_guard rules green. Remaining
+queued work — the `parallelold/` multiprocessing strategy
+spans (a-4) — is the only foundation item left on the
+work-stream. Recorded in §4 Async/OTel/1.0 row. When you change
+anything above, bump this line with the date and the branch
+name so the next reader knows the freshness window at a glance.*

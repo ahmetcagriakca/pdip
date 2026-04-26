@@ -36,6 +36,20 @@ for the public API surface described in
   `tests/unittests/integrator/connection/sql/test_async_sql_dialect.py`
   plus per-backend integration suites that mirror the existing
   asyncpg Postgres test layout.
+- **Per-backend async smoke jobs verified green end-to-end on the
+  integration-tests workflow (ADR-0032 §3 follow-up (a-5)).** The
+  workflow YAML shipped in #122 had not been exercised against the
+  actual fixtures until PR #125's
+  ``tests/integrationtests/**`` self-test trigger fired; that run
+  surfaced — and this changelog entry's siblings under **Fixed**
+  cover — a chain of pre-existing bugs in the sync connectors and
+  smoke setUps that had silently kept the per-backend MySQL /
+  MSSQL / Oracle async smoke jobs red. After the fixes,
+  ``unittest discover`` over
+  ``tests/integrationtests/integrator/connection/sql/<backend>/``
+  is green for all four backends (Postgres 16, MySQL 8.4, SQL
+  Server 2022, Oracle XE 21c) on the same fixture set the sync
+  integration suites already exercised.
 - **ADR-0029 — Integration tests run nightly in CI.** New
   `.github/workflows/integration-tests.yml` boots the pinned
   Postgres 16, MySQL 8.4, **and Oracle XE 21c**
@@ -68,6 +82,72 @@ for the public API surface described in
   (PR #94), to be filed at `nedbat/coveragepy` once 3.14 reaches
   final. ADR-0028's Follow-ups bullet links to it as the
   deprecation trigger for the canonical-cell workaround.
+
+### Fixed
+
+- **AsyncMssqlConnector ODBC driver discovery (ADR-0032).** The
+  async MSSQL connector hard-coded
+  ``Driver={ODBC Driver 18 for SQL Server};`` in its DSN; the
+  integration-tests CI runner installs Driver 17 (Driver 18
+  enforces TLS verification by default and rejects the test
+  container's self-signed certificate), so every async MSSQL
+  smoke run failed at ``aioodbc.connect``. Ports the sync
+  ``MssqlConnector.find_driver_name`` discovery — pick the newest
+  ``... for SQL Server`` driver ``pyodbc.drivers()`` reports, fall
+  back to anything mentioning ``SQL Server`` / ``FreeTDS``, then
+  to the first installed driver. Now both Driver 17 (CI) and 18
+  (local fixture) work without code changes.
+- **MysqlConnector SQLAlchemy URL routes through
+  mysql-connector-python.** ``get_engine_connection_url`` rendered
+  a bare ``mysql://`` URL, which SQLAlchemy resolves to the
+  default ``MySQLdb`` driver (the C-based ``mysqlclient`` binding
+  that is **not** in ``setup.py``'s ``integrator`` extra and so
+  not installed in CI). Switching to ``mysql+mysqlconnector://``
+  aligns the engine surface with the cursor surface so a single
+  driver dependency (``mysql-connector-python>=9.1``) covers both
+  paths.
+- **OracleConnector engine URL uses ``?service_name=`` for PDB
+  lookup.** ``get_engine_connection_url``'s ``ServiceName``
+  branch rendered the bare-path URL form
+  (``host:port/<ServiceName>``), which python-oracledb interprets
+  as **SID** resolution — modern Oracle (12c+) Pluggable
+  Databases (PDBs) are registered with the listener as a *service
+  name*, not a SID, so this URL form fails with ``DPY-6003``
+  against any PDB-only fixture. The ``?service_name=`` query
+  parameter is the SQLAlchemy + python-oracledb contract for
+  service-name resolution. The cursor-side ``connect()`` path
+  already worked because it called
+  ``oracledb.makedsn(..., service_name=...)`` directly; only the
+  SQLAlchemy engine path was broken.
+- **Async smoke setUps for MSSQL / Oracle credentials aligned with
+  the integration-tests workflow's provisioned users / databases.**
+  The MSSQL async smoke connected as ``sa`` against ``master``
+  with ``Pdi!123456``; the workflow provisions ``pdi`` with
+  ``CHECK_POLICY = OFF`` against ``test_pdi`` and the ``sa``
+  password it sets is actually ``yourStrong(!)Password``. The
+  Oracle async smoke connected as ``pdi`` against ``XEPDB1``;
+  the workflow's ``ORACLE_DATABASE: test_pdi`` + ``APP_USER:
+  test_pdi`` create a PDB named ``test_pdi`` and a matching user
+  inside it. Both setUps now match the green sync siblings under
+  ``tests/integrationtests/integrator/integration/sql/<backend>/test_integrator.py``.
+- **Sync ``test_check_schema_and_tables`` (MySQL) skips system
+  schemas.** The test swept every schema returned by
+  ``dialect.get_schemas()`` and called ``get_columns`` on each
+  view; ``information_schema.FILES`` requires the global
+  ``PROCESS`` privilege which the workflow-provisioned ``pdi``
+  user does not have (``MYSQL_USER`` + ``MYSQL_DATABASE`` only
+  grants ``ALL`` on the matching database). Skipping the four
+  built-in MySQL schemas (``information_schema``, ``mysql``,
+  ``performance_schema``, ``sys``) keeps the test focused on the
+  user-owned ``test_pdi`` schema and matches the privilege
+  envelope the documented integration fixture grants.
+- **Sync Oracle ``test_connection.py`` setUp uses workflow-provisioned
+  ``test_pdi`` PDB.** The setUp connected via ``Sid='xe'`` and
+  ``User='pdi'`` — neither of which the workflow provisions
+  (``ORACLE_DATABASE: test_pdi`` creates a PDB named ``test_pdi``,
+  ``APP_USER: test_pdi`` creates the user inside it). Aligned
+  with the green sync sibling under
+  ``tests/integrationtests/integrator/integration/sql/oracle/test_integrator.py``.
 
 ### Changed
 
