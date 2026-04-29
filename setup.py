@@ -58,7 +58,7 @@ setup(
             "dataclasses-json==0.6.7",
             "func-timeout==4.3.5",
             "mysql-connector-python>=9.1,<10",
-            "pandas==2.2.3",
+            "pandas==2.3.3",
             "psycopg2-binary==2.9.12",
             "pyodbc==5.3.0"
         ],
