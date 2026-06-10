@@ -37,7 +37,7 @@ setup(
     extras_require={
         "api": [
             "Flask==3.1.3",
-            "Flask_Cors==6.0.2",
+            "Flask_Cors==6.0.5",
             "Flask-Injector==0.15.0",
             "flask-restx==1.3.2",
             "markupsafe==3.0.3",
@@ -50,7 +50,7 @@ setup(
             "aiokafka>=0.10,<1"
         ],
         "cryptography": [
-            "cryptography==46.0.7"
+            "cryptography==48.0.1"
         ],
         "integrator": [
             "oracledb>=2,<4",
@@ -69,7 +69,7 @@ setup(
         "preferred": [
             "injector==0.24.0",
             "PyYAML==6.0.3",
-            "SQLAlchemy==2.0.49"
+            "SQLAlchemy==2.0.50"
         ]
     },
     classifiers=[
