@@ -50,7 +50,7 @@ setup(
             "aiokafka>=0.10,<1"
         ],
         "cryptography": [
-            "cryptography==46.0.7"
+            "cryptography==48.0.1"
         ],
         "integrator": [
             "oracledb>=2,<4",
